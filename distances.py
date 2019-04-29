@@ -1,6 +1,6 @@
 import collections
 
-def get_distances(connections, start):
+def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
   dists = {start: 0}
   queue = collections.deque()
@@ -10,7 +10,7 @@ def get_distances(connections, start):
   while queue:
     person = queue.popleft()
     dist = dists[person]
-    for neigh in connections.get(person, set()):
+    for neigh in db.get_connections(person):
       if neigh not in dists:
         dists[neigh] = dist + 1
         total_dist += dist + 1
@@ -20,10 +20,11 @@ def get_distances(connections, start):
 
 if __name__ == "__main__":
   import sys
-  import csv_dump
+  import csv_load
 
-  connections, id2num, num2id = csv_dump.load_connections()
+  db = csv_load.CsvLoad()
+  db.load_all()
 
   for user_id in sys.argv[1:]:
-    dists, d_mean, d_max = get_distances(connections, id2num[user_id])
+    dists, d_mean, d_max = get_distances(db, db.id2num[user_id])
     print user_id, d_mean, d_max

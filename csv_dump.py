@@ -13,7 +13,7 @@ import time
 #         |17750925|18370214|Hebron, Connecticut|Mansfield, Connecticut|335
 #         |347|60|0|1
 
-def load_genetic(connections, id2num, num2id, filename="dump_people_user.csv",
+def load_genetic(connections, id2num, num2id, filename="dump_people_users.csv",
                  include_siblings=True):
   """Load mappings from people->parents and ->children."""
   USER_NUM = 0

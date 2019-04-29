@@ -35,34 +35,19 @@ class CsvLoad(object):
 
   def load_user(self, filename):
     """Load mappings from people->parents and ->children."""
-    # dump_people_user.csv example:
-    # Fields: User ID|WikiTree ID|Touched|Prefix|First Name|
-    #         Preferred Name|Middle Name|Last Name at Birth|Last Name Current|Last Name Other|
-    #         Suffix|Gender|Birth Date|Death Date|Birth Location|
-    #         Death Location|Father|Mother|Privacy|Is Guest|
-    #         Connected
-    # Example: 334|Gilbert-6||John|John
-    #         ||Gilbert|Gilbert||1
-    #         |17750925|18370214|Hebron, Connecticut|Mansfield, Connecticut|335
-    #         |347|60|0|1
-    USER_NUM = 0
-    WT_ID = 1
-    FATHER_NUM = 16
-    MOTHER_NUM = 17
-    BIRTH_DATE = 12
-    DEATH_DATE = 13
-
     with open(filename, "rb") as f:
       reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
+      # First, figure out the index for various columns. These change
+      # over time as new columns are added, so we cannot hardcode values.
       header = reader.next()
       print "Header:", "|".join(header)
-      assert header[USER_NUM] == "User ID", header[USER_NUM]
-      assert header[WT_ID] == "WikiTree ID", header[WT_ID]
-      assert header[FATHER_NUM] == "Father", header[FATHER_NUM]
-      assert header[MOTHER_NUM] == "Mother", header[MOTHER_NUM]
-      assert header[BIRTH_DATE] == "Birth Date", header[BIRTH_DATE]
-      assert header[DEATH_DATE] == "Death Date", header[DEATH_DATE]
+      USER_NUM = header.index("User ID")
+      WT_ID = header.index("WikiTree ID")
+      FATHER_NUM = header.index("Father")
+      MOTHER_NUM = header.index("Mother")
+      BIRTH_DATE = header.index("Birth Date")
+      DEATH_DATE = header.index("Death Date")
 
       i = 0
       start = time.time()
@@ -90,7 +75,7 @@ class CsvLoad(object):
             self.siblings[person].add(sibling)
             self.siblings[sibling].add(person)
 
-        if i % 1000000 == 0:
+        if i % 100000 == 0:
           print " ... {:,}".format(i), \
                 "{:,}".format(len(self.parents)), \
                 "{:,}".format(len(self.children)), \
@@ -127,7 +112,7 @@ class CsvLoad(object):
 
   def load_all(self):
     print "Loading parent/child/sibling data", time.clock()
-    self.load_user("dump_people_user.csv")
+    self.load_user("dump_people_users.csv")
     print "Loading marriages data", time.clock()
     self.load_marriages("dump_people_marriages.csv")
 
