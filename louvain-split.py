@@ -1,5 +1,8 @@
+# Louvain method for splitting network into communities.
+
 import collections
 import copy
+import random
 
 def calc_Q(graph, community_of):
   k = dict()
@@ -22,8 +25,8 @@ def calc_dQ(graph, community_of, node, new_comm):
   Q1 = calc_Q(graph, new_comm_of)
   return Q1 - Q0
 
-def louvain_split(graph):
-  print len(graph)
+def louvain_split(graph, level=0):
+  print "Level", level, len(graph)
   for node in graph:
     for neighbor, weight in graph[node].items():
       assert neighbor in graph, (node, neighbor, graph[node], graph)
@@ -38,7 +41,9 @@ def louvain_split(graph):
   while progress:
     progress = False
 
-    for node in graph:
+    nodes = graph.keys()
+    #random.shuffle(nodes)
+    for node in nodes:
       # For each node, see which comminity gives it the max modularity.
       best_dQ = 0
       best_comm = community_of[node]
@@ -53,13 +58,15 @@ def louvain_split(graph):
         # Move node to the best community.
         community_of[node] = best_comm
 
+  print "Q =", calc_Q(graph, community_of)
+
   communities = collections.defaultdict(list)
   for node in community_of:
     communities[community_of[node]].append(node)
 
   # If there was no change in communities, then we're done.
   if len(communities) == len(graph):
-    return graph
+    return graph, {node : [node] for node in graph}
 
   # Meta step: Build a new graph where each community becomes a node.
   meta_graph = dict()
@@ -69,7 +76,9 @@ def louvain_split(graph):
       for neighbor, weight in graph[node].items():
         meta_graph[comm][community_of[neighbor]] += weight
 
-  return louvain_split(meta_graph), communities
+  top_graph, mapping = louvain_split(meta_graph, level + 1)
+  return top_graph, {node : (mapping[community_of[node]] + [community_of[node]])
+                     for node in graph}
 
 
 def load_graph(filename):
@@ -100,7 +109,8 @@ if __name__ == "__main__":
 
   #graph = load_graph(sys.argv[1])
   graph = load_tsv(sys.argv[1])
-  partition = louvain_split(graph)
+  top_graph, partition = louvain_split(graph)
 
+  pprint.pprint(top_graph)
   pprint.pprint(partition)
-  # TODO: Describe
+  print "Q =", calc_Q(graph, {node: comm[0] for node, comm in partition.items()})
