@@ -4,44 +4,24 @@ import time
 
 import networkx as nx
 
-# dump_people_user.csv example:
-# Fields: User ID|WikiTree ID|Prefix|First Name|Preferred Name
-#        |Middle Name|Last Name at Birth|Last Name Current|Suffix|Gender
-#        |Birth Date|Death Date|Birth Location|Death Location|Father
-#        |Mother|Privacy|Is Guest|Connected
-# Example: 334|Gilbert-6||John|John
-#         ||Gilbert|Gilbert||1
-#         |17750925|18370214|Hebron, Connecticut|Mansfield, Connecticut|335
-#         |347|60|0|1
-
-def load_genetic(graph, filename="dump_people_user.csv"):
+def load_genetic(graph, filename="dump_people_users.csv"):
   """Load mappings from people->parents and ->children."""
-  USER_NUM = 0
-  USER_ID = 1
-  FATHER_NUM = 14
-  MOTHER_NUM = 15
-
   with open(filename, "rb") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
     header = reader.next()
-    assert header[USER_NUM] == "User ID"
-    assert header[USER_ID] == "WikiTree ID"
-    assert header[FATHER_NUM] == "Father"
-    assert header[MOTHER_NUM] == "Mother"
+    USER_NUM = header.index("User ID")
+    WT_ID = header.index("WikiTree ID")
+    FATHER_NUM = header.index("Father")
+    MOTHER_NUM = header.index("Mother")
 
     i = 0
-    id2num = {}
-    num2id = {}
     # parents = collections.defaultdict(set)
     children = collections.defaultdict(set)
     # siblings = collections.defaultdict(set)
     start = time.time()
     for row in reader:
       person = row[USER_NUM]
-      person_id = row[USER_ID]
-      id2num[person_id] = person
-      num2id[person] = person_id
 
       this_sibs = set()
       # Create connections to and from parents.
@@ -65,8 +45,6 @@ def load_genetic(graph, filename="dump_people_user.csv"):
     print " ... {:,}".format(i), \
           "{:,}".format(len(graph)), \
           time.time() - start
-
-    return id2num, num2id
 
 def load_marriages(graph, filename="dump_people_marriages.csv"):
   """Load mappings from people->spouses."""
@@ -95,8 +73,7 @@ def build_graph():
   graph = nx.Graph()
 
   print "Loading parent/child/sibling data", time.clock()
-  id2num, num2id = load_genetic(graph)
-  # TODO: Use id2num, num2id as well.
+  load_genetic(graph)
 
   print "Loading marriages data", time.clock()
   load_marriages(graph)

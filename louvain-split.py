@@ -42,7 +42,7 @@ def louvain_split(graph, level=0):
     progress = False
 
     nodes = graph.keys()
-    #random.shuffle(nodes)
+    random.shuffle(nodes)
     for node in nodes:
       # For each node, see which comminity gives it the max modularity.
       best_dQ = 0
@@ -107,10 +107,19 @@ if __name__ == "__main__":
   import pprint
   import sys
 
-  #graph = load_graph(sys.argv[1])
-  graph = load_tsv(sys.argv[1])
+  graph = load_graph(sys.argv[1])
+  #graph = load_tsv(sys.argv[1])
   top_graph, partition = louvain_split(graph)
 
-  pprint.pprint(top_graph)
-  pprint.pprint(partition)
-  print "Q =", calc_Q(graph, {node: comm[0] for node, comm in partition.items()})
+  community_of = {node: comm[0] for node, comm in partition.items()}
+  print "Q =", calc_Q(graph, community_of)
+
+  communities = collections.defaultdict(list)
+  for node in community_of:
+    communities[community_of[node]].append(node)
+
+  print "Num communities =", len(communities)
+  print "Min community size =", min(len(nodes) for nodes in communities.values())
+  print "Max community size =", max(len(nodes) for nodes in communities.values())
+  #pprint.pprint(top_graph)
+  #pprint.pprint(partition)
