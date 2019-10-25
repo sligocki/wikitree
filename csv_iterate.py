@@ -6,16 +6,16 @@ class UserRow(object):
     self.key = key
 
   def user_num(self):
-    return self.row[self.key["User ID"]]
+    return int(self.row[self.key["User ID"]])
 
   def wikitree_id(self):
     return self.row[self.key["WikiTree ID"]]
 
   def father_num(self):
-    return self.row[self.key["Father"]]
+    return int(self.row[self.key["Father"]])
 
   def mother_num(self):
-    return self.row[self.key["Mother"]]
+    return int(self.row[self.key["Mother"]])
 
 
 def iterate_users(filename="dump_people_users.csv"):

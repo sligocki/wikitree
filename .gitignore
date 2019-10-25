@@ -1,3 +1,5 @@
+*~
 *.pyc
 dumps
 dump_*.csv
+*.db
