@@ -1,5 +1,12 @@
 import csv
 
+def ParseUnicode(s):
+  try:
+    return unicode(s, encoding="utf-8", errors="strict")
+  except UnicodeDecodeError:
+    print s
+    raise
+
 class UserRow(object):
   def __init__(self, row, key):
     self.row = row
@@ -9,7 +16,7 @@ class UserRow(object):
     return int(self.row[self.key["User ID"]])
 
   def wikitree_id(self):
-    return self.row[self.key["WikiTree ID"]]
+    return ParseUnicode(self.row[self.key["WikiTree ID"]])
 
   def father_num(self):
     return int(self.row[self.key["Father"]])
@@ -18,7 +25,7 @@ class UserRow(object):
     return int(self.row[self.key["Mother"]])
 
 
-def iterate_users(filename="dump_people_users.csv"):
+def iterate_users_file(filename):
   with open(filename, "rb") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
@@ -32,6 +39,13 @@ def iterate_users(filename="dump_people_users.csv"):
     # Now iterate through all data rows.
     for row in reader:
       yield UserRow(row, key)
+
+
+def iterate_users():
+  for user in iterate_users_file("dump_people_users.csv"):
+    yield user
+  for user in iterate_users_file("custom_user.csv"):
+    yield user
 
 
 if __name__ == "__main__":
