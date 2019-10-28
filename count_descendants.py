@@ -1,35 +1,20 @@
 import time
 
-import csv_iterate
-
-
-def id_to_num(wt_id):
-  """Find the user_number for a given wt_id."""
-  for person in csv_iterate.iterate_users():
-    if person.wikitree_id() == wt_id:
-      return person.user_num()
-  raise Exception, "No person found with WikiTree ID: %s" % wt_id
-
-
-def find_children(parents):
-  """Find all children (nums) of people listed in parents (nums)."""
-  children = set()
-  for person in csv_iterate.iterate_users():
-    if (person.father_num() in parents or
-        person.mother_num() in parents):
-      children.add(person.user_num())
-  return children
+import sqlite_reader
 
 
 def count_descendants(wt_id):
+  db = sqlite_reader.Database()
   parents = set()
-  parents.add(id_to_num(wt_id))
+  parents.add(db.id2num(wt_id))
   gen_num = 0
   total_descendants = 0
   while parents:
     total_descendants += len(parents)
     print gen_num, len(parents), total_descendants, time.clock()
-    children = find_children(parents)
+    children = set()
+    for parent in parents:
+      children.update(db.children_of(parent))
     gen_num += 1
     parents = children
   print gen_num, len(parents), total_descendants, time.clock()
