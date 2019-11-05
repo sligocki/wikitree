@@ -9,7 +9,7 @@ import sqlite3
 
 
 class Database(object):
-  def __init__(self, filename="wikitree_dump.db"):
+  def __init__(self, filename="data/wikitree_dump.db"):
     self.conn = sqlite3.connect(filename)
     self.conn.row_factory = sqlite3.Row
     self.cursor = self.conn.cursor()

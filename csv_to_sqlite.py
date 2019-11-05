@@ -6,7 +6,7 @@ import csv_iterate
 
 def csv_to_sqlite():
   # Create output table.
-  conn = sqlite3.connect("wikitree_dump.db")
+  conn = sqlite3.connect("data/wikitree_dump.db")
   c = conn.cursor()
   c.execute("CREATE TABLE people (user_num INT, wikitree_id STRING, birth_name STRING, birth_date DATE, death_date DATE, father_num INT, mother_num INT, PRIMARY KEY (user_num))")
   c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
