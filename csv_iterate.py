@@ -1,10 +1,31 @@
 import csv
+import datetime
 
 def ParseUnicode(s):
   try:
     return unicode(s, encoding="utf-8", errors="strict")
   except UnicodeDecodeError:
     print s
+    raise
+
+def LoadMin(s):
+  """Convert s to an integer defaulting to 1 if it is None or <= 0"""
+  if not s:
+    return 1
+  num = int(s)
+  return max(num, 1)
+
+def ParseDate(date_str):
+  if not date_str or date_str == "0":
+    return None
+  year = int(date_str[:4])
+  # TODO: What do we want to do with month/day not specified?
+  month = LoadMin(date_str[4:6])
+  day = LoadMin(date_str[6:])
+  try:
+    return datetime.date(year, month, day)
+  except:
+    print date_str, year, month, day
     raise
 
 class UserRow(object):
@@ -23,6 +44,15 @@ class UserRow(object):
 
   def mother_num(self):
     return int(self.row[self.key["Mother"]])
+
+  def birth_name(self):
+    return ParseUnicode(self.row[self.key["First Name"]]) + " " + ParseUnicode(self.row[self.key["Last Name at Birth"]])
+
+  def birth_date(self):
+    return ParseDate(self.row[self.key["Birth Date"]])
+
+  def death_date(self):
+    return ParseDate(self.row[self.key["Death Date"]])
 
 
 def iterate_users_file(filename):
@@ -46,6 +76,42 @@ def iterate_users():
     yield user
   for user in iterate_users_file("custom_user.csv"):
     yield user
+
+
+class MarriageRow(object):
+  def __init__(self, row, key):
+    self.row = row
+    self.key = key
+
+  def user_nums(self):
+    return set([int(self.row[self.key["User ID1"]]),
+                int(self.row[self.key["UserID2"]])])
+
+  def marriage_date(self):
+    return ParseDate(self.row[self.key["Marriage Date"]])
+
+
+def iterate_marriages_file(filename):
+  with open(filename, "rb") as f:
+    reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
+
+    # First, figure out the order of column names. These change
+    # over time as new columns are added, so we cannot hardcode values.
+    header = reader.next()
+    key = {}
+    for index, name in enumerate(header):
+      key[name] = index
+
+    # Now iterate through all data rows.
+    for row in reader:
+      yield MarriageRow(row, key)
+
+
+def iterate_marriages():
+  for marriage in iterate_marriages_file("dump_people_marriages.csv"):
+    yield marriage
+  for marriage in iterate_marriages_file("custom_marriages.csv"):
+    yield marriage
 
 
 if __name__ == "__main__":

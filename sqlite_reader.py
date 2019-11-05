@@ -24,6 +24,18 @@ class Database(object):
     rows = self.cursor.fetchall()
     return [row["parent_num"] for row in rows]
 
+  def father_of(self, child_num):
+    # TODO: Find actual father, not just first parent.
+    parents = self.parents_of(child_num)
+    if parents:
+      return parents[0]
+
+  def mother_of(self, child_num):
+    # TODO: Find actual mother
+    parents = self.parents_of(child_num)
+    if len(parents) >= 2:
+      return parents[1]
+
   def children_of(self, parent_num):
     self.cursor.execute("SELECT child_num FROM parents WHERE parent_num=?", (parent_num,))
     rows = self.cursor.fetchall()
