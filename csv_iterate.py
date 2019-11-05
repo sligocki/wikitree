@@ -46,7 +46,12 @@ class UserRow(object):
     return int(self.row[self.key["Mother"]])
 
   def birth_name(self):
-    return ParseUnicode(self.row[self.key["First Name"]]) + " " + ParseUnicode(self.row[self.key["Last Name at Birth"]])
+    first_name = self.row[self.key["First Name"]]
+    if not first_name:
+      first_name = self.row[self.key["Preferred Name"]]
+    if not first_name:
+      first_name = "(Unlisted)"
+    return ParseUnicode(first_name) + " " + ParseUnicode(self.row[self.key["Last Name at Birth"]])
 
   def birth_date(self):
     return ParseDate(self.row[self.key["Birth Date"]])
