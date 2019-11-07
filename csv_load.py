@@ -12,13 +12,19 @@ class CsvLoad(object):
 
     self.death_date = {}  # Death datetime.date
 
-    self.id2num = {}
-    self.num2id = {}
+    self._id2num = {}
+    self._num2id = {}
 
-  def get_connections(self, person):
+  def neighbors_of(self, person):
     """Return set of all people adjacent to |person|."""
     return (self.parents[person] | self.children[person] |
             self.siblings[person] | self.spouses[person])
+
+  def id2num(self, wikitree_id):
+    return self._id2num[wikitree_id]
+
+  def num2id(self, user_num):
+    return self._num2id[user_num]
 
   def load_min(self, s):
     if not s:
@@ -54,8 +60,8 @@ class CsvLoad(object):
       for row in reader:
         person = row[USER_NUM]
         person_id = row[WT_ID]
-        self.id2num[person_id] = person
-        self.num2id[person] = person_id
+        self._id2num[person_id] = person
+        self._num2id[person] = person_id
 
         death_date = row[DEATH_DATE]
         if death_date and death_date != "0":
@@ -75,7 +81,7 @@ class CsvLoad(object):
             self.siblings[person].add(sibling)
             self.siblings[sibling].add(person)
 
-        if i % 100000 == 0:
+        if i % 1000000 == 0:
           print " ... {:,}".format(i), \
                 "{:,}".format(len(self.parents)), \
                 "{:,}".format(len(self.children)), \
@@ -112,11 +118,11 @@ class CsvLoad(object):
 
   def load_all(self):
     print "Loading parent/child/sibling data", time.clock()
-    self.load_user("dump_people_users.csv")
+    self.load_user("data/dump_people_users.csv")
     print "Loading marriages data", time.clock()
-    self.load_marriages("dump_people_marriages.csv")
+    self.load_marriages("data/dump_people_marriages.csv")
 
     print "Loading custom data", time.clock()
-    self.load_user("custom_user.csv")
-    self.load_marriages("custom_marriages.csv")
+    self.load_user("data/custom_users.csv")
+    self.load_marriages("data/custom_marriages.csv")
     print "Loaded all connections", time.clock()

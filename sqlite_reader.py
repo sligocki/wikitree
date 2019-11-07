@@ -26,6 +26,17 @@ class Database(object):
     assert len(rows) == 1, rows
     return rows[0]["wikitree_id"]
 
+  def name_of(self, user_num):
+    self.cursor.execute("SELECT birth_name FROM people WHERE user_num=?", (user_num,))
+    rows = self.cursor.fetchall()
+    assert len(rows) == 1, rows
+    return rows[0]["birth_name"]
+
+  def neighbors_of(self, user_num):
+    self.cursor.execute("SELECT relative_num FROM relationships WHERE user_num=?", (user_num,))
+    rows = self.cursor.fetchall()
+    return frozenset(row["relative_num"] for row in rows)
+
   def father_of(self, child_num):
     self.cursor.execute("SELECT father_num FROM people WHERE user_num=?", (child_num,))
     rows = self.cursor.fetchall()
@@ -43,4 +54,4 @@ class Database(object):
   def children_of(self, parent_num):
     self.cursor.execute("SELECT relative_num FROM relationships WHERE user_num=? AND relationship_type = 'child'", (parent_num,))
     rows = self.cursor.fetchall()
-    return [row["relative_num"] for row in rows]
+    return frozenset(row["relative_num"] for row in rows)

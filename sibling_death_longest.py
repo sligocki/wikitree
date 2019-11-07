@@ -1,3 +1,9 @@
+"""
+Can also be computed with:
+
+select a.birth_name, b.birth_name, a.death_date - b.death_date as age_diff from people as a, people as b, relationships where relationships.user_num = a.user_num and relationships.relative_num = b.user_num and relationship_type = 'sibling' order by age_diff desc limit 20;
+"""
+
 from __future__ import division
 
 import datetime
