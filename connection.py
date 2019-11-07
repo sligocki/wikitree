@@ -35,23 +35,23 @@ class Bfs(object):
           yield neigh
     self.todo = next_todo
 
-  def get_in_path(self, person):
-    """Get a path from person -> self.start (not including person)."""
-    path = []
-    while person != self.start:
-      # Get one arbitrary path
-      if len(self.paths[person]) > 1:
-        print "Mult options:", person, self.paths[person]
-      person = self.paths[person][0]
-      path.append(person)
-    return path
-
-  def get_out_path(self, person):
+  def get_out_paths(self, person):
     """Get a path from self.start -> person (not including person)."""
-    return list(reversed(self.get_in_path(person)))
+    if person == self.start:
+      yield []
+    else:
+      for next in self.paths[person]:
+        for path in self.get_out_paths(next):
+          yield path + [next]
 
 
-def find_connection(person1, person2):
+  def get_in_paths(self, person):
+    """Get a path from person -> self.start (not including person)."""
+    for path in self.get_out_paths(person):
+      yield list(reversed(path))
+
+
+def find_connections(person1, person2):
   bfs1 = Bfs(person1)
   bfs2 = Bfs(person2)
 
@@ -68,7 +68,9 @@ def find_connection(person1, person2):
       if person in other.dists:
         # We found a path
         found = True
-        yield bfs1.get_out_path(person) + [person] + bfs2.get_in_path(person)
+        for path1 in bfs1.get_out_paths(person):
+          for path2 in bfs2.get_in_paths(person):
+            yield path1 + [person] + path2
 
   print "Evaluated %d (%d around %s) & %d (%d around %s)" % (
     len(bfs1.dists), bfs1.num_steps, person1_id, len(bfs2.dists), bfs2.num_steps, person2_id)
@@ -84,8 +86,8 @@ db = sqlite_reader.Database()
 person1 = db.id2num(person1_id)
 person2 = db.id2num(person2_id)
 
-for i, connection in enumerate(find_connection(person1, person2)):
-  print "Connection", i
+for i, connection in enumerate(find_connections(person1, person2)):
+  print "Connection", i + 1
   for dist, user_num in enumerate(connection):
     print "-", dist, db.num2id(user_num), db.name_of(user_num)
   print
