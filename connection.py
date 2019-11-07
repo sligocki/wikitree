@@ -4,7 +4,6 @@ import sys
 import time
 
 import csv_load
-from distances import get_distances
 import sqlite_reader
 
 
