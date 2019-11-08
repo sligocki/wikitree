@@ -2,8 +2,7 @@ import collections
 import sys
 import time
 
-import csv_load
-import sqlite_reader
+import data_reader
 
 def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
@@ -25,14 +24,13 @@ def get_distances(db, start):
           hist_dist.append(0)
         hist_dist[dist + 1] += 1
         queue.append(neigh)
-        if len(dists) % 1000000 == 0:
-          print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
+        #if len(dists) % 1000000 == 0:
+        #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
   return dists, hist_dist, float(total_dist) / len(dists), max_dist
 
 if __name__ == "__main__":
-  #db = sqlite_reader.Database()
-  db = csv_load.CsvLoad()
-  db.load_all()
+  db = data_reader.Database()
+  db.load_connections()
 
   for wikitree_id in sys.argv[1:]:
     user_num = db.id2num(wikitree_id)
