@@ -16,8 +16,8 @@ import time
 
 from graphviz import Digraph
 
-import csv_load
-import sqlite_reader
+import data_reader
+
 
 def flow_paths(db, start):
   # Map from person -> shortest distance to start. Also used as a visited set
@@ -84,7 +84,7 @@ def create_dot(db, start, flows, sources, cuttoff):
     visited.add(person)
 
     # TODO: Add readable name.
-    dot.node(person, label=db.name_of(person))  #db.num2id(person))
+    dot.node(person, label=db.num2id(person))
     for source in sources[person]:
       # TODO: Add weights.
       dot.edge(person, source, label="%.2f" % flows[person])
@@ -96,9 +96,8 @@ def create_dot(db, start, flows, sources, cuttoff):
   dot.view()
 
 if __name__ == "__main__":
-  db = csv_load.CsvLoad()
-  db.load_all()
-  # db = sqlite_reader.Database()
+  db = data_reader.Database()
+  db.load_connections()
 
   for user_id in sys.argv[1:]:
     print "Analyzing", user_id, time.clock()

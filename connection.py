@@ -3,8 +3,7 @@ import random
 import sys
 import time
 
-import csv_load
-import sqlite_reader
+import data_reader
 
 
 class Bfs(object):
@@ -78,9 +77,7 @@ def find_connections(person1, person2):
 person1_id = unicode(sys.argv[1], encoding="utf-8", errors="strict")
 person2_id = unicode(sys.argv[2], encoding="utf-8", errors="strict")
 
-db = sqlite_reader.Database()
-#db = csv_load.CsvLoad()
-#db.load_all()
+db = data_reader.Database()
 
 person1 = db.id2num(person1_id)
 person2 = db.id2num(person2_id)
