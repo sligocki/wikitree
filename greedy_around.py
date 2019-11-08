@@ -18,16 +18,17 @@ def greedy_path(db, start, visited):
 
   best_mean = d_mean
   while person:
-    print("Best neighbor", db.name_of(person), db.num2id(person), best_mean)
+    print("Best neighbor\t%s\t%s\t%s" % (
+            db.name_of(person), db.num2id(person), best_mean))
     best_neigh = None
     for neigh in db.neighbors_of(person):
       if neigh not in visited:
         visited.add(neigh)
         start_time = time.time()
         dists, _, d_mean, d_max = get_distances(db, neigh)
-        print("Person", len(visited), db.name_of(neigh), db.num2id(neigh),
-              dists[start], "\t",
-              d_mean, d_max, time.time() - start_time)
+        print(" - Person\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+                len(visited), db.name_of(neigh), db.num2id(neigh),
+                dists[start], d_mean, d_max, time.time() - start_time))
         if d_mean < best_mean:
           best_neigh = neigh
           best_mean = d_mean

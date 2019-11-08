@@ -24,8 +24,8 @@ def get_distances(db, start):
           hist_dist.append(0)
         hist_dist[dist + 1] += 1
         queue.append(neigh)
-        if len(dists) % 1000000 == 0:
-          print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
+        #if len(dists) % 1000000 == 0:
+        #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
   return dists, hist_dist, float(total_dist) / len(dists), max_dist
 
 if __name__ == "__main__":
