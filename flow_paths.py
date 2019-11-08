@@ -3,8 +3,8 @@ Look over all shortest paths to every other profile. Find the number of these
 paths which go through each of our relatives. This can give a sense for how
 well connected into the graph a person is.
 
-For example, if 99.9% of all their paths go through on relative, say their
-paternal grandmother they are brittly connected (any change in that chain
+For example, if 99.9% of all their paths go through one relative, say their
+paternal grandmother then their connection is brittle (any change in that chain
 would have a large effect). If 33% go through father, 33% through mother
 and 33% through husband, they are much more solidly connected (any change
 will have a much smaller effect).
@@ -16,9 +16,10 @@ import time
 
 from graphviz import Digraph
 
-import csv_dump
+import csv_load
+import sqlite_reader
 
-def flow_paths(connections, start):
+def flow_paths(db, start):
   # Map from person -> shortest distance to start. Also used as a visited set
   # to determine if we have found this node yet.
   dists = {start: 0}
@@ -36,7 +37,7 @@ def flow_paths(connections, start):
     person = queue.popleft()
     dist = dists[person]
     cur_sources = sources[person]
-    for neigh in connections.get(person, set()):
+    for neigh in db.neighbors_of(person):
       if neigh not in dists:
         # Found a shortest path.
         dists[neigh] = dist + 1
@@ -69,9 +70,9 @@ def flow_paths(connections, start):
 def asciify(string):
   return unicode(string, "latin-1", "replace").encode("ascii", "replace")
 
-def create_dot(connections, num2id, start, flows, sources, cuttoff):
+def create_dot(db, start, flows, sources, cuttoff):
   """Create a graphviz DOT file with all people who have flow >= cuttoff and all of their neighbors."""
-  dot = Digraph(name=("%s_%.2f" % (asciify(num2id[start]), cuttoff)))
+  dot = Digraph(name=("%s_%.2f" % (db.num2id(start), cuttoff)))
 
   todo = collections.deque()
   todo.append(start)
@@ -83,30 +84,29 @@ def create_dot(connections, num2id, start, flows, sources, cuttoff):
     visited.add(person)
 
     # TODO: Add readable name.
-    dot.node(person, label=asciify(num2id[person]))
+    dot.node(person, label=db.name_of(person))  #db.num2id(person))
     for source in sources[person]:
       # TODO: Add weights.
       dot.edge(person, source, label="%.2f" % flows[person])
 
-    for neigh in connections.get(person, set()):
+    for neigh in db.neighbors_of(person):
       if flows[neigh] >= cuttoff:
         todo.append(neigh)
 
   dot.view()
 
 if __name__ == "__main__":
-  connections, id2num, num2id = csv_dump.load_connections()
+  db = csv_load.CsvLoad()
+  db.load_all()
+  # db = sqlite_reader.Database()
 
   for user_id in sys.argv[1:]:
     print "Analyzing", user_id, time.clock()
-    if user_id not in id2num:
-      continue
-    start = id2num[user_id]
-    flows, sources, dists = flow_paths(connections, start)
+    start = db.id2num(user_id)
+    flows, sources, dists = flow_paths(db, start)
 
     #print "Creating DOT", time.clock()
-    create_dot(connections, num2id, start, flows, sources, cuttoff=0.05)
-    #continue  # TODO
+    create_dot(db, start, flows, sources, cuttoff=0.05)
 
     print "Ordering people", time.clock()
     # Order folks from most flow to least.
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     max_dist = -1
     for frac, person in ordered_people:
       if dists[person] > max_dist:
-        print user_id, dists[person], frac, num2id[person]
+        print user_id, dists[person], frac, db.num2id(person)
         max_dist = dists[person]
         if max_dist >= 20:
           break

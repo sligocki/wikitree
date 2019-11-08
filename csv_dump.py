@@ -13,7 +13,7 @@ import time
 #         |17750925|18370214|Hebron, Connecticut|Mansfield, Connecticut|335
 #         |347|60|0|1
 
-def load_genetic(connections, id2num, num2id, filename="dump_people_users.csv",
+def load_genetic(connections, id2num, num2id, filename="data/dump_people_users.csv",
                  include_siblings=True):
   """Load mappings from people->parents and ->children."""
   USER_NUM = 0
@@ -69,7 +69,7 @@ def load_genetic(connections, id2num, num2id, filename="dump_people_users.csv",
 
     return id2num, num2id
 
-def load_marriages(connections, filename="dump_people_marriages.csv"):
+def load_marriages(connections, filename="data/dump_people_marriages.csv"):
   """Load mappings from people->spouses."""
   with open(filename, "rb") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
@@ -106,9 +106,9 @@ def load_connections(include_siblings=True):
   load_marriages(connections)
 
   print "Loading custom data", time.clock()
-  load_genetic(connections, id2num, num2id, filename="custom_user.csv",
+  load_genetic(connections, id2num, num2id, filename="data/custom_users.csv",
                include_siblings=include_siblings)
-  load_marriages(connections, filename="custom_marriages.csv")
+  load_marriages(connections, filename="data/custom_marriages.csv")
 
   print "Loaded all connections", time.clock()
   return connections, id2num, num2id
