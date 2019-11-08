@@ -1,7 +1,7 @@
 import collections
 import time
 
-import sqlite_reader
+import data_reader
 
 
 def count_descendants(person_num):
@@ -39,8 +39,8 @@ def descendants_per_ancestor(db, start_num):
 
 import sys
 
-wt_id = sys.argv[1]
+db = data_reader.Database()
 
-db = sqlite_reader.Database()
+wt_id = sys.argv[1]
 start_num = db.id2num(wt_id)
 descendants_per_ancestor(db, start_num)
