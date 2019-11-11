@@ -30,9 +30,23 @@ def get_distances(db, start):
         #if len(dists) % 1000000 == 0:
         #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
   mean_dist = float(total_dist) / len(dists)
-  results_conn.execute("INSERT INTO distances VALUES (?,?,?)", (start, mean_dist, max_dist))
-  results_conn.commit()
   return dists, hist_dist, mean_dist, max_dist
+
+def get_mean_dists(db, start):
+  c = results_conn.cursor()
+  c.execute("SELECT mean_dist, max_dist FROM distances WHERE user_num=?", (start,))
+  rows = c.fetchall()
+  if rows:
+    assert len(rows) == 1, rows
+    return rows[0]["mean_dist"], rows[0]["max_dist"]
+  else:
+    _, _, mean_dist, max_dist = get_distances(db, start)
+    try:
+      results_conn.execute("INSERT INTO distances VALUES (?,?,?)", (start, mean_dist, max_dist))
+      results_conn.commit()
+    except e:
+      print "Ignoring distances.db write failure:", e
+    return mean_dist, max_dist
 
 if __name__ == "__main__":
   db = data_reader.Database()
