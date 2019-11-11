@@ -1,8 +1,11 @@
 import collections
+import sqlite3
 import sys
 import time
 
 import data_reader
+
+results_conn = sqlite3.connect("distances.db")
 
 def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
@@ -26,7 +29,10 @@ def get_distances(db, start):
         queue.append(neigh)
         #if len(dists) % 1000000 == 0:
         #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
-  return dists, hist_dist, float(total_dist) / len(dists), max_dist
+  mean_dist = float(total_dist) / len(dists)
+  results_conn.execute("INSERT INTO distances VALUES (?,?,?)", (start, mean_dist, max_dist))
+  results_conn.commit()
+  return dists, hist_dist, mean_dist, max_dist
 
 if __name__ == "__main__":
   db = data_reader.Database()
