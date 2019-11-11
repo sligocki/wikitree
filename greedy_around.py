@@ -5,7 +5,7 @@ import sys
 import time
 
 import data_reader
-from distances import get_distances
+import distances
 
 def greedy_path(db, start, visited):
   """Use greedy algorithm to find a local minimum for (average distance to other
@@ -14,7 +14,7 @@ def greedy_path(db, start, visited):
   if person in visited:
     return
   visited.add(person)
-  start_dists, _, d_mean, _ = get_distances(db, person)
+  start_dists, _, d_mean, _ = distances.get_distances(db, person)
 
   best_mean = d_mean
   while person:
@@ -25,7 +25,7 @@ def greedy_path(db, start, visited):
       if neigh not in visited:
         visited.add(neigh)
         start_time = time.time()
-        d_mean, d_max = get_mean_dists(db, neigh)
+        d_mean, d_max = distances.get_mean_dists(db, neigh)
         print(" - Person\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
                 len(visited), db.name_of(neigh), db.num2id(neigh),
                 start_dists[neigh], d_mean, d_max, time.time() - start_time))

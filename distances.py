@@ -6,6 +6,7 @@ import time
 import data_reader
 
 results_conn = sqlite3.connect("distances.db")
+results_conn.row_factory = sqlite3.Row
 
 def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
