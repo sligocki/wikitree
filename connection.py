@@ -82,9 +82,9 @@ db = data_reader.Database()
 person1 = db.id2num(person1_id)
 person2 = db.id2num(person2_id)
 
-prev_user = None
 for i, connection in enumerate(find_connections(person1, person2)):
   print "Connection", i + 1
+  prev_user = None
   for dist, user_num in enumerate(connection):
     rel_type = db.relationship_type(prev_user, user_num) if prev_user else ""
     print "-", dist, rel_type, db.num2id(user_num), db.name_of(user_num)
