@@ -76,9 +76,10 @@ def iterate_users_file(filename):
       yield UserRow(row, key)
 
 
-def iterate_users():
-  for user in iterate_users_file("data/dump_people_users.csv"):
-    yield user
+def iterate_users(only_custom=False):
+  if not only_custom:
+    for user in iterate_users_file("data/dump_people_users.csv"):
+      yield user
   for user in iterate_users_file("data/custom_users.csv"):
     yield user
 
@@ -112,9 +113,10 @@ def iterate_marriages_file(filename):
       yield MarriageRow(row, key)
 
 
-def iterate_marriages():
-  for marriage in iterate_marriages_file("data/dump_people_marriages.csv"):
-    yield marriage
+def iterate_marriages(only_custom=False):
+  if not only_custom:
+    for marriage in iterate_marriages_file("data/dump_people_marriages.csv"):
+      yield marriage
   for marriage in iterate_marriages_file("data/custom_marriages.csv"):
     yield marriage
 

@@ -1,24 +1,27 @@
+import argparse
 import sqlite3
 import time
 
 import csv_iterate
 
 
-def csv_to_sqlite():
-  # Create output table.
+def csv_to_sqlite(only_update_custom=False):
   conn = sqlite3.connect("data/wikitree_dump.db")
   c = conn.cursor()
-  c.execute("CREATE TABLE people (user_num INT, wikitree_id STRING, birth_name STRING, birth_date DATE, death_date DATE, father_num INT, mother_num INT, PRIMARY KEY (user_num))")
-  c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
-  # Additional index for fast lookup
-  c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
-  c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
+
+  if not only_update_custom:
+    # Create output table.
+    c.execute("CREATE TABLE people (user_num INT, wikitree_id STRING, birth_name STRING, birth_date DATE, death_date DATE, father_num INT, mother_num INT, PRIMARY KEY (user_num))")
+    c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
+    # Additional index for fast lookup
+    c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
+    c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
 
   # Iterate CSV
   i = 0
   num_rels = 0
   print "Loading people from CSV", time.clock()
-  for person in csv_iterate.iterate_users():
+  for person in csv_iterate.iterate_users(only_update_custom):
     c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?)",
               (person.user_num(), person.wikitree_id(), person.birth_name(),
                person.birth_date(), person.death_date(),
@@ -40,7 +43,7 @@ def csv_to_sqlite():
   conn.commit()
 
   print "Loading marriages from CSV", time.clock()
-  for marriage in csv_iterate.iterate_marriages():
+  for marriage in csv_iterate.iterate_marriages(only_update_custom):
     user1, user2 = marriage.user_nums()
     c.execute("INSERT INTO relationships VALUES (?,?,'spouse')",
               (user1, user2))
@@ -51,12 +54,18 @@ def csv_to_sqlite():
   print "People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock()
   conn.commit()
 
-  print "Computing siblings", time.clock()
-  c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
+  # TODO: Figure out how to update siblings incrementally.
+  if not only_update_custom:
+    print "Computing siblings", time.clock()
+    c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
 
   print "Done", time.clock()
   conn.commit()
   conn.close()
 
 
-csv_to_sqlite()
+parser = argparse.ArgumentParser()
+parser.add_argument("--only-update-custom", action="store_true")
+args = parser.parse_args()
+
+csv_to_sqlite(args.only_update_custom)
