@@ -67,9 +67,6 @@ def flow_paths(db, start):
   return {person: float(len(on_path_to[person])) / len(all_connections)
           for person in sources}, sources, dists
 
-def asciify(string):
-  return unicode(string, "latin-1", "replace").encode("ascii", "replace")
-
 def create_dot(db, start, flows, sources, cuttoff):
   """Create a graphviz DOT file with all people who have flow >= cuttoff and all of their neighbors."""
   dot = Digraph(name=("%s_%.2f" % (db.num2id(start), cuttoff)))
@@ -84,10 +81,11 @@ def create_dot(db, start, flows, sources, cuttoff):
     visited.add(person)
 
     # TODO: Add readable name.
-    dot.node(person, label=db.num2id(person))
+    person_label = db.num2id(person)
+    dot.node(str(person), label=person_label)
     for source in sources[person]:
       # TODO: Add weights.
-      dot.edge(person, source, label="%.2f" % flows[person])
+      dot.edge(str(person), str(source), label="%.2f" % flows[person])
 
     for neigh in db.neighbors_of(person):
       if flows[neigh] >= cuttoff:
@@ -104,26 +102,19 @@ if __name__ == "__main__":
     start = db.id2num(user_id)
     flows, sources, dists = flow_paths(db, start)
 
-    #print "Creating DOT", time.clock()
+    print "Creating DOT", time.clock()
     create_dot(db, start, flows, sources, cuttoff=0.05)
 
     print "Ordering people", time.clock()
     # Order folks from most flow to least.
     ordered_people = reversed(sorted([(flows[person], person)
                                       for person in flows]))
-    # List top flowing people.
-    print "Highest flow counts", time.clock()
-    # for i, (frac, person) in enumerate(ordered_people):
-    #   if i > 10:
-    #     break
-    #   print user_id, i, "%.4f" % frac, num2id[person], dists[person], [num2id[x] for x in sources[person]]
 
-    # List the furthest person who has flow at least X for various X.
     print "Highest flow per distance", time.clock()
     max_dist = -1
     for frac, person in ordered_people:
       if dists[person] > max_dist:
-        print user_id, dists[person], frac, db.num2id(person)
+        print user_id, dists[person], frac, db.name_of(person), db.num2id(person)
         max_dist = dists[person]
         if max_dist >= 20:
           break
