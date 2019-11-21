@@ -13,9 +13,6 @@ def csv_to_sqlite(only_update_custom=False):
     # Create output table.
     c.execute("CREATE TABLE people (user_num INT, wikitree_id STRING, birth_name STRING, birth_date DATE, death_date DATE, father_num INT, mother_num INT, PRIMARY KEY (user_num))")
     c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
-    # Additional index for fast lookup
-    c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
-    c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
 
   # Iterate CSV
   i = 0
@@ -60,6 +57,13 @@ def csv_to_sqlite(only_update_custom=False):
     c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
 
   print "Done", time.clock()
+  conn.commit()
+
+  # Add additional indexes for fast lookup.
+  # Note: Adding them at the end is the most efficient.
+  c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
+  c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
+
   conn.commit()
   conn.close()
 
