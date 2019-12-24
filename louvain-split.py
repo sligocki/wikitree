@@ -123,3 +123,20 @@ if __name__ == "__main__":
   print "Max community size =", max(len(nodes) for nodes in communities.values())
   #pprint.pprint(top_graph)
   #pprint.pprint(partition)
+
+  import data_reader
+  db = data_reader.Database()
+
+  comm_to_name = {comm : db.name_of(min(nodes))
+                      for comm, nodes in communities.items()}
+
+  print "Graph"
+  for comm in top_graph:
+    neighs = top_graph[comm]
+    print comm_to_name[comm], {comm_to_name[other] : neighs[other] for other in neighs}
+
+  print "Communities"
+  for comm, nodes in communities.items():
+    print "Community", comm_to_name[comm]
+    for node in nodes:
+      print "", db.num2id(node), db.name_of(node)
