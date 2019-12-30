@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
+"""
+Simulate DNA inheritance from ancestors including crossover.
+
+Compute various statistics.
+"""
 
 import argparse
 import collections
+import pprint
 import random
 
 
@@ -33,10 +39,10 @@ def sim_crossover(chrom_size):
       chrom_num = 1 - chrom_num
 
 
-def apply_crossover(cross, par_chromos):
-  child_chromo = []
+def apply_crossover(cross, par_chrom_pair):
+  child_chrom = []
   for begin_cross, end_cross, chrom_num in cross:
-    for begin_seg, end_seg, ahn in par_chromos[chrom_num]:
+    for begin_seg, end_seg, id in par_chrom_pair[chrom_num]:
       if end_seg <= begin_cross:
         # Keep scanning chromosome till we find a segment that overlaps.
         continue
@@ -45,10 +51,10 @@ def apply_crossover(cross, par_chromos):
         break
       else:
         # Add the overlapping portion of [begin_cross, end_cross] & [begin_seg, end_seg]
-        child_chromo.append((max(begin_seg, begin_cross),
-                             min(end_seg, end_cross),
-                             ahn))
-  return child_chromo
+        child_chrom.append((max(begin_seg, begin_cross),
+                            min(end_seg, end_cross),
+                            id))
+  return child_chrom
 
 
 def validate_chromosome(chrom_size, chrom):
@@ -81,16 +87,16 @@ def sim_chrom_pair(chrom_size, gens):
   # For each parent, we:
   for i in range(2):
     # 1) Simulate that parent's chromosomes,
-    par_chromos = sim_chrom_pair(chrom_size, gens - 1)
+    par_chrom_pair = sim_chrom_pair(chrom_size, gens - 1)
     # 2) Simulate crossover to produce a single hybrid chromosome which
     #    will be passed down to the child.
     cross = sim_crossover(chrom_size)
-    child_chromo = apply_crossover(cross, par_chromos)
-    validate_chromosome(chrom_size, child_chromo)
+    child_chrom = apply_crossover(cross, par_chrom_pair)
+    validate_chromosome(chrom_size, child_chrom)
     # 3) Update the Ahnentafel #s
     # TODO: This is the wrong Ahnentafel translation!?!
     chromosomes[i] = [(begin, end, str(i) + ahn)
-                      for (begin, end, ahn) in child_chromo]
+                      for (begin, end, ahn) in child_chrom]
   return chromosomes
 
 
