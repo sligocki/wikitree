@@ -31,7 +31,7 @@ class Row:
   def lookup(self, col_name):
     try:
       return self.row[self.key[col_name]]
-    except IndexError:
+    except (IndexError, KeyError):
       return None
 
 
@@ -61,6 +61,9 @@ class UserRow(Row):
 
   def death_date(self):
     return ParseDate(self.lookup("Death Date"))
+
+  def no_more_children(self):
+    return bool(self.lookup("No Children"))
 
 
 def iterate_users_file(filename):
