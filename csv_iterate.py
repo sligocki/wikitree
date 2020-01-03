@@ -22,36 +22,45 @@ def ParseDate(date_str):
     print(date_str, year, month, day)
     raise
 
-class UserRow(object):
+
+class Row:
   def __init__(self, row, key):
     self.row = row
     self.key = key
 
+  def lookup(self, col_name):
+    try:
+      return self.row[self.key[col_name]]
+    except IndexError:
+      return None
+
+
+class UserRow(Row):
   def user_num(self):
-    return int(self.row[self.key["User ID"]])
+    return int(self.lookup("User ID"))
 
   def wikitree_id(self):
-    return self.row[self.key["WikiTree ID"]]
+    return self.lookup("WikiTree ID")
 
   def father_num(self):
-    return int(self.row[self.key["Father"]])
+    return int(self.lookup("Father"))
 
   def mother_num(self):
-    return int(self.row[self.key["Mother"]])
+    return int(self.lookup("Mother"))
 
   def birth_name(self):
-    first_name = self.row[self.key["First Name"]]
+    first_name = self.lookup("First Name")
     if not first_name:
-      first_name = self.row[self.key["Preferred Name"]]
+      first_name = self.lookup("Preferred Name")
     if not first_name:
       first_name = "(Unlisted)"
-    return first_name + " " + self.row[self.key["Last Name at Birth"]]
+    return first_name + " " + self.lookup("Last Name at Birth")
 
   def birth_date(self):
-    return ParseDate(self.row[self.key["Birth Date"]])
+    return ParseDate(self.lookup("Birth Date"))
 
   def death_date(self):
-    return ParseDate(self.row[self.key["Death Date"]])
+    return ParseDate(self.lookup("Death Date"))
 
 
 def iterate_users_file(filename):
@@ -78,17 +87,13 @@ def iterate_users(only_custom=False):
     yield user
 
 
-class MarriageRow(object):
-  def __init__(self, row, key):
-    self.row = row
-    self.key = key
-
+class MarriageRow(Row):
   def user_nums(self):
-    return set([int(self.row[self.key["User ID1"]]),
-                int(self.row[self.key["UserID2"]])])
+    return set([int(self.lookup("User ID1")),
+                int(self.lookup("UserID2"))])
 
   def marriage_date(self):
-    return ParseDate(self.row[self.key["Marriage Date"]])
+    return ParseDate(self.lookup("Marriage Date"))
 
 
 def iterate_marriages_file(filename):
