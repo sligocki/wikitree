@@ -19,26 +19,6 @@ def count_descendants(db, person_num, remove_num=None):
   return descendants
 
 
-def descendants_per_ancestor(db, start_num):
-  todo = collections.deque()
-  todo.append((0, 1, start_num))
-  best_count = 0
-  while todo:
-    gen, ahnentafel, person_num = todo.popleft()
-    descendants = count_descendants(db, person_num)
-    count = sum(descendants)
-    if True: #count > best_count:
-      print(gen, ahnentafel, db.num2id(person_num), db.name_of(person_num), sum(descendants), descendants)
-      best_count = count
-    # Add parents
-    father_num = db.father_of(person_num)
-    if father_num:
-      todo.append((gen + 1, ahnentafel * 2, father_num))
-    mother_num = db.mother_of(person_num)
-    if mother_num:
-      todo.append((gen + 1, ahnentafel * 2 + 1, mother_num))
-
-
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("wikitree_id")
