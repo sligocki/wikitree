@@ -9,7 +9,7 @@ def load_genetic(graph, filename="dump_people_users.csv"):
   with open(filename, "rb") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
-    header = reader.next()
+    header = next(reader)
     USER_NUM = header.index("User ID")
     WT_ID = header.index("WikiTree ID")
     FATHER_NUM = header.index("Father")
@@ -38,53 +38,53 @@ def load_genetic(graph, filename="dump_people_users.csv"):
           graph.add_edge(person, sibling)
 
       if i % 1000000 == 0:
-        print " ... {:,}".format(i), \
+        print(" ... {:,}".format(i), \
               "{:,}".format(len(graph)), \
-              time.time() - start
+              time.time() - start)
       i += 1
-    print " ... {:,}".format(i), \
+    print(" ... {:,}".format(i), \
           "{:,}".format(len(graph)), \
-          time.time() - start
+          time.time() - start)
 
 def load_marriages(graph, filename="dump_people_marriages.csv"):
   """Load mappings from people->spouses."""
   with open(filename, "rb") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
-    header = reader.next()
+    header = next(reader)
     assert header[0] == "User ID1"
     assert header[1] == "UserID2"
 
     i = 0
     start = time.time()
-    print " ... {:,}".format(i), \
+    print(" ... {:,}".format(i), \
           "{:,}".format(len(graph)), \
-          time.time() - start
+          time.time() - start)
     for row in reader:
       person_1, person_2 = row[0], row[1]
       graph.add_edge(person_1, person_2)
       i += 1
 
-    print " ... {:,}".format(i), \
+    print(" ... {:,}".format(i), \
           "{:,}".format(len(graph)), \
-          time.time() - start
+          time.time() - start)
 
 def build_graph():
   graph = nx.Graph()
 
-  print "Loading parent/child/sibling data", time.clock()
+  print("Loading parent/child/sibling data", time.clock())
   load_genetic(graph)
 
-  print "Loading marriages data", time.clock()
+  print("Loading marriages data", time.clock())
   load_marriages(graph)
 
-  print "Loaded all graph", time.clock()
+  print("Loaded all graph", time.clock())
   return graph
 
 if __name__ == "__main__":
   g = build_graph()
 
-  print "Writing graph to file", time.clock()
+  print("Writing graph to file", time.clock())
   nx.write_adjlist(g, "graph.adj.nx")
 
-  print "Done", time.clock()
+  print("Done", time.clock())

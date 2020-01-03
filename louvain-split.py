@@ -26,7 +26,7 @@ def calc_dQ(graph, community_of, node, new_comm):
   return Q1 - Q0
 
 def louvain_split(graph, level=0):
-  print "Level", level, len(graph)
+  print("Level", level, len(graph))
   for node in graph:
     for neighbor, weight in graph[node].items():
       assert neighbor in graph, (node, neighbor, graph[node], graph)
@@ -58,7 +58,7 @@ def louvain_split(graph, level=0):
         # Move node to the best community.
         community_of[node] = best_comm
 
-  print "Q =", calc_Q(graph, community_of)
+  print("Q =", calc_Q(graph, community_of))
 
   communities = collections.defaultdict(list)
   for node in community_of:
@@ -112,15 +112,15 @@ if __name__ == "__main__":
   top_graph, partition = louvain_split(graph)
 
   community_of = {node: comm[0] for node, comm in partition.items()}
-  print "Q =", calc_Q(graph, community_of)
+  print("Q =", calc_Q(graph, community_of))
 
   communities = collections.defaultdict(list)
   for node in community_of:
     communities[community_of[node]].append(node)
 
-  print "Num communities =", len(communities)
-  print "Min community size =", min(len(nodes) for nodes in communities.values())
-  print "Max community size =", max(len(nodes) for nodes in communities.values())
+  print("Num communities =", len(communities))
+  print("Min community size =", min(len(nodes) for nodes in communities.values()))
+  print("Max community size =", max(len(nodes) for nodes in communities.values()))
   #pprint.pprint(top_graph)
   #pprint.pprint(partition)
 
@@ -130,13 +130,13 @@ if __name__ == "__main__":
   comm_to_name = {comm : db.name_of(min(nodes))
                       for comm, nodes in communities.items()}
 
-  print "Graph"
+  print("Graph")
   for comm in top_graph:
     neighs = top_graph[comm]
-    print comm_to_name[comm], {comm_to_name[other] : neighs[other] for other in neighs}
+    print(comm_to_name[comm], {comm_to_name[other] : neighs[other] for other in neighs})
 
-  print "Communities"
+  print("Communities")
   for comm, nodes in communities.items():
-    print "Community", comm_to_name[comm]
+    print("Community", comm_to_name[comm])
     for node in nodes:
-      print "", db.num2id(node), db.name_of(node)
+      print("", db.num2id(node), db.name_of(node))

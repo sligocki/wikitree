@@ -70,12 +70,12 @@ def find_connections(person1, person2):
           for path2 in bfs2.get_in_paths(person):
             yield path1 + [person] + path2
 
-  print "Evaluated %d (%d around %s) & %d (%d around %s)" % (
-    len(bfs1.dists), bfs1.num_steps, person1_id, len(bfs2.dists), bfs2.num_steps, person2_id)
+  print("Evaluated %d (%d around %s) & %d (%d around %s)" % (
+    len(bfs1.dists), bfs1.num_steps, person1_id, len(bfs2.dists), bfs2.num_steps, person2_id))
 
 
-person1_id = unicode(sys.argv[1], encoding="utf-8", errors="strict")
-person2_id = unicode(sys.argv[2], encoding="utf-8", errors="strict")
+person1_id = str(sys.argv[1], encoding="utf-8", errors="strict")
+person2_id = str(sys.argv[2], encoding="utf-8", errors="strict")
 
 db = data_reader.Database()
 
@@ -83,10 +83,10 @@ person1 = db.id2num(person1_id)
 person2 = db.id2num(person2_id)
 
 for i, connection in enumerate(find_connections(person1, person2)):
-  print "Connection", i + 1
+  print("Connection", i + 1)
   prev_user = None
   for dist, user_num in enumerate(connection):
     rel_type = db.relationship_type(prev_user, user_num) if prev_user else ""
-    print "-", dist, rel_type, db.num2id(user_num), db.name_of(user_num)
+    print("-", dist, rel_type, db.num2id(user_num), db.name_of(user_num))
     prev_user = user_num
-  print
+  print()

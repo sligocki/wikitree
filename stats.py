@@ -22,7 +22,7 @@ class DefaultList:
 
 
 def print_stats(dists):
-  print "People connected:", "{:,}".format(len(dists))
+  print("People connected:", "{:,}".format(len(dists)))
 
   hist = DefaultList(int)
   total = 0
@@ -38,6 +38,6 @@ def print_stats(dists):
     i += 1
   median = i
 
-  print "Mean distance:", float(total) / len(dists)
-  print "Median distance:", median
-  print "Max distance:", len(hist) - 1
+  print("Mean distance:", float(total) / len(dists))
+  print("Median distance:", median)
+  print("Max distance:", len(hist) - 1)

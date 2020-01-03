@@ -12,7 +12,7 @@ anchor_id = "Tudor-4"  # King Henry
 anchor = db.id2num(anchor_id)
 
 main_tree, _, anchor_mean, anchor_max = get_distances(db, anchor)
-print anchor_id, "{:,}".format(len(main_tree)), "\t", anchor_mean, anchor_max
+print(anchor_id, "{:,}".format(len(main_tree)), "\t", anchor_mean, anchor_max)
 
 visited = set()
 while len(visited) < len(main_tree):

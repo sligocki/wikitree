@@ -3,9 +3,9 @@ import datetime
 
 def ParseUnicode(s):
   try:
-    return unicode(s, encoding="utf-8", errors="strict")
+    return str(s, encoding="utf-8", errors="strict")
   except UnicodeDecodeError:
-    print s
+    print(s)
     raise
 
 def LoadMin(s):
@@ -25,7 +25,7 @@ def ParseDate(date_str):
   try:
     return datetime.date(year, month, day)
   except:
-    print date_str, year, month, day
+    print(date_str, year, month, day)
     raise
 
 class UserRow(object):
@@ -66,7 +66,7 @@ def iterate_users_file(filename):
 
     # First, figure out the order of column names. These change
     # over time as new columns are added, so we cannot hardcode values.
-    header = reader.next()
+    header = next(reader)
     key = {}
     for index, name in enumerate(header):
       key[name] = index
@@ -103,7 +103,7 @@ def iterate_marriages_file(filename):
 
     # First, figure out the order of column names. These change
     # over time as new columns are added, so we cannot hardcode values.
-    header = reader.next()
+    header = next(reader)
     key = {}
     for index, name in enumerate(header):
       key[name] = index
@@ -130,6 +130,6 @@ if __name__ == "__main__":
   for user in iterate_users():
     i += 1
     if (i % 1000000) == 0:
-      print "... Read", i, "records", time.clock()
+      print("... Read", i, "records", time.clock())
     if user.wikitree_id() == id:
-      print user.wikitree_id(), user.user_num(), user.father_num(), user.mother_num()
+      print(user.wikitree_id(), user.user_num(), user.father_num(), user.mother_num())

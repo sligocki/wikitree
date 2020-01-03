@@ -2,7 +2,7 @@
 Load N people around a person and output in graph format.
 """
 
-from __future__ import print_function
+
 
 import argparse
 import collections

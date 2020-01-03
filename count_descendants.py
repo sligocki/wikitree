@@ -26,7 +26,7 @@ def descendants_per_ancestor(db, start_num):
     descendants = count_descendants(person_num)
     count = sum(descendants)
     if count > best_count:
-      print gen, ahnentafel, db.num2id(person_num), sum(descendants), descendants
+      print(gen, ahnentafel, db.num2id(person_num), sum(descendants), descendants)
       best_count = count
     # Add parents
     father_num = db.father_of(person_num)

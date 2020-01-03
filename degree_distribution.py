@@ -15,8 +15,8 @@ for user in db.connections:
   degrees[degree] += 1
   total_edges += degree  # Note: This actually double counts edges.
 
-print "Number of nodes", len(db.connections)
-print "Number of edges (double counted)", total_edges
-print "Degree distribution:"
+print("Number of nodes", len(db.connections))
+print("Number of edges (double counted)", total_edges)
+print("Degree distribution:")
 for degree, count in enumerate(degrees):
-  print "Degree", degree, count
+  print("Degree", degree, count)

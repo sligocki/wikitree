@@ -17,7 +17,7 @@ def csv_to_sqlite(only_update_custom=False):
   # Iterate CSV
   i = 0
   num_rels = 0
-  print "Loading people from CSV", time.clock()
+  print("Loading people from CSV", time.clock())
   for person in csv_iterate.iterate_users(only_update_custom):
     c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?)",
               (person.user_num(), person.wikitree_id(), person.birth_name(),
@@ -34,12 +34,12 @@ def csv_to_sqlite(only_update_custom=False):
 
     i += 1
     if (i % 1000000) == 0:
-      print "People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock()
+      print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock())
       conn.commit()
-  print "People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock()
+  print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock())
   conn.commit()
 
-  print "Loading marriages from CSV", time.clock()
+  print("Loading marriages from CSV", time.clock())
   for marriage in csv_iterate.iterate_marriages(only_update_custom):
     user1, user2 = marriage.user_nums()
     c.execute("INSERT INTO relationships VALUES (?,?,'spouse')",
@@ -48,15 +48,15 @@ def csv_to_sqlite(only_update_custom=False):
               (user2, user1))
     num_rels += 2
     # Note: We are ignoring the marriage dates.
-  print "People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock()
+  print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.clock())
   conn.commit()
 
   # TODO: Figure out how to update siblings incrementally.
   if not only_update_custom:
-    print "Computing siblings", time.clock()
+    print("Computing siblings", time.clock())
     c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
 
-  print "Done", time.clock()
+  print("Done", time.clock())
   conn.commit()
 
   # Add additional indexes for fast lookup.

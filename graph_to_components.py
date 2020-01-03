@@ -32,16 +32,16 @@ for comp in nx.connected_components(g):
   num_comps_by_size[oom] += 1
 
 
-print "Top components"
+print("Top components")
 for num_nodes, sg in top_n.items:
-  print num_nodes
+  print(num_nodes)
   filename = "comp-%d.adj.nx" % num_nodes
   nx.write_adjlist(sg, filename)
 sizes_written = {num_nodes for num_nodes, _ in top_n.items}
 
-print "Num of components by size"
+print("Num of components by size")
 for oom in sorted(num_comps_by_size.keys()):
-  print "10^%d %d (ex: %d)" % (oom, num_comps_by_size[oom], comps_by_size[oom][0])
+  print("10^%d %d (ex: %d)" % (oom, num_comps_by_size[oom], comps_by_size[oom][0]))
   num_nodes, sg = comps_by_size[oom]
   if num_nodes not in sizes_written:
     filename = "comp-%d.adj.nx" % num_nodes

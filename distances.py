@@ -46,7 +46,7 @@ def get_mean_dists(db, start):
       results_conn.execute("INSERT INTO distances VALUES (?,?,?)", (start, mean_dist, max_dist))
       results_conn.commit()
     except e:
-      print "Ignoring distances.db write failure:", e
+      print("Ignoring distances.db write failure:", e)
     return mean_dist, max_dist
 
 if __name__ == "__main__":
@@ -55,11 +55,11 @@ if __name__ == "__main__":
 
   for wikitree_id in sys.argv[1:]:
     user_num = db.id2num(wikitree_id)
-    print
+    print()
     dists, d_hist, d_mean, d_max = get_distances(db, user_num)
-    print
+    print()
     #cum_count = 0
     #for dist, count in enumerate(d_hist):
     #  cum_count += count
     #  print dist, count, cum_count
-    print wikitree_id, d_mean, d_max, len(dists), time.clock()
+    print(wikitree_id, d_mean, d_max, len(dists), time.clock())

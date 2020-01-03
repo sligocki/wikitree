@@ -23,7 +23,7 @@ class Database(sqlite_reader.Database):
     self.connections = collections.defaultdict(set)
     children_of = collections.defaultdict(set)
 
-    print "Loading people", time.clock()
+    print("Loading people", time.clock())
     num_conns = 0
     for i, person in enumerate(csv_iterate.iterate_users()):
       person_num = person.user_num()
@@ -38,11 +38,11 @@ class Database(sqlite_reader.Database):
             num_conns += 2
           children_of[parent_num].add(person_num)
       if i % 1000000 == 0:
-        print " ... {:,}".format(i), "{:,}".format(num_conns), time.clock()
+        print(" ... {:,}".format(i), "{:,}".format(num_conns), time.clock())
 
-    print "Loading marriages", time.clock()
+    print("Loading marriages", time.clock())
     for marriage in csv_iterate.iterate_marriages():
       user1, user2 = marriage.user_nums()
       self.connections[user1].add(user2)
       self.connections[user2].add(user1)
-    print "All connections loaded", time.clock()
+    print("All connections loaded", time.clock())

@@ -29,7 +29,7 @@ def flow_paths(db, start):
   # List of all connections in order of connectedness.
   all_connections = []
 
-  print "Running BFS", time.clock()
+  print("Running BFS", time.clock())
   # Queue for BFS
   queue = collections.deque()
   queue.append(start)
@@ -48,7 +48,7 @@ def flow_paths(db, start):
         # Found another equally short path.
         sources[neigh].append(person)
 
-  print "Calculating flow counts", time.clock()
+  print("Calculating flow counts", time.clock())
   # Map from person -> set of all people who have a shortest path to start
   # which includes person. Note: there could be more than one shortest path,
   # person need only be one of them.
@@ -98,25 +98,25 @@ if __name__ == "__main__":
   db.load_connections()
 
   for user_id in sys.argv[1:]:
-    print "Analyzing", user_id, time.clock()
+    print("Analyzing", user_id, time.clock())
     start = db.id2num(user_id)
     flows, sources, dists = flow_paths(db, start)
 
-    print "Creating DOT", time.clock()
+    print("Creating DOT", time.clock())
     create_dot(db, start, flows, sources, cuttoff=0.05)
 
-    print "Ordering people", time.clock()
+    print("Ordering people", time.clock())
     # Order folks from most flow to least.
     ordered_people = reversed(sorted([(flows[person], person)
                                       for person in flows]))
 
-    print "Highest flow per distance", time.clock()
+    print("Highest flow per distance", time.clock())
     max_dist = -1
     for frac, person in ordered_people:
       if dists[person] > max_dist:
-        print user_id, dists[person], frac, db.name_of(person), db.num2id(person)
+        print(user_id, dists[person], frac, db.name_of(person), db.num2id(person))
         max_dist = dists[person]
         if max_dist >= 20:
           break
 
-  print "Done", time.clock()
+  print("Done", time.clock())
