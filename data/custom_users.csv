@@ -1,13 +1,12 @@
 User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last Name Current	Gender	Birth Date	Death Date
-Header: User ID|WikiTree ID|Father|Mother|First Name|Middle Name|Last Name at Birth|Last Name Current|Gender
 19440571	Ligocki-7	19441051	12233188	Shawn	Michael	Ligocki	Ligocki	1		
-19441051	Ligocki-8	19441613	19441987	Terry	Jay	Ligocki	Ligocki	1		
-19441987	Scherz-19	19442187	19442071	Naomi		Scherz	Ligocki	2		
-19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1		
-19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2		
-19980450	Edgar-1938	0	19980477	Diann		Edgar	Wilson	2		
-20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2		
-20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1		
-20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2		
-4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1		
-7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2		
+19441051	Ligocki-8	19441613	19441987	Terry	Jay	Ligocki	Ligocki	1
+19441987	Scherz-19	19442187	19442071	Naomi		Scherz	Ligocki	2
+19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1
+19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2
+19980450	Edgar-1938	0	19980477	Diann		Edgar	Wilson	2
+20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2
+20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1
+20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2
+4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1
+7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2
