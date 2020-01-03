@@ -6,7 +6,7 @@ import networkx as nx
 
 def load_genetic(graph, filename="dump_people_users.csv"):
   """Load mappings from people->parents and ->children."""
-  with open(filename, "rb") as f:
+  with open(filename, "r") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
     header = next(reader)
@@ -48,7 +48,7 @@ def load_genetic(graph, filename="dump_people_users.csv"):
 
 def load_marriages(graph, filename="dump_people_marriages.csv"):
   """Load mappings from people->spouses."""
-  with open(filename, "rb") as f:
+  with open(filename, "r") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
     header = next(reader)

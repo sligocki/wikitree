@@ -5,7 +5,7 @@ import numpy as np
 
 def load_from_edges(filename):
   print("Loading edges from file", time.process_time())
-  with open(filename, "rb") as f:
+  with open(filename, "r") as f:
     edges = np.load(f)
 
   print("Converting from edges into dictionary", time.process_time())

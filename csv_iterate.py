@@ -1,12 +1,6 @@
 import csv
 import datetime
 
-def ParseUnicode(s):
-  try:
-    return str(s, encoding="utf-8", errors="strict")
-  except UnicodeDecodeError:
-    print(s)
-    raise
 
 def LoadMin(s):
   """Convert s to an integer defaulting to 1 if it is None or <= 0"""
@@ -37,7 +31,7 @@ class UserRow(object):
     return int(self.row[self.key["User ID"]])
 
   def wikitree_id(self):
-    return ParseUnicode(self.row[self.key["WikiTree ID"]])
+    return self.row[self.key["WikiTree ID"]]
 
   def father_num(self):
     return int(self.row[self.key["Father"]])
@@ -51,7 +45,7 @@ class UserRow(object):
       first_name = self.row[self.key["Preferred Name"]]
     if not first_name:
       first_name = "(Unlisted)"
-    return ParseUnicode(first_name) + " " + ParseUnicode(self.row[self.key["Last Name at Birth"]])
+    return first_name + " " + self.row[self.key["Last Name at Birth"]]
 
   def birth_date(self):
     return ParseDate(self.row[self.key["Birth Date"]])
@@ -61,7 +55,7 @@ class UserRow(object):
 
 
 def iterate_users_file(filename):
-  with open(filename, "rb") as f:
+  with open(filename, "r") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
     # First, figure out the order of column names. These change
@@ -98,7 +92,7 @@ class MarriageRow(object):
 
 
 def iterate_marriages_file(filename):
-  with open(filename, "rb") as f:
+  with open(filename, "r") as f:
     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
 
     # First, figure out the order of column names. These change

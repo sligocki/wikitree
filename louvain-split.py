@@ -83,7 +83,7 @@ def louvain_split(graph, level=0):
 
 def load_graph(filename):
   graph = dict()
-  with file(filename, "rb") as f:
+  with file(filename, "r") as f:
     for line in f:
       parts = line.strip().split()
       # Every edge has an initial weight of 1.
@@ -92,7 +92,7 @@ def load_graph(filename):
 
 def load_tsv(filename):
   graph = collections.defaultdict(dict)
-  with file(filename, "rb") as f:
+  with file(filename, "r") as f:
     for line in f:
       if line[0] == "%":
         continue
