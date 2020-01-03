@@ -9,9 +9,9 @@ import networkx as nx
 
 filename = sys.argv[1]
 
-print("Loading graph", time.clock())
+print("Loading graph", time.process_time())
 g = nx.read_adjlist(filename)
-print("Graph loaded", time.clock())
+print("Graph loaded", time.process_time())
 
 def GetSubgraphAround(g, start, size):
   """Get a BFS subgraph around |start| of size |size|."""

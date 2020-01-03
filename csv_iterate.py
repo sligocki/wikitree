@@ -130,6 +130,6 @@ if __name__ == "__main__":
   for user in iterate_users():
     i += 1
     if (i % 1000000) == 0:
-      print("... Read", i, "records", time.clock())
+      print("... Read", i, "records", time.process_time())
     if user.wikitree_id() == id:
       print(user.wikitree_id(), user.user_num(), user.father_num(), user.mother_num())

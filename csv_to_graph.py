@@ -72,19 +72,19 @@ def load_marriages(graph, filename="dump_people_marriages.csv"):
 def build_graph():
   graph = nx.Graph()
 
-  print("Loading parent/child/sibling data", time.clock())
+  print("Loading parent/child/sibling data", time.process_time())
   load_genetic(graph)
 
-  print("Loading marriages data", time.clock())
+  print("Loading marriages data", time.process_time())
   load_marriages(graph)
 
-  print("Loaded all graph", time.clock())
+  print("Loaded all graph", time.process_time())
   return graph
 
 if __name__ == "__main__":
   g = build_graph()
 
-  print("Writing graph to file", time.clock())
+  print("Writing graph to file", time.process_time())
   nx.write_adjlist(g, "graph.adj.nx")
 
-  print("Done", time.clock())
+  print("Done", time.process_time())

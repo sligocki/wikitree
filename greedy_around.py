@@ -41,5 +41,5 @@ if __name__ == "__main__":
   start = db.id2num(start_id)
   # Load connections into memory so that it's faster to do BFS.
   db.load_connections()
-  print("Searching around", start_id, time.clock())
+  print("Searching around", start_id, time.process_time())
   greedy_path(db, start, visited=set())

@@ -29,7 +29,7 @@ def get_distances(db, start):
         hist_dist[dist + 1] += 1
         queue.append(neigh)
         #if len(dists) % 1000000 == 0:
-        #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.clock()
+        #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.process_time()
   mean_dist = float(total_dist) / len(dists)
   return dists, hist_dist, mean_dist, max_dist
 
@@ -62,4 +62,4 @@ if __name__ == "__main__":
     #for dist, count in enumerate(d_hist):
     #  cum_count += count
     #  print dist, count, cum_count
-    print(wikitree_id, d_mean, d_max, len(dists), time.clock())
+    print(wikitree_id, d_mean, d_max, len(dists), time.process_time())

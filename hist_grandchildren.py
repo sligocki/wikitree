@@ -34,7 +34,7 @@ for person in db.all_people():
   hist_num_grandchildren[len(grandchildren)] += 1
 
   if num_people % 100000 == 0:
-    print("...", num_people, time.clock())
+    print("...", num_people, time.process_time())
     print("Histogram of number of children:")
     print_hist(hist_num_children, num_people)
     print()
