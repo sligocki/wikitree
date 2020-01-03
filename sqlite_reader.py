@@ -61,3 +61,10 @@ class Database(object):
     rows = self.cursor.fetchall()
     assert len(rows) >= 1, (user_num, relative_num, rows)
     return rows[0]["relationship_type"]
+
+  def all_people(self):
+    # Cost: 30s (for 18M)
+    self.cursor.execute("SELECT user_num FROM people")
+    rows = self.cursor.fetchall()
+    assert len(rows) >= 1
+    return (row["user_num"] for row in rows)

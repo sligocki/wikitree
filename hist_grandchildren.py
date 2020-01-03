@@ -1,0 +1,41 @@
+import collections
+import time
+
+import data_reader
+
+
+def print_hist(hist, total):
+  # Iterate through buckets in order including empty ones.
+  for i in range(max(hist.keys()) + 1):
+    # Print percent in each bucket.
+    print("%5d : %10d (%7.4f%%)" % (i, hist[i], 100. * hist[i] / total))
+
+
+db = data_reader.Database()
+
+# Histogram of counts for # children/grandchildren of all people in tree.
+num_people = 0
+hist_num_children = collections.defaultdict(int)
+hist_num_grandchildren = collections.defaultdict(int)
+for person in db.all_people():
+  children = db.children_of(person)
+  grandchildren = set()
+  for child in children:
+    grandchildren.update(db.children_of(child))
+  num_people += 1
+  hist_num_children[len(children)] += 1
+  hist_num_grandchildren[len(grandchildren)] += 1
+
+  if num_people % 10000 == 0:
+    print("...", num_people, time.clock())
+    print("Histogram of number of children:")
+    print_hist(hist_num_children, num_people)
+    print()
+    print("Histogram of number of grand-children:")
+    print_hist(hist_num_grandchildren, num_people)
+
+print("Histogram of number of children:")
+print_hist(hist_num_children, num_people)
+print()
+print("Histogram of number of grand-children:")
+print_hist(hist_num_grandchildren, num_people)
