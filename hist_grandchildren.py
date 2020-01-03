@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 
 import collections
 import time
@@ -7,11 +7,17 @@ import data_reader
 
 
 def print_hist(hist, total):
+  cumm = 0.0
+  mean = 0.0
   for i in range(max(hist.keys()) + 1):
     # Skip empty buckets.
     if hist[i]:
-      # Print percent in each bucket.
-      print("%5d : %10d (%7.4f%%)" % (i, hist[i], 100. * hist[i] / total))
+      frac = hist[i] / total
+      cumm += frac
+      print("%5d : %10d (%7.4f%% / Cumm: %7.4f%%)"
+            % (i, hist[i], 100. * frac, 100. * cumm))
+      mean += i * frac
+  print("Mean: %.2f" % mean)
 
 
 db = data_reader.Database()
