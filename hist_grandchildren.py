@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import collections
 import time
 
@@ -5,10 +7,11 @@ import data_reader
 
 
 def print_hist(hist, total):
-  # Iterate through buckets in order including empty ones.
   for i in range(max(hist.keys()) + 1):
-    # Print percent in each bucket.
-    print("%5d : %10d (%7.4f%%)" % (i, hist[i], 100. * hist[i] / total))
+    # Skip empty buckets.
+    if hist[i]:
+      # Print percent in each bucket.
+      print("%5d : %10d (%7.4f%%)" % (i, hist[i], 100. * hist[i] / total))
 
 
 db = data_reader.Database()
@@ -26,7 +29,7 @@ for person in db.all_people():
   hist_num_children[len(children)] += 1
   hist_num_grandchildren[len(grandchildren)] += 1
 
-  if num_people % 10000 == 0:
+  if num_people % 100000 == 0:
     print("...", num_people, time.clock())
     print("Histogram of number of children:")
     print_hist(hist_num_children, num_people)
