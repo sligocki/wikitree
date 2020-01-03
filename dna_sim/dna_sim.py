@@ -107,7 +107,7 @@ def print_sim(cM, num_gens):
   for chrom in chroms:
     print("Chromosome")
     for begin, end, ahn in chrom:
-      print(("- %6.2f  %d" % (end-begin, int("1" + ahn, 2))))
+      print("- %6.2f  %d" % (end-begin, int("1" + ahn, 2)))
 
 
 def sim_human_chroms(num_gens):
@@ -121,11 +121,11 @@ def sim_human_chroms(num_gens):
 
 def describe_stat(xs):
   """Print various summary stats about a list of observations."""
-  print(("  Mean:   %.2f" % (sum(xs) / len(xs))))
+  print("  Mean:   %.2f" % (sum(xs) / len(xs)))
   xs.sort()
-  print(("  Median: %.2f" % xs[len(xs) // 2]))
+  print("  Median: %.2f" % xs[len(xs) // 2])
   for percentile in (1, 10, 90, 99):
-    print(("  %3d%%-ile:%7.2f" % (percentile, xs[len(xs) * percentile // 100])))
+    print("  %3d%%-ile:%7.2f" % (percentile, xs[len(xs) * percentile // 100]))
 
 
 class TopN:
@@ -196,7 +196,7 @@ def summarize(num_gens, num_sims):
   print("Median ancestor total contribution (cM) [inc. segs >= 7cM]:")
   describe_stat(med_ancestor_total_cM)
   print()
-  print(("Num genetic ancestors", num_gens, "back [seg >= 7cM]:"))
+  print("Num genetic ancestors", num_gens, "back [seg >= 7cM]:")
   describe_stat(num_genetic_ancestors)
   print()
 
