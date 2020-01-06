@@ -7,6 +7,8 @@ import argparse
 import collections
 import random
 
+import numpy
+
 import dna_sim
 
 
@@ -154,7 +156,8 @@ if __name__ == "__main__":
   parser.add_argument("--max-gen-dist", type=int)
   args = parser.parse_args()
 
-  fertility_func = lambda: 3
+  # Mean 3 children, but have some spread.
+  fertility_func = lambda: numpy.random.poisson(3)
   root = create_tree(fertility_func, args.max_gen_dist)
 
   # Human autosome (Chromosomes 1-22).
@@ -172,11 +175,11 @@ if __name__ == "__main__":
     detected_segments = flatten_segments(shared_segments)
     sizes_detectable = [end-begin for _, begin, end in detected_segments if end-begin >= 7.0]
     shared_amount[person.gen_dist].append((sum(sizes_detectable), max(sizes_detectable, default=0.), person))
-  print("%3s %8s %8s %8s %8s %8s %8s %8s" % ("Gen", "Max", "90%-ile", "Median", "Min", "Mean", "#>40cM", "#"))
+  print("%3s %8s %8s %8s %8s %8s %8s %8s %8s" % ("Gen", "Max", "Median", "Min", "Mean", "#>80cM", "#>40cM", "#>20cM", "#"))
   for gen_dist in range(args.max_gen_dist + 1):
     total_cMs = [total_cM for total_cM, _, person in shared_amount[gen_dist] if person.gen_delta <= 2]
     total_cMs.sort(reverse=True)
-    print("%3d %8.2f %8.2f %8.2f %8.2f %8.2f %8d %8d" % (gen_dist, total_cMs[0], total_cMs[10 * len(total_cMs) // 100], total_cMs[len(total_cMs) // 2], total_cMs[-1], sum(total_cMs) / len(total_cMs), bin_search_index(total_cMs, 40.) + 1, len(total_cMs)))
+    print("%3d %8.2f %8.2f %8.2f %8.2f %8d %8d %8d %8d" % (gen_dist, total_cMs[0], total_cMs[len(total_cMs) // 2], total_cMs[-1], sum(total_cMs) / len(total_cMs), bin_search_index(total_cMs, 80.) + 1, bin_search_index(total_cMs, 40.) + 1, bin_search_index(total_cMs, 20.) + 1, len(total_cMs)))
   # for total_cm, max_cm, person in shared_amount:
   #   if person.gen_dist != None:
   #     print("%3d   %-10s %10.2f %10.2f" % (person.gen_dist, person.id, total_cm, max_cm))
