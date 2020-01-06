@@ -11,7 +11,14 @@ def csv_to_sqlite(only_update_custom=False):
 
   if not only_update_custom:
     # Create output table.
-    c.execute("CREATE TABLE people (user_num INT, wikitree_id STRING, birth_name STRING, father_num INT, mother_num INT, birth_date DATE, death_date DATE, no_more_children BOOL, PRIMARY KEY (user_num))")
+    c.execute("""CREATE TABLE people (
+      user_num INT, wikitree_id STRING, birth_name STRING,
+      father_num INT, mother_num INT,
+      birth_date DATE, death_date DATE,
+      gender_code INT, no_more_children BOOL,
+      registered_time TIMESTAMP, touched_time TIMESTAMP,
+      edit_count INT,
+      PRIMARY KEY (user_num))""")
     c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
 
   # Iterate CSV
@@ -19,11 +26,14 @@ def csv_to_sqlite(only_update_custom=False):
   num_rels = 0
   print("Loading people from CSV", time.process_time())
   for person in csv_iterate.iterate_users(only_update_custom):
-    c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?)",
-              (person.user_num(), person.wikitree_id(), person.birth_name(),
+    c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+              (person.user_num(), person.wikitree_id(),
+               person.birth_name(),
                person.father_num(), person.mother_num(),
                person.birth_date(), person.death_date(),
-               person.no_more_children()))
+               person.gender_code(), person.no_more_children(),
+               person.registered_time(), person.touched_time(),
+               person.edit_count()))
     child_num = person.user_num()
     for parent_num in (person.father_num(), person.mother_num()):
       if parent_num != 0:

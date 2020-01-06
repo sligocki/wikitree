@@ -9,6 +9,22 @@ def LoadMin(s):
   num = int(s)
   return max(num, 1)
 
+
+def ParseInt(int_str):
+  if not int_str:
+    return None
+  return int(int_str)
+
+
+def ParseBool(bool_str):
+  if bool_str == "1":
+    return True
+  elif bool_str == "0":
+    return False
+  else:
+    return None
+
+
 def ParseDate(date_str):
   if not date_str or date_str == "0":
     return None
@@ -20,6 +36,22 @@ def ParseDate(date_str):
     return datetime.date(year, month, day)
   except:
     print(date_str, year, month, day)
+    raise
+
+
+def ParseTimestamp(timestamp_str):
+  if not timestamp_str or timestamp_str == "0":
+    return None
+  year = int(timestamp_str[:4])
+  month = int(timestamp_str[4:6])
+  day = int(timestamp_str[6:8])
+  hour = int(timestamp_str[8:10])
+  min = int(timestamp_str[10:12])
+  sec = int(timestamp_str[12:])
+  try:
+    return datetime.datetime(year, month, day, hour, min, sec)
+  except:
+    print(timestamp_str, year, month, day, hour, min, sec)
     raise
 
 
@@ -37,16 +69,16 @@ class Row:
 
 class UserRow(Row):
   def user_num(self):
-    return int(self.lookup("User ID"))
+    return ParseInt(self.lookup("User ID"))
 
   def wikitree_id(self):
     return self.lookup("WikiTree ID")
 
   def father_num(self):
-    return int(self.lookup("Father"))
+    return ParseInt(self.lookup("Father"))
 
   def mother_num(self):
-    return int(self.lookup("Mother"))
+    return ParseInt(self.lookup("Mother"))
 
   def birth_name(self):
     first_name = self.lookup("First Name")
@@ -56,6 +88,11 @@ class UserRow(Row):
       first_name = "(Unlisted)"
     return first_name + " " + self.lookup("Last Name at Birth")
 
+  def gender_code(self):
+    # Note: Gender is stored as 0 = Blank, 1 = Male, 2 = Female.
+    # Also possible is "" which might mean private info?
+    return ParseInt(self.lookup("Gender"))
+
   def birth_date(self):
     return ParseDate(self.lookup("Birth Date"))
 
@@ -63,7 +100,16 @@ class UserRow(Row):
     return ParseDate(self.lookup("Death Date"))
 
   def no_more_children(self):
-    return bool(self.lookup("No Children"))
+    return ParseBool(self.lookup("No Children"))
+
+  def registered_time(self):
+    return ParseTimestamp(self.lookup("Registered"))
+
+  def touched_time(self):
+    return ParseTimestamp(self.lookup("Touched"))
+
+  def edit_count(self):
+    return ParseInt(self.lookup("Edit Count"))
 
 
 def iterate_users_file(filename):
