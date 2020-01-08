@@ -74,8 +74,8 @@ def find_connections(person1, person2):
     len(bfs1.dists), bfs1.num_steps, person1_id, len(bfs2.dists), bfs2.num_steps, person2_id))
 
 
-person1_id = str(sys.argv[1], encoding="utf-8", errors="strict")
-person2_id = str(sys.argv[2], encoding="utf-8", errors="strict")
+person1_id = sys.argv[1]
+person2_id = sys.argv[2]
 
 db = data_reader.Database()
 
