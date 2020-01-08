@@ -13,12 +13,12 @@ def enum_ancestors(db, start_num):
     gen = new_gen
 
 
-def enum_descendant(db, id, start_num, skip=None):
+def enum_descendant_generations(db, id, start_num, skip=None):
   gen = [(id, start_num)]
   while gen:
+    yield gen
     new_gen = []
     for id, person in gen:
-      yield id, person
       for child_index, child in enumerate(db.children_of(person)):
         if not skip or child not in skip:
           new_gen.append(("%s.%d" % (id, child_index), child))
@@ -28,7 +28,8 @@ def enum_descendant(db, id, start_num, skip=None):
 def enum_kin(db, start_num):
   visited = set()
   for ahn, ancestor in enum_ancestors(db, start_num):
-    for id, person in enum_descendant(db, str(ahn), ancestor, skip=visited):
-      if person not in visited:
-        visited.add(person)
-        yield id, person
+    for gen in enum_descendant_generations(db, str(ahn), ancestor, skip=visited):
+      for id, person in gen:
+        if person not in visited:
+          visited.add(person)
+          yield id, person
