@@ -71,6 +71,12 @@ class Database(object):
     rows = self.cursor.fetchall()
     return frozenset(row["relative_num"] for row in rows)
 
+  def relative_of_mult(self, user_num, relationship_types):
+    self.cursor.execute("SELECT relative_num, relationship_type FROM relationships WHERE user_num=?", (user_num,))
+    rows = self.cursor.fetchall()
+    return frozenset(row["relative_num"] for row in rows
+                     if row["relationship_type"] in relationship_types)
+
   def children_of(self, parent_num):
     return self.relative_of(parent_num, "child")
 
