@@ -66,10 +66,19 @@ class Database(object):
     rows = self.cursor.fetchall()
     return frozenset(row["relative_num"] for row in rows)
 
-  def children_of(self, parent_num):
-    self.cursor.execute("SELECT relative_num FROM relationships WHERE user_num=? AND relationship_type = 'child'", (parent_num,))
+  def relative_of(self, user_num, relationship_type):
+    self.cursor.execute("SELECT relative_num FROM relationships WHERE user_num = ? AND relationship_type = ?", (user_num, relationship_type))
     rows = self.cursor.fetchall()
     return frozenset(row["relative_num"] for row in rows)
+
+  def children_of(self, parent_num):
+    return self.relative_of(parent_num, "child")
+
+  def siblings_of(self, user_num):
+    return self.relative_of(user_num, "sibling")
+
+  def spouses_of(self, user_num):
+    return self.relative_of(user_num, "spouse")
 
   def relationship_type(self, user_num, relative_num):
     self.cursor.execute("SELECT relationship_type FROM relationships WHERE user_num=? AND relative_num=?", (user_num, relative_num))
