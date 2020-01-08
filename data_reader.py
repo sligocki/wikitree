@@ -8,6 +8,45 @@ import time
 import csv_iterate
 import sqlite_reader
 
+
+def load_connections(include_parents,
+                     include_children,
+                     include_siblings,
+                     include_spouses):
+  connections = collections.defaultdict(set)
+  children_of = collections.defaultdict(set)
+
+  print("Loading people", time.process_time())
+  num_conns = 0
+  for i, person in enumerate(csv_iterate.iterate_users()):
+    person_num = person.user_num()
+    for parent_num in (person.father_num(), person.mother_num()):
+      if parent_num:
+        if include_parents:
+          connections[person_num].add(parent_num)
+          num_conns += 1
+        if include_children:
+          connections[parent_num].add(person_num)
+          num_conns += 1
+        if include_siblings:
+          for sibling_num in children_of[parent_num]:
+            connections[person_num].add(sibling_num)
+            connections[sibling_num].add(person_num)
+            num_conns += 2
+          children_of[parent_num].add(person_num)
+    if i % 1000000 == 0:
+      print(" ... {:,}".format(i), "{:,}".format(num_conns), time.process_time())
+
+  if include_spouses:
+    print("Loading marriages", time.process_time())
+    for marriage in csv_iterate.iterate_marriages():
+      user1, user2 = marriage.user_nums()
+      connections[user1].add(user2)
+      connections[user2].add(user1)
+
+  print("All connections loaded", time.process_time())
+  return connections
+
 class Database(sqlite_reader.Database):
   def __init__(self):
     super(Database, self).__init__()
@@ -20,29 +59,7 @@ class Database(sqlite_reader.Database):
       return super(Database, self).neighbors_of(person)
 
   def load_connections(self):
-    self.connections = collections.defaultdict(set)
-    children_of = collections.defaultdict(set)
-
-    print("Loading people", time.process_time())
-    num_conns = 0
-    for i, person in enumerate(csv_iterate.iterate_users()):
-      person_num = person.user_num()
-      for parent_num in (person.father_num(), person.mother_num()):
-        if parent_num:
-          self.connections[person_num].add(parent_num)
-          self.connections[parent_num].add(person_num)
-          num_conns += 2
-          for sibling_num in children_of[parent_num]:
-            self.connections[person_num].add(sibling_num)
-            self.connections[sibling_num].add(person_num)
-            num_conns += 2
-          children_of[parent_num].add(person_num)
-      if i % 1000000 == 0:
-        print(" ... {:,}".format(i), "{:,}".format(num_conns), time.process_time())
-
-    print("Loading marriages", time.process_time())
-    for marriage in csv_iterate.iterate_marriages():
-      user1, user2 = marriage.user_nums()
-      self.connections[user1].add(user2)
-      self.connections[user2].add(user1)
-    print("All connections loaded", time.process_time())
+    self.connections = load_connections(include_parents=True,
+                                        include_children=True,
+                                        include_siblings=True,
+                                        include_spouses=True)
