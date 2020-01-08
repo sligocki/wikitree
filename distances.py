@@ -5,7 +5,7 @@ import time
 
 import data_reader
 
-results_conn = sqlite3.connect("distances.db")
+results_conn = sqlite3.connect("data/distances.db")
 results_conn.row_factory = sqlite3.Row
 
 def get_distances(db, start):
