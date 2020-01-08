@@ -3,6 +3,7 @@
 import argparse
 import collections
 import itertools
+import sqlite3
 import time
 
 import data_reader
@@ -22,9 +23,11 @@ def find_sibling_in_laws(start, sib_spos_of):
   return visited
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--precompute", action="store_true",
+parser.add_argument("--no-precompute", action="store_true",
                     help="Preload all relationships into memory. "
                          "[Onetime cost: ~200s / Lookup speedup: 100x]")
+parser.add_argument("--write-db", action="store_true",
+                    help="Write results to a DB.")
 parser.add_argument("--person",
                     help="Find all sibling-in-laws for a specific person.")
 parser.add_argument("--ancestors", metavar="PERSON",
@@ -35,17 +38,17 @@ args = parser.parse_args()
 
 db = data_reader.Database()
 
-if args.precompute:
+if args.no_precompute:
+  def sib_spos_of(person):
+    return itertools.chain(db.siblings_of(person),
+                           db.spouses_of(person))
+else:
   connections = data_reader.load_connections(include_parents=False,
                                              include_children=False,
                                              include_siblings=True,
                                              include_spouses=True)
   def sib_spos_of(person):
     return connections[person]
-else:
-  def sib_spos_of(person):
-    return itertools.chain(db.siblings_of(person),
-                           db.spouses_of(person))
 
 if args.person:
   start_num = db.id2num(args.person)
@@ -65,7 +68,7 @@ if args.ancestors:
         print(ahn, len(sils), db.name_of(anc), total, sep="\t")
 
 if args.all:
-  sizes = {}
+  groups = {}
   max_size = 0
   best_rep = None
   total = 0
@@ -76,8 +79,8 @@ if args.all:
       sils = find_sibling_in_laws(person, sib_spos_of)
       visited.update(sils)
       rep = min(sils)
+      groups[rep] = set(sils)
       size = len(sils)
-      sizes[rep] = size
       total += size
       if size > max_size:
         max_size = size
@@ -85,8 +88,8 @@ if args.all:
         print("Best", size, db.num2id(rep), db.name_of(rep), total, num_people, time.process_time(), sep="\t")
 
   # Summarize
-  print("# Groups:", len(sizes))
-  ord_reps = [(sizes[rep], rep) for rep in sizes]
+  print("# Groups:", len(groups))
+  ord_reps = [(len(groups[rep]), rep) for rep in groups]
   ord_reps.sort(key=lambda x: x[0], reverse=True)
 
   print("Largest groups:")
@@ -109,3 +112,24 @@ if args.all:
       total += size
       i += 1
     print("  %s%%-ile # sibling-in-laws: %d" % (x, size))
+
+  if args.write_db:
+    conn = sqlite3.connect("data/groups.db")
+    c = conn.cursor()
+
+    c.execute("DROP TABLE IF EXISTS sibling_in_law")
+    c.execute("CREATE TABLE sibling_in_law (user_num INT, rep INT, PRIMARY KEY (user_num))")
+
+    i = 0
+    for rep in groups:
+      for person in groups[rep]:
+        c.execute("INSERT INTO sibling_in_law VALUES (?,?)",
+                  (person, rep))
+        i += 1
+        if i % 1000000 == 0:
+          conn.commit()
+    conn.commit()
+
+    c.execute("CREATE INDEX idx_sibling_in_law_rep ON sibling_in_law(rep)")
+    conn.commit()
+    conn.close()
