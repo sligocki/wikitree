@@ -26,14 +26,18 @@ def csv_to_sqlite(only_update_custom=False):
   num_rels = 0
   print("Loading people from CSV", time.process_time())
   for person in csv_iterate.iterate_users(only_update_custom):
-    c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-              (person.user_num(), person.wikitree_id(),
-               person.birth_name(),
-               person.father_num(), person.mother_num(),
-               person.birth_date(), person.death_date(),
-               person.gender_code(), person.no_more_children(),
-               person.registered_time(), person.touched_time(),
-               person.edit_count()))
+    try:
+      c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (person.user_num(), person.wikitree_id(),
+                 person.birth_name(),
+                 person.father_num(), person.mother_num(),
+                 person.birth_date(), person.death_date(),
+                 person.gender_code(), person.no_more_children(),
+                 person.registered_time(), person.touched_time(),
+                 person.edit_count()))
+    except Exception as e:
+      print("ERROR inserting person:", person.user_num(), person.row)
+      print(e)
     child_num = person.user_num()
     for parent_num in (person.father_num(), person.mother_num()):
       if parent_num != 0:

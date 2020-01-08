@@ -1,12 +1,19 @@
-User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last Name Current	Gender	Birth Date	Death Date
-19440571	Ligocki-7	19441051	12233188	Shawn	Michael	Ligocki	Ligocki	1		
-19441051	Ligocki-8	19441613	19441987	Terry	Jay	Ligocki	Ligocki	1
-19441987	Scherz-19	19442187	19442071	Naomi		Scherz	Ligocki	2
-19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1
-19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2
-19980450	Edgar-1938	0	19980477	Diann		Edgar	Wilson	2
-20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2
-20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1
-20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2
-4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1
-7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2
+User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last Name Current	Gender	No Children
+19440571	Ligocki-7	19441051	12233188	Shawn	Michael	Ligocki	Ligocki	1	1
+19441051	Ligocki-8	19441613	19441987	Terry	Jay	Ligocki	Ligocki	1	1
+19441987	Scherz-19	19442187	19442071	Naomi		Scherz	Ligocki	2	1
+19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1	1
+19445016	Peterson-9316	5605484	12233043	Michael		Peterson	Peterson	1	1
+19445030	Peterson-9317	5605484	12233043	Rocky		Peterson	Peterson	1	1
+19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2	1
+-1	Ligocki-15	19444694	0	Jonathan	Terry	Ligocki	Ligocki	1	1
+19470776	Ligocki-16	19441613	20190252	Dean		Ligocki	Ligocki	1	1
+19980450	Edgar-1938	0	19980477	Diann		Edgar	Wilson	2	1
+20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
+24354180	Peterson-11772	19445030	0	Vanessa		Peterson	Peterson	2	1
+20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2	1
+20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1	1
+20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2	1
+20304064	Treibergs-3	20304018	20304037	Lija		Treibergs	Treibergs	2	1
+4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1	0
+7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2	0
