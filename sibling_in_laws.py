@@ -70,7 +70,6 @@ if args.all:
   best_rep = None
   total = 0
   num_people = len(connections)
-  last_time = time.time()
   visited = set()
   for person in connections:
     if person not in visited:
@@ -84,19 +83,29 @@ if args.all:
         max_size = size
         best_rep = rep
         print("Best", size, db.num2id(rep), db.name_of(rep), total, num_people, time.process_time(), sep="\t")
-      elif size > 1000:
-        print("---", size, db.num2id(rep), db.name_of(rep), total, num_people, time.process_time(), sep="\t")
-      if time.time() - last_time > 10:
-        last_time = time.time()
-        print("...", time.process_time(), total, num_people, max_size, sep="\t")
+
+  # Summarize
   print("# Groups:", len(sizes))
   ord_reps = [(sizes[rep], rep) for rep in sizes]
   ord_reps.sort(key=lambda x: x[0], reverse=True)
+
   print("Largest groups:")
   for i in range(10):
     size, rep = ord_reps[i]
     print("  %d-th largest group: %d (rep: %s)" % (i + 1, size, db.num2id(rep)))
-  print("%-iles:")
-  for x in (90, 75, 50, 25, 10):
-    size, _ = ord_reps[len(ord_reps) * (100-x) // 100]
-    print("  %d%%-ile size: %d" % (x, size))
+
+  print("%-iles by groups:")
+  for x in (99.999, 99.99, 99.9, 99, 90, 50):
+    size, _ = ord_reps[int(len(ord_reps) * (100-x) // 100)]
+    print("  %s%%-ile group size: %d" % (x, size))
+
+  print("%-ile by people:")
+  for x in (99, 90, 75, 50, 25, 10):
+    person_num = int(num_people * (100-x) // 100)
+    total = 0
+    i = 0
+    while total < person_num:
+      size, _ = ord_reps[i]
+      total += size
+      i += 1
+    print("  %s%%-ile # sibling-in-laws: %d" % (x, size))
