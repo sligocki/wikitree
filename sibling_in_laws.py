@@ -3,11 +3,11 @@
 import argparse
 import collections
 import itertools
-import sqlite3
 import time
 
 import data_reader
 import enum_kin
+import group_tools
 
 
 def find_sibling_in_laws(start, sib_spos_of):
@@ -114,22 +114,4 @@ if args.all:
     print("  %s%%-ile # sibling-in-laws: %d" % (x, size))
 
   if args.write_db:
-    conn = sqlite3.connect("data/groups.db")
-    c = conn.cursor()
-
-    c.execute("DROP TABLE IF EXISTS sibling_in_law")
-    c.execute("CREATE TABLE sibling_in_law (user_num INT, rep INT, PRIMARY KEY (user_num))")
-
-    i = 0
-    for rep in groups:
-      for person in groups[rep]:
-        c.execute("INSERT INTO sibling_in_law VALUES (?,?)",
-                  (person, rep))
-        i += 1
-        if i % 1000000 == 0:
-          conn.commit()
-    conn.commit()
-
-    c.execute("CREATE INDEX idx_sibling_in_law_rep ON sibling_in_law(rep)")
-    conn.commit()
-    conn.close()
+    group_tools.write_group("sibling_in_law", groups)

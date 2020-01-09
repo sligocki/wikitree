@@ -11,6 +11,7 @@ import time
 import graphviz
 
 import data_reader
+import group_tools
 
 
 class Bfs(object):
@@ -82,16 +83,29 @@ def find_connections(person1, person2, rel_types):
     len(bfs1.dists), bfs1.num_steps, db.num2id(person1), len(bfs2.dists), bfs2.num_steps, db.num2id(person2)))
 
 
-def print_connections(args, db, person1, person2):
-  start_id = db.num2id(person1)
-  end_id = db.num2id(person2)
+def find_connections_group(start, group, rel_types):
+  bfs = Bfs(start, rel_types)
+
+  found = False
+  while not (found or len(bfs.todo) == 0):
+    for person in bfs.next_gen():
+      if person in group:
+        # We found a path
+        found = True
+        for path in bfs.get_out_paths(person):
+          yield path + [person]
+
+  print("Evaluated %d (%d around %s)" % (
+    len(bfs.dists), bfs.num_steps, db.num2id(start)))
+
+
+def print_connections(args, db, connections, graph_name):
   if args.graph:
-    dot = graphviz.Digraph(name=("results/Connections_%s_%s" % (start_id, end_id)))
+    dot = graphviz.Digraph(name=graph_name)
     nodes = set()
     edges = set()
 
-  print("Connection from", start_id, "to", end_id)
-  for i, connection in enumerate(find_connections(person1, person2, args.rel_types)):
+  for i, connection in enumerate(connections):
     print("Distance", len(connection) - 1)
     if args.distance_only:
       break
@@ -120,7 +134,6 @@ def print_connections(args, db, person1, person2):
     dot.view()
 
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("person_id", nargs='+')
 
@@ -128,6 +141,9 @@ parser.add_argument("--graph", action="store_true",
                     help="Produce a DOT graph of connections.")
 parser.add_argument("--distance-only", action="store_true",
                     help="Only print the distance (not connection sequence).")
+
+parser.add_argument("--to-group",
+                    help="Destination is group rather than specific person.")
 
 parser.add_argument("--rel-types", nargs='+', default=frozenset(["parent", "child", "sibling", "spouse"]))
 parser.add_argument("--genetic", dest="rel_types", action="store_const", const=frozenset(["parent", "child"]),
@@ -139,5 +155,28 @@ args = parser.parse_args()
 
 db = data_reader.Database()
 
-for i in range(len(args.person_id) - 1):
-  print_connections(args, db, db.id2num(args.person_id[i]), db.id2num(args.person_id[i + 1]))
+if args.to_group:
+  # Find shortest connection from person to any member of a group.
+  group_type, member_id = args.to_group.split(":")
+  member_num = db.id2num(member_id)
+  rep = group_tools.find_group_rep(group_type, member_num)
+  group_members = group_tools.list_group(group_type, rep)
+  for start_id in args.person_id:
+    print("Connections from", start_id, "to group", args.to_group)
+    graph_name = "results/Connections_%s_%s" % (start_id, args.to_group)
+    connections = find_connections_group(db.id2num(start_id),
+                                         group_members,
+                                         args.rel_types)
+    print_connections(args, db, connections, graph_name)
+
+else:
+  # Find shortest connection between two people.
+  for i in range(len(args.person_id) - 1):
+    start_id = args.person_id[i]
+    end_id = args.person_id[i + 1]
+    print("Connections from", start_id, "to", end_id)
+    graph_name = "results/Connections_%s_%s" % (start_id, end_id)
+    connections = find_connections(db.id2num(start_id),
+                                   db.id2num(end_id),
+                                   args.rel_types)
+    print_connections(args, db, connections, graph_name)
