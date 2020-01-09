@@ -5,6 +5,7 @@ import collections
 import itertools
 import time
 
+import csv_to_groups
 import data_reader
 import enum_kin
 import group_tools
@@ -68,24 +69,7 @@ if args.ancestors:
         print(ahn, len(sils), db.name_of(anc), total, sep="\t")
 
 if args.all:
-  groups = {}
-  max_size = 0
-  best_rep = None
-  total = 0
-  num_people = len(connections)
-  visited = set()
-  for person in connections:
-    if person not in visited:
-      sils = find_sibling_in_laws(person, sib_spos_of)
-      visited.update(sils)
-      rep = min(sils)
-      groups[rep] = set(sils)
-      size = len(sils)
-      total += size
-      if size > max_size:
-        max_size = size
-        best_rep = rep
-        print("Best", size, db.num2id(rep), db.name_of(rep), total, num_people, time.process_time(), sep="\t")
+  groups = csv_to_groups.get_connection_groups(connections)
 
   # Summarize
   print("# Groups:", len(groups))
