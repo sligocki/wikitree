@@ -1,8 +1,14 @@
+"""
+Find all of the shortest length connections between two people.
+"""
+
 import argparse
 import collections
 import random
 import sys
 import time
+
+import graphviz
 
 import data_reader
 
@@ -56,7 +62,7 @@ def find_connections(person1, person2, rel_types):
   bfs2 = Bfs(person2, rel_types)
 
   found = False
-  while not found:
+  while not (found or len(bfs1.todo) == 0 == len(bfs2.todo)):
     if len(bfs1.todo) <= len(bfs2.todo):
       this = bfs1
       other = bfs2
@@ -73,28 +79,65 @@ def find_connections(person1, person2, rel_types):
             yield path1 + [person] + path2
 
   print("Evaluated %d (%d around %s) & %d (%d around %s)" % (
-    len(bfs1.dists), bfs1.num_steps, args.start_id, len(bfs2.dists), bfs2.num_steps, args.end_id))
+    len(bfs1.dists), bfs1.num_steps, db.num2id(person1), len(bfs2.dists), bfs2.num_steps, db.num2id(person2)))
+
+
+def print_connections(args, db, person1, person2):
+  start_id = db.num2id(person1)
+  end_id = db.num2id(person2)
+  if args.graph:
+    dot = graphviz.Digraph(name=("results/Connections_%s_%s" % (start_id, end_id)))
+    nodes = set()
+    edges = set()
+
+  print("Connection from", start_id, "to", end_id)
+  for i, connection in enumerate(find_connections(person1, person2, args.rel_types)):
+    print("Distance", len(connection) - 1)
+    if args.distance_only:
+      break
+    else:
+      print("Connection", i + 1)
+      prev_user = None
+      for dist, user_num in enumerate(connection):
+        rel_type = db.relationship_type(prev_user, user_num) if prev_user else ""
+        print(" (%3d)  %-8s %-20s %s" % (dist, rel_type, db.num2id(user_num), db.name_of(user_num)))
+
+        if args.graph:
+          if user_num not in nodes:
+            nodes.add(user_num)
+            dot.node(str(user_num), label=db.num2id(user_num))
+          if prev_user and (prev_user, user_num) not in edges:
+            edges.add((prev_user, user_num))
+            dot.edge(str(prev_user), str(user_num), label=rel_type)
+
+        prev_user = user_num
+
+      print()
+
+  print()
+
+  if args.graph:
+    dot.view()
+
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("start_id")
-parser.add_argument("end_id")
-parser.add_argument("--genetic", dest="rel_types", action="store_const", const=set(["parent", "child"]),
+parser.add_argument("person_id", nargs='+')
+
+parser.add_argument("--graph", action="store_true",
+                    help="Produce a DOT graph of connections.")
+parser.add_argument("--distance-only", action="store_true",
+                    help="Only print the distance (not connection sequence).")
+
+parser.add_argument("--rel-types", nargs='+', default=frozenset(["parent", "child", "sibling", "spouse"]))
+parser.add_argument("--genetic", dest="rel_types", action="store_const", const=frozenset(["parent", "child"]),
                     help="Only consider genetic connections (exclude marriage).")
-parser.add_argument("--sibling-in-law", dest="rel_types", action="store_const", const=set(["sibling", "spouse"]),
+parser.add_argument("--sibling-in-law", dest="rel_types", action="store_const", const=frozenset(["sibling", "spouse"]),
                     help="Only consider sibling and spouse relationships (find how two people are sibling-in-laws).")
+
 args = parser.parse_args()
 
 db = data_reader.Database()
 
-person1 = db.id2num(args.start_id)
-person2 = db.id2num(args.end_id)
-
-for i, connection in enumerate(find_connections(person1, person2, args.rel_types)):
-  print("Connection", i + 1)
-  prev_user = None
-  for dist, user_num in enumerate(connection):
-    rel_type = db.relationship_type(prev_user, user_num) if prev_user else ""
-    print("-", dist, rel_type, db.num2id(user_num), db.name_of(user_num))
-    prev_user = user_num
-  print()
+for i in range(len(args.person_id) - 1):
+  print_connections(args, db, db.id2num(args.person_id[i]), db.id2num(args.person_id[i + 1]))

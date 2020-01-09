@@ -69,7 +69,7 @@ def flow_paths(db, start):
 
 def create_dot(db, start, flows, sources, cuttoff):
   """Create a graphviz DOT file with all people who have flow >= cuttoff and all of their neighbors."""
-  dot = Digraph(name=("%s_%.2f" % (db.num2id(start), cuttoff)))
+  dot = Digraph(name=("results/Flows_%s_%.2f" % (db.num2id(start), cuttoff)))
 
   todo = collections.deque()
   todo.append(start)
