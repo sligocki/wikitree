@@ -10,5 +10,6 @@ form.onsubmit = function() {
   return false;
 }
 worker.onmessage = function(e) {
+  // TODO: Format it.
   result.textContent = e.data;
 }

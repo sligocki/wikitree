@@ -72,7 +72,7 @@ def find_connections(person1, person2, rel_types):
       other = bfs1
 
     for person in this.next_gen():
-      if person in other.dists:
+      if person in other.paths:
         # We found a path
         found = True
         for path1 in bfs1.get_out_paths(person):
@@ -80,7 +80,7 @@ def find_connections(person1, person2, rel_types):
             yield path1 + [person] + path2
 
   print("Evaluated %d (%d around %s) & %d (%d around %s)" % (
-    len(bfs1.dists), bfs1.num_steps, db.num2id(person1), len(bfs2.dists), bfs2.num_steps, db.num2id(person2)))
+    len(bfs1.paths), bfs1.num_steps, db.num2id(person1), len(bfs2.paths), bfs2.num_steps, db.num2id(person2)))
 
 
 def find_connections_group(start, group, rel_types):
@@ -96,7 +96,7 @@ def find_connections_group(start, group, rel_types):
           yield path + [person]
 
   print("Evaluated %d (%d around %s)" % (
-    len(bfs.dists), bfs.num_steps, db.num2id(start)))
+    len(bfs.paths), bfs.num_steps, db.num2id(start)))
 
 
 def print_connections(args, db, connections, graph_name):
