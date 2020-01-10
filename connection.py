@@ -114,7 +114,7 @@ def print_connections(args, db, connections, graph_name):
       prev_user = None
       for dist, user_num in enumerate(connection):
         rel_type = db.relationship_type(prev_user, user_num) if prev_user else ""
-        print(" (%3d)  %-8s %-20s %s" % (dist, rel_type, db.num2id(user_num), db.name_of(user_num)))
+        print(" (%3d)  %-8s %-20s %-20s %-11s %-11s" % (dist, rel_type, db.num2id(user_num), db.name_of(user_num), db.get(user_num, "birth_date"), db.get(user_num, "death_date")))
 
         if args.graph:
           if user_num not in nodes:

@@ -14,6 +14,13 @@ class Database(object):
     self.conn.row_factory = sqlite3.Row
     self.cursor = self.conn.cursor()
 
+  def get(self, user_num, attribute):
+    self.cursor.execute(f"SELECT {attribute} FROM people WHERE user_num=?", (user_num,))
+    rows = self.cursor.fetchall()
+    if rows:
+      assert len(rows) == 1, (child_num, rows)
+      return rows[0][0]
+
   def id2num(self, wikitree_id):
     self.cursor.execute("SELECT user_num FROM people WHERE wikitree_id=?", (wikitree_id,))
     rows = self.cursor.fetchall()
@@ -21,37 +28,19 @@ class Database(object):
     return rows[0]["user_num"]
 
   def num2id(self, user_num):
-    self.cursor.execute("SELECT wikitree_id FROM people WHERE user_num=?", (user_num,))
-    rows = self.cursor.fetchall()
-    assert len(rows) == 1, (user_num, rows)
-    return rows[0]["wikitree_id"]
+    return self.get(user_num, "wikitree_id")
 
   def name_of(self, user_num):
-    self.cursor.execute("SELECT birth_name FROM people WHERE user_num=?", (user_num,))
-    rows = self.cursor.fetchall()
-    assert len(rows) == 1, (user_num, rows)
-    return rows[0]["birth_name"]
+    return self.get(user_num, "birth_name")
 
-  def father_of(self, child_num):
-    self.cursor.execute("SELECT father_num FROM people WHERE user_num=?", (child_num,))
-    rows = self.cursor.fetchall()
-    if rows:
-      assert len(rows) == 1, (child_num, rows)
-      return rows[0]["father_num"]
+  def father_of(self, user_num):
+    return self.get(user_num, "father_num")
 
-  def mother_of(self, child_num):
-    self.cursor.execute("SELECT mother_num FROM people WHERE user_num=?", (child_num,))
-    rows = self.cursor.fetchall()
-    if rows:
-      assert len(rows) == 1, (child_num, rows)
-      return rows[0]["mother_num"]
+  def mother_of(self, user_num):
+    return self.get(user_num, "mother_num")
 
   def no_more_children_of(self, user_num):
-    self.cursor.execute("SELECT no_more_children FROM people WHERE user_num=?", (user_num,))
-    rows = self.cursor.fetchall()
-    if rows:
-      assert len(rows) == 1, (user_num, rows)
-      return rows[0]["no_more_children"]
+    return self.get(user_num, "no_more_children")
 
   def has_person(self, user_num):
     self.cursor.execute("SELECT 1 FROM people WHERE user_num=?", (user_num,))
