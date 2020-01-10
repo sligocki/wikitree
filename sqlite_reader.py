@@ -53,6 +53,11 @@ class Database(object):
       assert len(rows) == 1, (user_num, rows)
       return rows[0]["no_more_children"]
 
+  def has_person(self, user_num):
+    self.cursor.execute("SELECT 1 FROM people WHERE user_num=?", (user_num,))
+    rows = self.cursor.fetchall()
+    return len(rows) > 0
+
   def all_people(self):
     # Cost: 30s (for 18M)
     self.cursor.execute("SELECT user_num FROM people")
