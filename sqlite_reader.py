@@ -39,9 +39,6 @@ class Database(object):
   def mother_of(self, user_num):
     return self.get(user_num, "mother_num")
 
-  def no_more_children_of(self, user_num):
-    return self.get(user_num, "no_more_children")
-
   def has_person(self, user_num):
     self.cursor.execute("SELECT 1 FROM people WHERE user_num=?", (user_num,))
     rows = self.cursor.fetchall()

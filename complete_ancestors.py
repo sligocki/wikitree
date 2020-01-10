@@ -17,7 +17,7 @@ for ahn, ancestor in enum_kin.enum_ancestors(db, start_num):
   for gen in enum_kin.enum_descendant_generations(db, ahn, ancestor):
     num_complete = 0
     for _, kin in gen:
-      if db.no_more_children_of(kin):
+      if db.get(kin, "no_more_children"):
         num_complete += 1
     print(" %.2f" % (num_complete / len(gen)), end = "")
   print()
