@@ -125,9 +125,16 @@ function getConnection(person1, person2, callback) {
       }
     }
     if (connections.length > 0) {
-      callback(connections, bfs1.num_steps, bfs1.paths.size, bfs2.num_steps, bfs2.paths.size);
+      callback(connections);
       return;
     }
+    console.log("Worker: Evaluated " + bfs1.paths.size + " (" + bfs1.num_steps + " around " + person1 + ") & " + bfs2.paths.size + " (" + bfs2.num_steps + " around " + person2 + ")");
+
+    postMessage({
+      "done": false,
+      "num_steps": bfs1.num_steps + bfs2.num_steps,
+      "num_people": bfs1.paths.size + bfs2.paths.size,
+    })
 
     // If we're not done yet, expand the smaller todo list one more level.
     // TODO: step both at once?
@@ -142,14 +149,17 @@ function getConnection(person1, person2, callback) {
 }
 
 onmessage = function(e) {
-  let startTime = new Date();
+  let start_time = new Date();
   console.log("Worker: Recieved message " + e.data);
   let person1 = e.data[0];
   let person2 = e.data[1];
 
-  getConnection(person1, person2, function(connections, num_steps1, num_people1, num_steps2, num_people2) {
-    let timeDiff = (new Date() - startTime) / 1000;
-    console.log("Worker: Evaluated " + num_people1 + " (" + num_steps1 + " around " + person1 + ") & " + num_people2 + " (" + num_steps2 + " around " + person2 + ") (Time: " + timeDiff + "s)");
-    postMessage(connections);
+  getConnection(person1, person2, function(connections) {
+    let time_diff = (new Date() - start_time) / 1000;
+    console.log("Worker: found result in time: " + time_diff + "s")
+    postMessage({
+      "done": true,
+      "result": connections,
+    });
   });
 }

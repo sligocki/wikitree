@@ -7,16 +7,16 @@
     <form id="input">
       <div>
         <label for="start">Start id: </label>
-        <input type="text" id="start" value="Ligocki-7">
+        <input type="text" id="start" value="Tudor-4">
       </div>
       <div>
         <label for="end">End id: </label>
-        <input type="text" id="end" value="Ligocki-9">
+        <input type="text" id="end" value="Benham-8">
       </div>
       <input type="submit">
     </form>
 
-    <p id="result">None</p>
+    <div id="result">None</div>
 
     <script src="connection.js"></script>
   </body>
