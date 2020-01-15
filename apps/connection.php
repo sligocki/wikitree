@@ -11,7 +11,7 @@
       </div>
       <div>
         <label for="end">End id: </label>
-        <input type="text" id="end" value="Benham-8">
+        <input type="text" id="end" value="Goodrich-120">
       </div>
       <input type="submit">
     </form>

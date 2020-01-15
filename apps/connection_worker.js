@@ -108,11 +108,19 @@ class Bfs {
   }
 }
 
-function getConnection(person1, person2, callback) {
+function getConnection(person1, person2, start_time, callback) {
   let bfs1 = new Bfs(person1);
   let bfs2 = new Bfs(person2);
 
   function step() {
+    let time_diff = (new Date() - start_time) / 1000;
+    console.log("Worker: Evaluated " + bfs1.paths.size + " (" + bfs1.num_steps + " around " + person1 + ") & " + bfs2.paths.size + " (" + bfs2.num_steps + " around " + person2 + ") in " + time_diff + "s");
+    postMessage({
+      "done": false,
+      "num_steps": bfs1.num_steps + bfs2.num_steps,
+      "num_people": bfs1.paths.size + bfs2.paths.size,
+    })
+
     // See if we have found a connection yet.
     let connections = [];
     for (let person of bfs1.todo) {
@@ -128,13 +136,6 @@ function getConnection(person1, person2, callback) {
       callback(connections);
       return;
     }
-    console.log("Worker: Evaluated " + bfs1.paths.size + " (" + bfs1.num_steps + " around " + person1 + ") & " + bfs2.paths.size + " (" + bfs2.num_steps + " around " + person2 + ")");
-
-    postMessage({
-      "done": false,
-      "num_steps": bfs1.num_steps + bfs2.num_steps,
-      "num_people": bfs1.paths.size + bfs2.paths.size,
-    })
 
     // If we're not done yet, expand the smaller todo list one more level.
     // TODO: step both at once?
@@ -154,7 +155,7 @@ onmessage = function(e) {
   let person1 = e.data[0];
   let person2 = e.data[1];
 
-  getConnection(person1, person2, function(connections) {
+  getConnection(person1, person2, start_time, function(connections) {
     let time_diff = (new Date() - start_time) / 1000;
     console.log("Worker: found result in time: " + time_diff + "s")
     postMessage({
