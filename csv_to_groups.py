@@ -29,13 +29,28 @@ def get_connection_groups(connections):
   for person in connections:
     if person not in visited:
       group = connected_to(person, connections)
+      visited.update(group)
       rep = min(group)
       groups[rep] = group
   return groups
 
 if __name__ == "__main__":
-  db = data_reader.Database()
-  db.load_connections()
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--sibling-in-law", action="store_true")
+  args = parser.parse_args()
 
-  groups = get_connection_groups(db.connections)
-  group_tools.write_group("connected", groups)
+  if args.sibling_in_law:
+    connections = data_reader.load_connections(include_parents=False,
+                                               include_children=False,
+                                               include_siblings=True,
+                                               include_spouses=True)
+    groups = get_connection_groups(connections)
+    group_tools.write_group("sibling_in_law", groups)
+
+  else:
+    connections = data_reader.load_connections(include_parents=True,
+                                               include_children=True,
+                                               include_siblings=True,
+                                               include_spouses=True)
+    groups = get_connection_groups(connections)
+    group_tools.write_group("connected", groups)
