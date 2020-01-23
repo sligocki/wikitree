@@ -58,12 +58,15 @@ class Bfs(object):
       yield list(reversed(path))
 
 
-def find_connections(person1, person2, rel_types):
+def find_connections(person1, person2, rel_types, max_dist=None):
   bfs1 = Bfs(person1, rel_types)
   bfs2 = Bfs(person2, rel_types)
 
   found = False
   while not (found or len(bfs1.todo) == 0 == len(bfs2.todo)):
+    if max_dist and bfs1.num_steps + bfs2.num_steps > max_dist:
+      print("No connection found in", max_dist)
+      return
     if len(bfs1.todo) <= len(bfs2.todo):
       this = bfs1
       other = bfs2
@@ -141,6 +144,7 @@ parser.add_argument("--graph", action="store_true",
                     help="Produce a DOT graph of connections.")
 parser.add_argument("--distance-only", action="store_true",
                     help="Only print the distance (not connection sequence).")
+parser.add_argument("--max-dist", type=int)
 
 parser.add_argument("--to-group",
                     help="Destination is group rather than specific person.")
@@ -178,5 +182,6 @@ else:
     graph_name = "results/Connections_%s_%s" % (start_id, end_id)
     connections = find_connections(db.id2num(start_id),
                                    db.id2num(end_id),
-                                   args.rel_types)
+                                   args.rel_types,
+                                   args.max_dist)
     print_connections(args, db, connections, graph_name)
