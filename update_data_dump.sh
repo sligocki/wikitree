@@ -27,8 +27,8 @@ cd data/dumps/$TIMESTAMP
 echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com
 
 echo "(3) Unzip (overwriting previous CSVs)"
-for x in users marriages; do
-  gunzip dump_people_${x}.csv.gz -c > ../../dump_people_${x}.csv
+for x in people_users people_marriages categories; do
+  gunzip dump_${x}.csv.gz -c > ../../dump_${x}.csv
 done
 
 echo "(4) Process new dump"
@@ -42,6 +42,8 @@ echo csv_to_groups.py
 python csv_to_groups.py
 echo "csv_to_groups.py --sibling-in-law"
 python csv_to_groups.py --sibling-in-law
+echo process_categories.sh
+bash process_categories.sh
 
 echo "(5) Print stats about new dump"
 # TODO
