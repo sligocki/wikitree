@@ -42,6 +42,7 @@ echo csv_to_groups.py
 python csv_to_groups.py
 echo "csv_to_groups.py --sibling-in-law"
 python csv_to_groups.py --sibling-in-law
+rm -f data/categories.db
 echo process_categories.sh
 bash process_categories.sh
 
