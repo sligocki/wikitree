@@ -10,6 +10,7 @@ and 33% through husband, they are much more solidly connected (any change
 will have a much smaller effect).
 """
 
+import argparse
 import collections
 import sys
 import time
@@ -94,16 +95,22 @@ def create_dot(db, start, flows, sources, cuttoff):
   dot.view()
 
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("user_id", nargs="+")
+  parser.add_argument("--cuttoff", type=float, default=0.05,
+                      help="Cuttoff for including connection in DOT.")
+  args = parser.parse_args()
+
   db = data_reader.Database()
   db.load_connections()
 
-  for user_id in sys.argv[1:]:
+  for user_id in args.user_id:
     print("Analyzing", user_id, time.process_time())
     start = db.id2num(user_id)
     flows, sources, dists = flow_paths(db, start)
 
     print("Creating DOT", time.process_time())
-    create_dot(db, start, flows, sources, cuttoff=0.05)
+    create_dot(db, start, flows, sources, cuttoff=args.cuttoff)
 
     print("Ordering people", time.process_time())
     # Order folks from most flow to least.
