@@ -83,9 +83,11 @@ class Database(object):
     assert len(rows) >= 1, (user_num, relative_num, rows)
     return rows[0]["relationship_type"]
 
-  def all_connections(self):
-    # Cost:
-    self.cursor.execute("SELECT user_num, relative_num FROM relationships")
-    rows = self.cursor.fetchall()
-    assert len(rows) >= 1
-    return ((row["user_num"], row["relative_num"]) for row in rows)
+  def enum_connections(self):
+    cursor = self.conn.cursor()
+    cursor.execute("SELECT user_num, relative_num FROM relationships")
+    while True:
+      row = cursor.fetchone()
+      if not row:
+        return
+      yield (row["user_num"], row["relative_num"])
