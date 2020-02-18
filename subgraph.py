@@ -4,10 +4,9 @@ import random
 import sys
 import time
 
-import community
 import networkx as nx
 
-filename = sys.argv[1]
+filename = "data/connection_graph.adj.nx"
 
 print("Loading graph", time.process_time())
 g = nx.read_adjlist(filename)
@@ -23,10 +22,12 @@ subset_nodes = list(itertools.islice(g.nodes, 10000))
 
 size = 10
 while size < g.number_of_nodes():
-  print("Making random subgraph of size", size)
+  print("Making random subgraph of size", size, time.process_time())
   # Pick random starting node
   start = random.choice(subset_nodes)
   sg = GetSubgraphAround(g, start, size)
   filename = "sub-%d.adj.nx" % size
   nx.write_adjlist(sg, filename)
   size *= 10
+
+print("Done", time.process_time())

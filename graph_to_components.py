@@ -16,7 +16,7 @@ class TopN:
         del self.items[-1]
 
 
-g = nx.read_adjlist("graph.adj.nx")
+g = nx.read_adjlist("data/connection_graph.adj.nx")
 
 # Get list of 5 biggest components and one component for each order of magnitude.
 top_n = TopN(5)
