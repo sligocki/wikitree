@@ -36,15 +36,18 @@ cd ../../..  # Back to main repo
 rm -f data/wikitree_dump.db
 echo csv_to_sqlite.py
 python csv_to_sqlite.py
-echo csv_to_graph.py
-python csv_to_graph.py
+
 echo csv_to_groups.py
 python csv_to_groups.py
 echo "csv_to_groups.py --sibling-in-law"
 python csv_to_groups.py --sibling-in-law
+
 rm -f data/categories.db
 echo process_categories.sh
 bash process_categories.sh
+
+echo sqlite_to_graph.py
+python sqlite_to_graph.py
 
 echo "(5) Print stats about new dump"
 # TODO
