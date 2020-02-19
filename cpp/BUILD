@@ -5,16 +5,25 @@ cc_library(
   srcs = ["chinese_whispers.cc"],
   hdrs = ["chinese_whispers.h"],
   deps = [
-    "map_vector_graph",
+    "graph",
     "timer",
     "util",
   ]
 )
 
 cc_library(
-  name = "map_vector_graph",
-  srcs = ["map_vector_graph.cc"],
-  hdrs = ["map_vector_graph.h"],
+  name = "hierarchy_graph",
+  srcs = ["hierarchy_graph.cc"],
+  hdrs = ["hierarchy_graph.h"],
+  deps = [
+    "graph",
+  ],
+)
+
+cc_library(
+  name = "graph",
+  srcs = ["graph.cc"],
+  hdrs = ["graph.h"],
 )
 
 cc_library(
@@ -33,7 +42,8 @@ cc_binary(
   srcs = ["graph_experiment.cc"],
   deps = [
     "chinese_whispers",
-    "map_vector_graph",
+    "hierarchy_graph",
+    "graph",
     "timer",
     "util",
   ],

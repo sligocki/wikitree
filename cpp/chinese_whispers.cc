@@ -8,17 +8,15 @@
 #include "timer.h"
 #include "util.h"
 
-using Node = MapVectorGraph::Node;
-
-void ClusterChineseWhispers(const MapVectorGraph& graph,
+void ClusterChineseWhispers(const Graph& graph,
                             int iterations,
-                            std::map<Node, CWLabel>* labels) {
+                            std::map<Graph::Node, CWLabel>* labels) {
   auto seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine rand_engine(seed);
 
   // Initialize labels
   std::vector<int> nodes = graph.nodes();
-  for (Node node : nodes) {
+  for (Graph::Node node : nodes) {
     (*labels)[node] = node;
   }
 
@@ -32,11 +30,11 @@ void ClusterChineseWhispers(const MapVectorGraph& graph,
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
     // Greedily optimize the label of all nodes.
-    for (Node node : nodes) {
+    for (Graph::Node node : nodes) {
       // Count # of neighbors with each label.
-      std::map<CWLabel, int> counts;
-      for (Node neigh : graph.neighbors(node)) {
-        counts[(*labels)[neigh]] += 1;
+      std::map<CWLabel, double> counts;
+      for (auto& [neigh, weight] : graph.neighbors(node)) {
+        counts[(*labels)[neigh]] += weight;
       }
 
       // Find max label count

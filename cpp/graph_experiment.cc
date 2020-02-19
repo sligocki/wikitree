@@ -4,7 +4,7 @@
 #include <string>
 
 #include "chinese_whispers.h"
-#include "map_vector_graph.h"
+#include "graph.h"
 #include "timer.h"
 #include "util.h"
 
@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Loading graph from " << filename
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-  auto graph = MapVectorGraph::LoadFromAdjList(filename);
+  auto graph = Graph::LoadFromAdjList(filename);
 
   std::cout << "Graph loaded #Nodes=" << graph->num_nodes()
     << " #Edges=" << graph->num_edges()
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Computing clusters"
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-  std::map<MapVectorGraph::Node, CWLabel> labels;
+  std::map<Graph::Node, CWLabel> labels;
   ClusterChineseWhispers(*graph, iterations, &labels);
 
   std::map<CWLabel, int> cluster_sizes;

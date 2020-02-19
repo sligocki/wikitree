@@ -3,14 +3,14 @@
 
 #include <map>
 
-#include "map_vector_graph.h"
+#include "graph.h"
 
-using CWLabel = MapVectorGraph::Node;
+using CWLabel = Graph::Node;
 
 // Cluster using "Chinese Whispers" algorithm:
 ///  https://en.wikipedia.org/wiki/Chinese_Whispers_(clustering_method)
-void ClusterChineseWhispers(const MapVectorGraph& graph,
+void ClusterChineseWhispers(const Graph& graph,
                             int iterations,
-                            std::map<MapVectorGraph::Node, CWLabel>* labels);
+                            std::map<Graph::Node, CWLabel>* labels);
 
 #endif  // WIKITREE_CHINESE_WHISPERS_H_
