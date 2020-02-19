@@ -11,7 +11,7 @@ class Timer {
 
  private:
   const std::chrono::high_resolution_clock::time_point start_time_;
-}
+};
 
 Timer::Timer()
   : start_time_(std::chrono::high_resolution_clock::now()) {}

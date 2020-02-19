@@ -18,7 +18,7 @@ class MapVectorGraph {
   void AddEdge(int node_a, int node_b);
 
   // List neighbors of a node.
-  const std::vector<int>& neighbors(int node) const {
+  const std::vector<int>& neighbors(int node) {
     return edges_[node];
   }
 
