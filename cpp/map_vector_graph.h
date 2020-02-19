@@ -12,15 +12,21 @@
 // which have at least one edge.
 class MapVectorGraph {
  public:
+  using Node = int;
+
   MapVectorGraph() {}
   ~MapVectorGraph();
 
-  void AddEdge(int node_a, int node_b);
+  void AddEdge(Node node_a, Node node_b);
 
   // List neighbors of a node.
-  const std::vector<int>& neighbors(int node) {
-    return edges_[node];
+  const std::vector<Node>& neighbors(Node node) const {
+    return edges_.at(node);
   }
+
+  // Create a vector copy of nodes.
+  // TODO: Figure out a way to iterate over nodes for efficiency if don't need a copy of nodes.
+  std::vector<Node> nodes() const;
 
   int num_nodes() const { return edges_.size(); }
   int num_edges() const { return num_edges_; }
@@ -29,10 +35,10 @@ class MapVectorGraph {
     const std::string& filename);
 
  private:
-  void AddDirectedEdge(int start_node, int end_node);
+  void AddDirectedEdge(Node start_node, Node end_node);
 
   int num_edges_ = 0;
-  std::map<int, std::vector<int> > edges_;
+  std::map<Node, std::vector<Node> > edges_;
 };
 
 #endif  // WIKITREE_MAP_VECTOR_GRAPH_H_

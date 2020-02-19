@@ -7,14 +7,22 @@
 
 MapVectorGraph::~MapVectorGraph() {}
 
-void MapVectorGraph::AddEdge(int node_a, int node_b) {
+void MapVectorGraph::AddEdge(Node node_a, Node node_b) {
   AddDirectedEdge(node_a, node_b);
   AddDirectedEdge(node_b, node_a);
+  num_edges_ += 1;
 }
 
-void MapVectorGraph::AddDirectedEdge(int start_node, int end_node) {
+void MapVectorGraph::AddDirectedEdge(Node start_node, Node end_node) {
   edges_[start_node].push_back(end_node);
-  num_edges_ += 1;
+}
+
+std::vector<MapVectorGraph::Node> MapVectorGraph::nodes() const {
+  std::vector<int> nodes;
+  for (const auto& [node, value] : edges_) {
+    nodes.push_back(node);
+  }
+  return nodes;
 }
 
 // static
@@ -32,7 +40,7 @@ std::unique_ptr<MapVectorGraph> MapVectorGraph::LoadFromAdjList(
     if (line.size() > 0 && line[0] != '#') {
       std::istringstream line_stream(line);
       bool first_field = true;
-      int start_node = 0;
+      MapVectorGraph::Node start_node = 0;
       std::string field;
       while (std::getline(line_stream, field, ' ')) {
         if (first_field) {
@@ -41,7 +49,7 @@ std::unique_ptr<MapVectorGraph> MapVectorGraph::LoadFromAdjList(
           first_field = false;
         } else {
           // Subsequent numbers are neighbors of start_node.
-          const int end_node = std::stoi(field);
+          const MapVectorGraph::Node end_node = std::stoi(field);
           graph->AddEdge(start_node, end_node);
         }
       }
