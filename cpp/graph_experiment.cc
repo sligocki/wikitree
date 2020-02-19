@@ -8,6 +8,9 @@
 int main(int argc, char* argv[]) {
   Timer timer;
 
+  if (argc < 2) {
+    throw std::invalid_argument("Parameter required.");
+  }
   const std::string filename(argv[1]);
 
   std::cout << "Loading graph from " << filename

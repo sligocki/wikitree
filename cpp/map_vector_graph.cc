@@ -24,6 +24,9 @@ std::unique_ptr<MapVectorGraph> MapVectorGraph::LoadFromAdjList(
 
   std::ifstream file;
   file.open(filename);
+  if (!file.is_open()) {
+    throw std::runtime_error("File does not exist.");
+  }
   std::string line;
   while (std::getline(file, line)) {
     if (line.size() > 0 && line[0] != '#') {
@@ -44,6 +47,7 @@ std::unique_ptr<MapVectorGraph> MapVectorGraph::LoadFromAdjList(
       }
     }
   }
+  file.close();
 
   return graph;
 }
