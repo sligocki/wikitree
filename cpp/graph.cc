@@ -14,7 +14,10 @@ void Graph::AddEdge(Node node_a, Node node_b, double weight) {
 }
 
 void Graph::AddDirectedEdge(Node start_node, Node end_node, double weight) {
-  edges_[start_node].emplace_back(end_node, weight);
+  std::map<Node, double>& neighbors = edges_[start_node];
+  // If this is the first time this edge was added, initialize it.
+  neighbors.emplace(end_node, 0.0);
+  neighbors[end_node] += weight;
 }
 
 std::vector<Graph::Node> Graph::nodes() const {
