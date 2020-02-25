@@ -1,5 +1,7 @@
 # Experiments with efficient graph code in C++.
 
+# Libraries
+
 cc_library(
   name = "chinese_whispers",
   srcs = ["chinese_whispers.cc"],
@@ -35,6 +37,18 @@ cc_library(
 cc_library(
   name = "util",
   hdrs = ["util.h"]
+)
+
+# Binaries
+
+cc_binary(
+  name = "degree_distribution",
+  srcs = ["degree_distribution.cc"],
+  deps = [
+    "graph",
+    "timer",
+    "util",
+  ],
 )
 
 cc_binary(
