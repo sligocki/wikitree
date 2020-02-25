@@ -14,6 +14,9 @@ void ClusterChineseWhispers(const Graph& graph,
                             int iterations,
                             std::map<Graph::Node, CWLabel>* labels);
 
+double Modularity(const Graph& graph,
+                  const std::map<Graph::Node, CWLabel>& labels);
+
 void WriteCluster(
   int level,
   const std::map<Graph::Node, CWLabel> labels,

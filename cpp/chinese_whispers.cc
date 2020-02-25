@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <set>
 
 #include "timer.h"
 #include "util.h"
@@ -58,6 +59,33 @@ void ClusterChineseWhispers(const Graph& graph,
       << " Max cluster size = " << max_size
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
   }
+}
+
+
+// https://en.wikipedia.org/wiki/Modularity_(networks)
+double Modularity(const Graph& graph,
+                  const std::map<Graph::Node, CWLabel>& labels) {
+  std::map<CWLabel, std::set<Graph::Node> > clusters;
+  for (const auto& [node, label] : labels) {
+    clusters[label].insert(node);
+  }
+  // Q = 1/(2m) * \sum_vw (A_vw - k_v k_w / (2m)) \delta(c_v, c_w)
+  double Q = 0.0;
+  const double m2 = 2.0 * graph.num_edges();
+  for (const auto& [label, nodes] : clusters) {
+    for (const Graph::Node& node_a : nodes) {
+      const int deg_a = graph.degree(node_a);
+      for (const Graph::Node& node_b : nodes) {
+        const int deg_b = graph.degree(node_b);
+        if (graph.HasEdge(node_a, node_b)) {
+          Q += 1.0;
+        }
+        Q -= deg_a * deg_b / m2;
+      }
+    }
+  }
+
+  return Q / m2;
 }
 
 

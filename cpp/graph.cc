@@ -20,6 +20,11 @@ void Graph::AddDirectedEdge(Node start_node, Node end_node, double weight) {
   neighbors[end_node] += weight;
 }
 
+bool Graph::HasEdge(Node node_a, Node node_b) const {
+  const std::map<Node, double>& neighbors = edges_.at(node_a);
+  return neighbors.find(node_b) != neighbors.end();
+}
+
 std::vector<Graph::Node> Graph::nodes() const {
   std::vector<int> nodes;
   for (const auto& [node, value] : edges_) {

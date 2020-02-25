@@ -25,9 +25,15 @@ class Graph {
   // equal to the sum of all weights of the added edges.
   void AddEdge(Node node_a, Node node_b, double weight = 1.0);
 
+  bool HasEdge(Node node_a, Node node_b) const;
+
   // List neighbors of a node and their weights.
   const std::map<Node, double>& neighbors(Node node) const {
     return edges_.at(node);
+  }
+  // TODO: Convert this to work as sum of weights?
+  int degree(Node node) const {
+    return neighbors(node).size();
   }
 
   // Create a vector copy of nodes.

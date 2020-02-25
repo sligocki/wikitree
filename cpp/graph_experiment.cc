@@ -43,8 +43,10 @@ int main(int argc, char* argv[]) {
       cluster_sizes[label] += 1;
     }
     auto [max_label, max_size] = ArgMax(cluster_sizes);
+    const double modularity = Modularity(*graph, labels);
     std::cout << "Cluster stats: # Clusters = " << cluster_sizes.size()
       << " Max cluster size = " << max_size
+      << " Modularity = " << modularity
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
     std::cout << "Writing cluster to disk"
