@@ -17,36 +17,34 @@ import time
 
 import networkx as nx
 
-import data_reader
+import csv_iterate
 import graph_tools
 
 
-print("Loading DB", time.process_time())
-db = data_reader.Database()
-
-print("Collecting memberships", time.process_time())
+print("Loading users", time.process_time())
 # Map node -> people who are members of this node
 members_of = collections.defaultdict(set)
 # Map people -> nodes they are members of
 nodes_of = collections.defaultdict(set)
-for i, person in enumerate(db.enum_people()):
-  parents = db.parents_of(person)
+for i, person in enumerate(csv_iterate.iterate_users()):
+  parents = [p for p in (person.father_num(), person.mother_num()) if p]
   if parents:
     node = str(sorted(tuple(parents)))
     # Connect child and parents to this node.
     # Note: Parents will be double added, but it's a set, so that's fine.
-    for member in parents | set([person]):
+    for member in parents + [person]:
       members_of[node].add(member)
       nodes_of[member].add(node)
-  # Connect any spouses. Note: This is redundant for couples with children.
-  for spouse in db.spouses_of(person):
-    node = str(sorted((person, spouse)))
-    for member in (person, spouse):
-      members_of[node].add(member)
-      nodes_of[member].add(node)
-  if i % 100000 == 0:
+  if i % 1000000 == 0:
     print(f" ... {i:,}  # Nodes: {len(members_of):,}", time.process_time())
-
+print("Loading marriages", time.process_time())
+# Connect any spouses. Note: This is redundant for couples with children.
+for marriage in csv_iterate.iterate_marriages():
+  couple = marriages.user_nums()
+  node = str(sorted(tuple(couple)))
+  for member in couple:
+    members_of[node].add(member)
+    nodes_of[member].add(node)
 
 print("Building graph", time.process_time())
 graph = nx.Graph()
