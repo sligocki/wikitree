@@ -3,6 +3,7 @@ import time
 import networkx as nx
 
 import data_reader
+import graph_tools
 
 
 print("Loading DB", time.process_time())
@@ -24,13 +25,10 @@ print("Writing graph to file", time.process_time())
 nx.write_adjlist(graph, "data/connection_graph.adj.nx")
 
 print("Finding largest connected component", time.process_time())
-max_size, main_component = max(
-((len(comp), comp) for comp in nx.connected_components(graph)),
-key = lambda x: x[0])
-main_subgraph = graph.subgraph(main_component)
+main_subgraph = graph_tools.LargestCombonent(graph)
 print(f"Main component size: {len(main_subgraph.nodes):,} Nodes {len(main_subgraph.edges):,} Edges.")
 
 print("Writing main component to file", time.process_time())
-nx.write_adjlist(main_subgraph, "data/main_component.adj.nx")
+nx.write_adjlist(main_subgraph, "data/connection_graph.main.adj.nx")
 
 print("Done", time.process_time())

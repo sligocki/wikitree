@@ -39,17 +39,23 @@ class Database(object):
   def mother_of(self, user_num):
     return self.get(user_num, "mother_num")
 
+  def parents_of(self, user_num):
+    return frozenset(
+      p for p in (self.father_of(user_num), self.mother_of(user_num)) if p)
+
   def has_person(self, user_num):
     self.cursor.execute("SELECT 1 FROM people WHERE user_num=?", (user_num,))
     rows = self.cursor.fetchall()
     return len(rows) > 0
 
-  def all_people(self):
-    # Cost: 30s (for 18M)
-    self.cursor.execute("SELECT user_num FROM people")
-    rows = self.cursor.fetchall()
-    assert len(rows) >= 1
-    return (row["user_num"] for row in rows)
+  def enum_people(self):
+    cursor = self.conn.cursor()
+    cursor.execute("SELECT user_num FROM people")
+    while True:
+      row = cursor.fetchone()
+      if not row:
+        return
+      yield row["user_num"]
 
 
   def neighbors_of(self, user_num):

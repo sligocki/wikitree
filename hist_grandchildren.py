@@ -24,22 +24,29 @@ db = data_reader.Database()
 num_people = 0
 hist_num_children = collections.defaultdict(int)
 hist_num_grandchildren = collections.defaultdict(int)
-for person in db.all_people():
+max_num_grandchildren = 0
+for person in db.enum_people():
   children = db.children_of(person)
   grandchildren = set()
   for child in children:
     grandchildren.update(db.children_of(child))
   num_people += 1
   hist_num_children[len(children)] += 1
-  hist_num_grandchildren[len(grandchildren)] += 1
+  num_grandchildren = len(grandchildren)
+  hist_num_grandchildren[num_grandchildren] += 1
+  if num_grandchildren > max_num_grandchildren:
+    max_num_grandchildren = num_grandchildren
+    print(" *** New max:", num_grandchildren, db.num2id(person), db.name_of(person))
+  elif num_grandchildren > 120:
+    print(" ---------- :", num_grandchildren, db.num2id(person), db.name_of(person))
 
-  if num_people % 100000 == 0:
-    print("...", num_people, time.process_time())
-    print("Histogram of number of children:")
-    print_hist(hist_num_children, num_people)
-    print()
-    print("Histogram of number of grand-children:")
-    print_hist(hist_num_grandchildren, num_people)
+  if num_people % 1000000 == 0:
+    print(" ... ", num_people, time.process_time())
+  #   print("Histogram of number of children:")
+  #   print_hist(hist_num_children, num_people)
+  #   print()
+  #   print("Histogram of number of grand-children:")
+  #   print_hist(hist_num_grandchildren, num_people)
 
 print("Histogram of number of children:")
 print_hist(hist_num_children, num_people)
