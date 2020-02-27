@@ -17,7 +17,7 @@ args = parser.parse_args()
 print("Loading graph", time.process_time())
 graph = nx.read_adjlist(args.graph_in)
 
-print("Find edge nodes", time.process_time())
+print("Find leaf nodes", time.process_time())
 to_delete = set()
 for node in graph.nodes():
   if graph.degree[node] <= 1:
