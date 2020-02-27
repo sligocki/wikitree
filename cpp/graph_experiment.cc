@@ -13,18 +13,18 @@
 int main(int argc, char* argv[]) {
   Timer timer;
 
-  if (argc < 4) {
+  if (argc < 3) {
     throw std::invalid_argument("Parameter required.");
   }
   const std::string filename = argv[1];
   const int iterations = std::stoi(argv[2]);
-  const std::string output_filename = argv[3];
+  // const std::string output_filename = argv[3];
 
-  std::ofstream outfile;
-  outfile.open(output_filename);
-  if (!outfile.is_open()) {
-    throw std::runtime_error("Could not create outfile.");
-  }
+  // std::ofstream outfile;
+  // outfile.open(output_filename);
+  // if (!outfile.is_open()) {
+  //   throw std::runtime_error("Could not create outfile.");
+  // }
 
   std::cout << "Loading graph from " << filename
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
@@ -51,16 +51,16 @@ int main(int argc, char* argv[]) {
       << " Modularity = " << modularity
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
-    std::cout << "Writing cluster to disk"
-      << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-    WriteCluster(level, labels, &outfile);
+    // std::cout << "Writing cluster to disk"
+    //   << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+    // WriteCluster(level, labels, &outfile);
 
     std::cout << "Producing hierarical graph"
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
     graph = GenerateHierarchicalGraph(*graph, labels);
   }
 
-  outfile.close();
+  // outfile.close();
   std::cout << "Done (" << timer.ElapsedSeconds() << "s)" << std::endl;
   return 0;
 }
