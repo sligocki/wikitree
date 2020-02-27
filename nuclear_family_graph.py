@@ -5,12 +5,9 @@
 # to each other. But does this really represent 15 different connections?
 #
 # Instead, in this representation there is a node for every pair of people who
-# either: (1) had children together or (2) were married. The "members" of that
-# node are the 2 parents and all their children together. Two nodes are
-# connected by an edge if they share "members". In other words, the node
-# representing me and my spouse would be connected to: (1) my parents' node,
-# (2) my spouse's parents' node, (3) each of our children's nuclear nodes and
-# (4) any previous spouse/partnership nodes of either me or my spouse.
+# either: (1) had children together or (2) were married. There are edges
+# connecting that node to the node representing each of those people's parents
+# and conversely to each child's partnership nodes.
 
 import collections
 import time
@@ -25,34 +22,42 @@ def NodeName(parents):
   return "/".join(str(p) for p in sorted(parents))
 
 print("Loading users", time.process_time())
-# Map people -> nodes they are members of
-nodes_of = collections.defaultdict(set)
-for i, person in enumerate(csv_iterate.iterate_users()):
-  parents = [p for p in (person.father_num(), person.mother_num()) if p]
+# Map: person -> node in which they are a child
+parent_node = {}
+# Map: person -> nodes in which they are parents
+spouse_nodes = collections.defaultdict(set)
+for i, person_obj in enumerate(csv_iterate.iterate_users()):
+  parents = [p for p in (person_obj.father_num(), person_obj.mother_num()) if p]
+  person_num = person_obj.user_num()
   if parents:
     node = NodeName(parents)
-    # Connect child and parents to this node.
+    parent_node[person_num] = node
     # Note: Parents will be double added, but it's a set, so that's fine.
-    for member in parents + [person.user_num()]:
-      nodes_of[member].add(node)
+    for parent in parents:
+      spouse_nodes[parent].add(node)
   if i % 1000000 == 0:
-    print(f" ... {i:,}", time.process_time())
+    print(f" ... {i:,}  {len(parent_node):,}  {len(spouse_nodes):,}", time.process_time())
 print("Loading marriages", time.process_time())
 # Connect any spouses. Note: This is redundant for couples with children.
 for marriage in csv_iterate.iterate_marriages():
   couple = marriage.user_nums()
   node = NodeName(couple)
-  for member in couple:
-    nodes_of[member].add(node)
+  for spouse in couple:
+    spouse_nodes[spouse].add(node)
+print(f"Finished loading {len(parent_node):,} {len(spouse_nodes):,}", time.process_time())
 
 print("Building graph", time.process_time())
 graph = nx.Graph()
-for member in nodes_of:
-  for node_a in nodes_of[member]:
-    for node_b in nodes_of[member]:
-      # Don't double-add edges
-      if node_a < node_b:
-        graph.add_edge(node_a, node_b)
+for person in spouse_nodes:
+  if person not in parent_node and len(spouse_nodes[person]) > 1:
+    # We add a dummy parent node if this person was married multiple times
+    # but has no parents listed. If we did not, their two families would
+    # be unconnected.
+    parent_node[person] = f"Parent/{person}"
+  if person in parent_node:
+    par_node = parent_node[person]
+    for child_node in spouse_nodes[person]:
+      graph.add_edge(child_node, par_node)
 print(f"Total graph size: {len(graph.nodes):,} Nodes {len(graph.edges):,} Edges.")
 
 print("Writing graph to file", time.process_time())
