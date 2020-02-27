@@ -42,7 +42,9 @@ int main(int argc, char* argv[]) {
     for (const auto& [node, label] : labels) {
       cluster_sizes[label] += 1;
     }
-    auto [max_label, max_size] = ArgMax(cluster_sizes);
+    const auto [max_label, max_size] = ArgMax(cluster_sizes);
+    std::cout << "Calculating modularity "
+      << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
     const double modularity = Modularity(*graph, labels);
     std::cout << "Cluster stats: # Clusters = " << cluster_sizes.size()
       << " Max cluster size = " << max_size

@@ -16,8 +16,8 @@ void ClusterChineseWhispers(const Graph& graph,
   std::default_random_engine rand_engine(seed);
 
   // Initialize labels
-  std::vector<int> nodes = graph.nodes();
-  for (Graph::Node node : nodes) {
+  std::vector<Graph::Node> nodes = graph.nodes();
+  for (const Graph::Node& node : nodes) {
     (*labels)[node] = node;
   }
 
@@ -73,16 +73,20 @@ double Modularity(const Graph& graph,
   double Q = 0.0;
   const double m2 = 2.0 * graph.num_edges();
   for (const auto& [label, nodes] : clusters) {
-    for (const Graph::Node& node_a : nodes) {
-      const int deg_a = graph.degree(node_a);
-      for (const Graph::Node& node_b : nodes) {
-        const int deg_b = graph.degree(node_b);
-        if (graph.HasEdge(node_a, node_b)) {
+    // Sum of degress of all nodes in cluster.
+    double sum_deg = 0.0;
+    for (const Graph::Node& node : nodes) {
+      // TODO: Should this sum the weighted degree instead?
+      sum_deg += graph.degree(node);
+      for (const auto& [neigh, weight] : graph.neighbors(node)) {
+        if (nodes.find(neigh) != nodes.end()) {
+          // TODO: Should this add up weights instead?
           Q += 1.0;
         }
-        Q -= deg_a * deg_b / m2;
       }
     }
+    // \sum_vw k_v k_w = \sum_v [k_v (\sum_w k_w)] = \sum_v [k_v sum_deg] = sum_deg^2
+    Q -= sum_deg * sum_deg / m2;
   }
 
   return Q / m2;

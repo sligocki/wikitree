@@ -14,7 +14,7 @@
 // which have at least one edge.
 class Graph {
  public:
-  using Node = int;
+  using Node = std::string;
 
   Graph() {}
   ~Graph();
@@ -23,16 +23,16 @@ class Graph {
   // There can be at most one edge between any two nodes. If the same edges
   // is added multiple times, we represent that by one edges with weight
   // equal to the sum of all weights of the added edges.
-  void AddEdge(Node node_a, Node node_b, double weight = 1.0);
+  void AddEdge(const Node& node_a, const Node& node_b, double weight = 1.0);
 
-  bool HasEdge(Node node_a, Node node_b) const;
+  bool HasEdge(const Node& node_a, const Node& node_b) const;
 
   // List neighbors of a node and their weights.
-  const std::map<Node, double>& neighbors(Node node) const {
+  const std::map<Node, double>& neighbors(const Node& node) const {
     return edges_.at(node);
   }
   // TODO: Convert this to work as sum of weights?
-  int degree(Node node) const {
+  int degree(const Node& node) const {
     return neighbors(node).size();
   }
 
@@ -49,7 +49,7 @@ class Graph {
     const std::string& filename);
 
  private:
-  void AddDirectedEdge(Node start_node, Node end_node, double weight);
+  void AddDirectedEdge(const Node& start_node, const Node& end_node, double weight);
 
   int num_edges_ = 0;
   std::map<Node, std::map<Node, double> > edges_;
