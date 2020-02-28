@@ -6,39 +6,31 @@ import argparse
 import collections
 import itertools
 import random
-import sqlite3
 import time
 
 import networkx as nx
 
+import distances_db
 
-parser = argparse.ArgumentParser()
-parser.add_argument("graph")
-args = parser.parse_args()
 
-conn = sqlite3.connect("data/distances.db", timeout=20)
-conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS distances (graph STRING, node STRING, mean_dist REAL)")
+def MeasureAndLogCentrality(graph, graph_name, node, randomly_sampled):
+  centrality = nx.closeness_centrality(graph, u=node)
+  mean_dist = 1./centrality
+  distances_db.LogDistance(graph_name, node, mean_dist, randomly_sampled)
+  return centrality
 
-print("Loading graph", time.process_time())
-graph = nx.read_adjlist(args.graph)
-print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graph")
+  args = parser.parse_args()
 
-nodes = list(graph.nodes)
-random.shuffle(nodes)
+  print("Loading graph", time.process_time())
+  graph = nx.read_adjlist(args.graph)
+  print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
 
-for i, node in enumerate(nodes):
-  try:
-    print("Node", i, node, time.process_time())
-    centrality = nx.closeness_centrality(graph, u=node)
-    mean_dist = 1./centrality
-    print(f"Centrality\t{node}\t{centrality:.4f}\t{mean_dist:.2f}")
+  nodes = list(graph.nodes)
+  random.shuffle(nodes)
 
-    print("Saving to DB", time.process_time())
-    cursor.execute("INSERT INTO distances VALUES (?, ?, ?)",
-                   (args.graph, node, mean_dist))
-    if i % 10 == 0:
-      conn.commit()
-  except sqlite3.OperationalError:
-    print(" !!! SQLite error !!!")
+  for i, node in enumerate(nodes):
+    centrality = MeasureAndLogCentrality(graph, args.graph, node, randomly_sampled=True)
+    print(f"Centrality  {i:6,}  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
