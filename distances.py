@@ -1,6 +1,7 @@
+import argparse
 import collections
+import random
 import sqlite3
-import sys
 import time
 
 import data_reader
@@ -28,8 +29,6 @@ def get_distances(db, start):
           hist_dist.append(0)
         hist_dist[dist + 1] += 1
         queue.append(neigh)
-        #if len(dists) % 1000000 == 0:
-        #  print "...", len(dists), max_dist, float(total_dist) / len(dists), time.process_time()
   mean_dist = float(total_dist) / len(dists)
   return dists, hist_dist, mean_dist, max_dist
 
@@ -49,17 +48,26 @@ def get_mean_dists(db, start):
       print("Ignoring distances.db write failure:", e)
     return mean_dist, max_dist
 
+def enum_user_nums(db, args):
+  if args.random:
+    all_people = list(db.enum_people())
+    random.shuffle(all_people)
+    for user_id in all_people:
+      yield all_people
+  else:
+    for wikitree_id in args.wikitree_id:
+      yield db.id2num(wikitree_id)
+
+
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--random", action="store_true")
+  parser.add_argument("wikitree_id", nargs="*")
+  args = parser.parse_args()
+
   db = data_reader.Database()
   db.load_connections()
 
-  for wikitree_id in sys.argv[1:]:
-    user_num = db.id2num(wikitree_id)
-    print()
-    dists, d_hist, d_mean, d_max = get_distances(db, user_num)
-    print()
-    #cum_count = 0
-    #for dist, count in enumerate(d_hist):
-    #  cum_count += count
-    #  print dist, count, cum_count
-    print(wikitree_id, d_mean, d_max, len(dists), time.process_time())
+  for user_num in enum_user_nums(db, args):
+    d_mean, d_max = get_mean_dists(db, user_num)
+    print(wikitree_id, d_mean, d_max, time.process_time())
