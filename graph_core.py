@@ -42,10 +42,10 @@ def PrintDegreeDist(graph, max_degree=4):
              for degree in range(max_degree)]
   print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:,}")
 
-def CollectRay(graph, node, previous):
+def CollectRay(graph, node, previous=None):
   path = set()
   # Follow path until we reach a fork (or dead end).
-  while graph.degree[node] == 2:
+  while not previous or graph.degree[node] == 2:
     path.add(node)
     (neighbor,) = set(graph.adj[node].keys()) - set([previous])
     previous = node
@@ -61,7 +61,7 @@ def CollectPath(graph, node):
   end_b, path_b = CollectRay(graph, neigh_b, previous=node)
   return (end_a, end_b), (path_a | path_b | set([node]))
 
-def ContractGraph(graph):
+def ContractGraph(graph, rep_nodes):
   print(f"Contracting graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
   PrintDegreeDist(graph)
 
@@ -75,15 +75,26 @@ def ContractGraph(graph):
   print(f"Stripping ({len(to_delete):,}+) nodes", time.process_time())
   for node in to_delete:
     if node in graph.nodes:
-      if graph.degree[node] <= 1:
-        # Strip all leaf nodes directly.
+      if graph.degree[node] == 0:
+        # Strip all isolated nodes directly.
         graph.remove_node(node)
+        del rep_nodes[node]
+      elif graph.degree[node] == 1:
+        end, path = CollectRay(graph, node)
+        for n in path:
+          rep_nodes[end].update(rep_nodes[n])
+          del rep_nodes[n]
+        graph.remove_nodes_from(path)
       else:
         assert graph.degree[node] == 2, (node, graph.degree[node])
         # Lift all path nodes. Get full linear path and two ends.
         # Note: path may not be a subset of to_delete since the degrees of
         # some nodes may have changed since we collected to_delete.
         (end_a, end_b), path = CollectPath(graph, node)
+        for n in path:
+          for end in (end_a, end_b):
+            rep_nodes[end].update(rep_nodes[n])
+          del rep_nodes[n]
         # Directly connect the two ends together (unless that would be a
         # self-edge or multi-edge, in which case we omit it.)
         if end_a != end_b and not graph.has_edge(end_a, end_b):
@@ -106,10 +117,23 @@ graph = nx.read_adjlist(args.graph_in)
 print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
 
 # Iteratively contract the graph until we reach the core.
-while ContractGraph(graph):
+rep_nodes = {node: set([node]) for node in graph.nodes}
+while ContractGraph(graph, rep_nodes):
   pass
 
 print(f"Final graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+sizes = [(len(nodes), core_node)
+         for core_node, nodes in rep_nodes.items()]
+sizes.sort()
+print("rep_nodes:")
+for p in (0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0):
+  index = int(p * (len(sizes) - 1))
+  size, _ = sizes[index]
+  print(f" * {p:5.0%}  {size:10,}")
+print("Largest rep nodes:")
+for n in range(20):
+  size, node = sizes[len(sizes) - 1 - n]
+  print(f" * {size:10,}   {node}")
 
 print("Saving to disk", time.process_time())
 nx.write_adjlist(graph, args.graph_out)
