@@ -122,14 +122,23 @@ while ContractGraph(graph, rep_nodes):
   pass
 
 print(f"Final graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+
+core_of = collections.defaultdict(set)
+for core_node in rep_nodes:
+  for sub_node in rep_nodes[core_node]:
+    core_of[sub_node].add(core_node)
+counts = collections.defaultdict(int)
+for node in core_of:
+  counts[len(core_of[node])] += 1
+print(f"core_of: {len(core_of):,} {counts[1]:,} {counts[2]:,} {counts}")
 sizes = [(len(nodes), core_node)
          for core_node, nodes in rep_nodes.items()]
 sizes.sort()
 print("rep_nodes:")
-for p in (0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0):
+for p in (0.0, 0.5, 0.75, 0.9, 0.99, 0.999, 0.9999, 0.99999, 1.0):
   index = int(p * (len(sizes) - 1))
   size, _ = sizes[index]
-  print(f" * {p:5.0%}  {size:10,}")
+  print(f" * {p:8%}  {size:10,}")
 print("Largest rep nodes:")
 for n in range(20):
   size, node = sizes[len(sizes) - 1 - n]
