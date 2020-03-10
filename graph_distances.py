@@ -33,4 +33,4 @@ if __name__ == "__main__":
 
   for i, node in enumerate(nodes):
     centrality = MeasureAndLogCentrality(graph, args.graph, node, randomly_sampled=True)
-    print(f"Centrality  {i:6,}  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
+    print(f"Centrality {i:}  {node:30} {1./centrality:=10.2f} {time.process_time():10.1f}")

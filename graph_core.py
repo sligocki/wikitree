@@ -106,6 +106,20 @@ def ContractGraph(graph, rep_nodes):
   # Note: # nodes deleted is >= len(to_delete)
   return len(to_delete) > 0
 
+def print_sizes_summary(core_to_nodes):
+  # List of core nodes sorted by # of nodes collapsed into them.
+  sizes = [(len(nodes), core)
+           for core, nodes in core_to_nodes.items()]
+  sizes.sort()
+  for p in (0.0, 0.5, 0.75, 0.9, 0.99, 0.999, 0.9999, 0.99999, 1.0):
+    index = int(p * (len(sizes) - 1))
+    size, _ = sizes[index]
+    print(f" * {p:8%}  {size:10,}")
+  print("Largest rep nodes:")
+  for n in range(20):
+    size, core = sizes[len(sizes) - 1 - n]
+    print(f" * {size:10,}   {core}")
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("graph_in")
@@ -117,34 +131,44 @@ graph = nx.read_adjlist(args.graph_in)
 print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
 
 # Iteratively contract the graph until we reach the core.
+# Map: core nodes -> nodes that collapse into this core node
 rep_nodes = {node: set([node]) for node in graph.nodes}
 while ContractGraph(graph, rep_nodes):
   pass
 
 print(f"Final graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
 
+print("Saving to disk", time.process_time())
+nx.write_adjlist(graph, args.graph_out)
+
+print("Summarizing nodes collapsed into each node", time.process_time())
+# Map: all nodes -> set of core nodes they were collapsed into (1 or 2).
 core_of = collections.defaultdict(set)
 for core_node in rep_nodes:
   for sub_node in rep_nodes[core_node]:
     core_of[sub_node].add(core_node)
+# Map: all nodes -> # of core nodes they collapse into.
 counts = collections.defaultdict(int)
 for node in core_of:
   counts[len(core_of[node])] += 1
-print(f"core_of: {len(core_of):,} {counts[1]:,} {counts[2]:,} {counts}")
-sizes = [(len(nodes), core_node)
-         for core_node, nodes in rep_nodes.items()]
-sizes.sort()
+print(f"core_of: {len(core_of):,} {counts[1]:,} {counts[2]:,}")
 print("rep_nodes:")
-for p in (0.0, 0.5, 0.75, 0.9, 0.99, 0.999, 0.9999, 0.99999, 1.0):
-  index = int(p * (len(sizes) - 1))
-  size, _ = sizes[index]
-  print(f" * {p:8%}  {size:10,}")
-print("Largest rep nodes:")
-for n in range(20):
-  size, node = sizes[len(sizes) - 1 - n]
-  print(f" * {size:10,}   {node}")
+print_sizes_summary(rep_nodes)
 
-print("Saving to disk", time.process_time())
-nx.write_adjlist(graph, args.graph_out)
+# Map: core node -> nodes that only collapse into this node
+rep_unique_nodes = collections.defaultdict(set)
+# Map: pair of core nodes -> nodes that collapse into both of these nodes
+rep_edges = collections.defaultdict(set)
+for node, core_nodes in core_of.items():
+  if len(core_nodes) == 1:
+    core_node, = tuple(core_nodes)
+    rep_unique_nodes[core_node].add(node)
+  else:
+    assert len(core_nodes) == 2, len(core_nodes)
+    rep_edges[frozenset(core_nodes)].add(node)
+print("rep_unique_nodes:")
+print_sizes_summary(rep_unique_nodes)
+print("rep_edges:")
+print_sizes_summary(rep_edges)
 
 print("Done", time.process_time())
