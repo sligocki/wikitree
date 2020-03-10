@@ -45,8 +45,6 @@ int main(int argc, char* argv[]) {
   std::cout << "Conditional probabilities of two clusterings: "
     << ConditionalProbabilitySimlarity(clustering[0], clustering[1])
     << " " << ConditionalProbabilitySimlarity(clustering[1], clustering[0])
-    << " " << ConditionalProbabilitySimlarity(clustering[0], clustering[0])
-    << " " << ConditionalProbabilitySimlarity(clustering[1], clustering[1])
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
   std::cout << "Done (" << timer.ElapsedSeconds() << "s)" << std::endl;
