@@ -18,13 +18,6 @@ int main(int argc, char* argv[]) {
   }
   const std::string filename = argv[1];
   const int iterations = std::stoi(argv[2]);
-  // const std::string output_filename = argv[3];
-
-  // std::ofstream outfile;
-  // outfile.open(output_filename);
-  // if (!outfile.is_open()) {
-  //   throw std::runtime_error("Could not create outfile.");
-  // }
 
   std::cout << "Loading graph from " << filename
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
@@ -35,32 +28,22 @@ int main(int argc, char* argv[]) {
       << " #Nodes=" << graph->num_nodes()
       << " #Edges=" << graph->num_edges()
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-    std::map<Graph::Node, CWLabel> labels;
-    ClusterChineseWhispers(*graph, iterations, &labels);
+    Clustering clustering;
+    ClusterChineseWhispers(*graph, iterations, &clustering);
 
-    std::map<CWLabel, int> cluster_sizes;
-    for (const auto& [node, label] : labels) {
-      cluster_sizes[label] += 1;
-    }
-    const auto [max_label, max_size] = ArgMax(cluster_sizes);
     std::cout << "Calculating modularity "
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-    const double modularity = Modularity(*graph, labels);
-    std::cout << "Cluster stats: # Clusters = " << cluster_sizes.size()
-      << " Max cluster size = " << max_size
+    const double modularity = Modularity(*graph, clustering);
+    std::cout << "Cluster stats: # Clusters = " << clustering.num_clusters()
+      // TODO: << " Max cluster size = " << max_size
       << " Modularity = " << modularity
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
-    // std::cout << "Writing cluster to disk"
-    //   << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-    // WriteCluster(level, labels, &outfile);
-
     std::cout << "Producing hierarical graph"
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
-    graph = GenerateHierarchicalGraph(*graph, labels);
+    graph = GenerateHierarchicalGraph(*graph, clustering);
   }
 
-  // outfile.close();
   std::cout << "Done (" << timer.ElapsedSeconds() << "s)" << std::endl;
   return 0;
 }

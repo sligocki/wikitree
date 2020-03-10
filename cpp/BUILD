@@ -7,10 +7,21 @@ cc_library(
   srcs = ["chinese_whispers.cc"],
   hdrs = ["chinese_whispers.h"],
   deps = [
-    "graph",
-    "timer",
-    "util",
-  ]
+    ":clustering",
+    ":graph",
+    ":timer",
+    ":util",
+  ],
+)
+
+cc_library(
+  name = "clustering",
+  srcs = ["clustering.cc"],
+  hdrs = ["clustering.h"],
+  deps = [
+    ":graph",
+    ":util",
+  ],
 )
 
 cc_library(
@@ -18,7 +29,7 @@ cc_library(
   srcs = ["hierarchy_graph.cc"],
   hdrs = ["hierarchy_graph.h"],
   deps = [
-    "graph",
+    ":graph",
   ],
 )
 
@@ -42,12 +53,24 @@ cc_library(
 # Binaries
 
 cc_binary(
+  name = "cluster_compare",
+  srcs = ["cluster_compare.cc"],
+  deps = [
+    ":chinese_whispers",
+    ":clustering",
+    ":graph",
+    ":timer",
+    ":util",
+  ],
+)
+
+cc_binary(
   name = "degree_distribution",
   srcs = ["degree_distribution.cc"],
   deps = [
-    "graph",
-    "timer",
-    "util",
+    ":graph",
+    ":timer",
+    ":util",
   ],
 )
 
@@ -55,10 +78,11 @@ cc_binary(
   name = "graph_experiment",
   srcs = ["graph_experiment.cc"],
   deps = [
-    "chinese_whispers",
-    "hierarchy_graph",
-    "graph",
-    "timer",
-    "util",
+    ":chinese_whispers",
+    ":clustering",
+    ":hierarchy_graph",
+    ":graph",
+    ":timer",
+    ":util",
   ],
 )
