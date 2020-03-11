@@ -7,6 +7,7 @@
 #include <iostream>
 #include <random>
 #include <set>
+#include <vector>
 
 #include "timer.h"
 #include "util.h"
@@ -199,14 +200,27 @@ void ClusterChineseWhispers(const Graph& graph, int iterations,
         counts[clustering->label(neigh)] += weight;
       }
 
-      // Find max label count
-      // NOTE: In case of tie we arbitrarily choose the first one. In the
-      // official algorithm, you are supposed to randomly choose one...
-      // TODO: choose randomly among best labels.
-      auto [best_label, max_count] = ArgMax(counts);
+      // Find max of neighbor counts.
+      double max_count = 0.0;
+      for (auto& [label, count] : counts) {
+        max_count = std::max(max_count, count);
+      }
 
-      // Update label to the optimal one.
-      clustering->LabelNode(node, best_label);
+      // Find labels which maximize count.
+      std::vector<Clustering::Label> max_labels;
+      for (auto& [label, count] : counts) {
+        if (count == max_count) {
+          max_labels.push_back(label);
+        }
+      }
+
+      // Pick random label among the ones with highest count.
+      std::uniform_int_distribution<int> index_dist(0, max_labels.size() - 1);
+      const int chosen_index = index_dist(rand_engine);
+      const Clustering::Label chosen_label = max_labels[chosen_index];
+
+      // Update label to the chosen optimal one.
+      clustering->LabelNode(node, chosen_label);
     }
     std::cout << "  CW[" << i << "] Label re-assignment finished"
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
