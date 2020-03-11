@@ -37,8 +37,9 @@ double Modularity(const Graph& graph, const Clustering& clustering);
 double Entropy(const Clustering& clustering);
 double MutualInformation(const Clustering& clustering1,
                          const Clustering& clustering2);
-double AdjustedMutualInformation(const Clustering& clustering1,
-                                 const Clustering& clustering2);
+// TODO: Implement:
+// double AdjustedMutualInformation(const Clustering& clustering1,
+//                                  const Clustering& clustering2);
 
 // Returns P( X~Y in clustering2 | X~Y in clustering1 )
 double ConditionalProbabilitySimlarity(const Clustering& clustering1,

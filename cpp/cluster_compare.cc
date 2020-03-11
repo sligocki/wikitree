@@ -42,10 +42,10 @@ int main(int argc, char* argv[]) {
     << MutualInformation(clustering[0], clustering[1])
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
-  std::cout << "Conditional probabilities of two clusterings: "
-    << ConditionalProbabilitySimlarity(clustering[0], clustering[1])
-    << " " << ConditionalProbabilitySimlarity(clustering[1], clustering[0])
+  std::cout << "Conditional probabilities:"
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+  ConditionalProbabilitySimlarity(clustering[0], clustering[1]);
+  ConditionalProbabilitySimlarity(clustering[1], clustering[0]);
 
   std::cout << "Done (" << timer.ElapsedSeconds() << "s)" << std::endl;
   return 0;

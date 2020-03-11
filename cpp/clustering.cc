@@ -1,5 +1,6 @@
 #include "clustering.h"
 
+#include <iostream>
 #include <math.h>
 
 #include "util.h"
@@ -103,6 +104,7 @@ double ConditionalProbabilitySimlarity(const Clustering& clustering1,
   double sim12 = 0.0;
   // P(X~Y in clustering1)
   double sim1 = 0.0;
+  double overlap = 0.0;
   const double num_nodes = clustering1.num_nodes();
   if (clustering2.num_nodes() != num_nodes) {
     throw std::invalid_argument("Clusterings are not compatible.");
@@ -120,17 +122,17 @@ double ConditionalProbabilitySimlarity(const Clustering& clustering1,
     }
 
     // Only iterate through clusters2 that overlap this cluster1.
+    int max_size = 0;
     for (const auto& [label2, intersection_nodes] : sub_clustering2.clusters()) {
       const double p12 = intersection_nodes.size() / num_nodes;
       sim12 += p12 * p12;
+      max_size = std::max(max_size, (int)intersection_nodes.size());
     }
+    overlap += max_size;
   }
+  std::cout << "Overlap: " << (overlap / num_nodes) << std::endl
+            << "Conditional probability " << sim12 / sim1 << std::endl;
   return sim12 / sim1;
-}
-
-double AdjustedMutualInformation(const Clustering& clustering1,
-                                 const Clustering& clustering2) {
-  // TODO: Implement.
 }
 
 
