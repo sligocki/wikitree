@@ -4,9 +4,8 @@
 #include <fstream>
 #include <string>
 
-#include "chinese_whispers.h"
+#include "clustering.h"
 #include "graph.h"
-#include "hierarchy_graph.h"
 #include "timer.h"
 #include "util.h"
 
@@ -35,7 +34,7 @@ int main(int argc, char* argv[]) {
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
     const double modularity = Modularity(*graph, clustering);
     std::cout << "Cluster stats: # Clusters = " << clustering.num_clusters()
-      // TODO: << " Max cluster size = " << max_size
+      << " Max cluster size = " << clustering.MaxClusterSize()
       << " Modularity = " << modularity
       << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 

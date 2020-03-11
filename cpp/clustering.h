@@ -19,6 +19,7 @@ class Clustering {
 
   int num_nodes() const;
   int num_clusters() const;
+  int MaxClusterSize() const;
 
  private:
   // Map: Node -> cluster it's in.
@@ -47,5 +48,21 @@ double ConditionalProbabilitySimlarity(const Clustering& clustering1,
 
 void WriteCluster(int level, const Clustering& clustering,
                   std::ofstream* outifle);
+
+
+// Cluster using "Chinese Whispers" algorithm:
+///  https://en.wikipedia.org/wiki/Chinese_Whispers_(clustering_method)
+void ClusterChineseWhispers(const Graph& graph, int iterations,
+                            Clustering* labels);
+
+
+// Take a garph and partition (hard clustering) and produce a new smaller graph
+// where every node is a cluster from the previous graph and edges between
+// clusters are weighted by the sum of all weights of inter-edges between
+// clusters.
+// Does not create any self-edges.
+std::unique_ptr<Graph> GenerateHierarchicalGraph(
+  const Graph& graph,
+  const Clustering& clustering);
 
 #endif  // WIKITREE_CLUSTERING_H_

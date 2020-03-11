@@ -4,7 +4,6 @@
 #include <fstream>
 #include <string>
 
-#include "chinese_whispers.h"
 #include "clustering.h"
 #include "graph.h"
 #include "timer.h"

@@ -1,8 +1,14 @@
 #include "clustering.h"
 
-#include <iostream>
 #include <math.h>
 
+#include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <random>
+#include <set>
+
+#include "timer.h"
 #include "util.h"
 
 void Clustering::LabelNode(const Graph::Node& node, const Label& label) {
@@ -32,6 +38,17 @@ int Clustering::num_nodes() const {
 
 int Clustering::num_clusters() const {
   return clusters().size();
+}
+
+int Clustering::MaxClusterSize() const {
+  int max_size = 0;
+  for (const auto& [label, nodes] : clusters()) {
+    const int size = nodes.size();
+    if (size > max_size) {
+      max_size = size;
+    }
+  }
+  return max_size;
 }
 
 double Modularity(const Graph& graph, const Clustering& clustering) {
@@ -151,4 +168,75 @@ void WriteCluster(int level, const Clustering& clustering,
 
   // Extra newline for visual separation.
   *outfile << std::endl;
+}
+
+
+void ClusterChineseWhispers(const Graph& graph, int iterations,
+                            Clustering* clustering) {
+  auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine rand_engine(seed);
+
+  // Initialize labels (each node is labeled with it's own name).
+  std::vector<Graph::Node> nodes = graph.nodes();
+  for (const Graph::Node& node : nodes) {
+    clustering->LabelNode(node, node);
+  }
+
+  // Run algorithm # iterations.
+  for (int i = 0; i < iterations; ++i) {
+    Timer timer;
+
+    // Randomize order of nodes.
+    std::shuffle(nodes.begin(), nodes.end(), rand_engine);
+    std::cout << "  CW[" << i << "] Shuffle finished"
+      << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+
+    // Greedily optimize the label of all nodes.
+    for (Graph::Node node : nodes) {
+      // Count # of neighbors with each label.
+      std::map<Clustering::Label, double> counts;
+      for (auto& [neigh, weight] : graph.neighbors(node)) {
+        counts[clustering->label(neigh)] += weight;
+      }
+
+      // Find max label count
+      // NOTE: In case of tie we arbitrarily choose the first one. In the
+      // official algorithm, you are supposed to randomly choose one...
+      // TODO: choose randomly among best labels.
+      auto [best_label, max_count] = ArgMax(counts);
+
+      // Update label to the optimal one.
+      clustering->LabelNode(node, best_label);
+    }
+    std::cout << "  CW[" << i << "] Label re-assignment finished"
+      << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+
+    std::cout << "  CW[" << i << "] Stats:"
+      << " # Clusters = " << clustering->num_clusters()
+      << " Max cluster size = " << clustering->MaxClusterSize()
+      << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+  }
+}
+
+
+std::unique_ptr<Graph> GenerateHierarchicalGraph(
+    const Graph& old_graph,
+    const Clustering& clustering) {
+  auto new_graph = std::make_unique<Graph>();
+
+  for (auto& [start_node, neighbors] : old_graph.edges()) {
+    const auto& start_cluster = clustering.label(start_node);
+    for (auto& [end_node, weight] : neighbors) {
+      // Avoid double adding edges.
+      if (end_node < start_node) {
+        const auto& end_cluster = clustering.label(end_node);
+        // Avoid self edges.
+        if (start_cluster != end_cluster) {
+          new_graph->AddEdge(start_cluster, end_cluster, weight);
+        }
+      }
+    }
+  }
+
+  return new_graph;
 }
