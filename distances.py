@@ -1,5 +1,6 @@
 import argparse
 import collections
+from pprint import pprint
 import random
 import sqlite3
 import time
@@ -62,6 +63,8 @@ def enum_user_nums(db, args):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--random", action="store_true")
+  parser.add_argument("--show-distribution", action="store_true",
+                      help="Show distribution of connection distances.")
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
@@ -69,5 +72,12 @@ if __name__ == "__main__":
   db.load_connections()
 
   for user_num in enum_user_nums(db, args):
-    d_mean, d_max = get_mean_dists(db, user_num)
-    print(wikitree_id, d_mean, d_max, time.process_time())
+    if args.show_distribution:
+      dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
+    else:
+      dists = None
+      hist_dist = None
+      d_mean, d_max = get_mean_dists(db, user_num)
+    print(db.num2id(wikitree_id), d_mean, d_max, time.process_time())
+    if hist_dist:
+      pprint(hist_dist)
