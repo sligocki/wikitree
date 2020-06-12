@@ -30,10 +30,10 @@ echo "(3) Unzip (overwriting previous CSVs)"
 for x in people_users people_marriages categories; do
   gunzip dump_${x}.csv.gz -c > ../../dump_${x}.csv
 done
+cd ../../..  # Back to main repo
 
 echo "(4) Process new dump"
-cd ../../..  # Back to main repo
-rm -f data/wikitree_dump.db
+mv data/wikitree_dump{,.bak}.db
 echo csv_to_sqlite.py
 python csv_to_sqlite.py
 
