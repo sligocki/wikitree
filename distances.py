@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import collections
 from pprint import pprint
@@ -72,12 +74,7 @@ if __name__ == "__main__":
   db.load_connections()
 
   for user_num in enum_user_nums(db, args):
+    dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
+    print(db.num2id(user_num), mean_dist, max_dist, time.process_time())
     if args.show_distribution:
-      dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
-    else:
-      dists = None
-      hist_dist = None
-      d_mean, d_max = get_mean_dists(db, user_num)
-    print(db.num2id(wikitree_id), d_mean, d_max, time.process_time())
-    if hist_dist:
       pprint(hist_dist)

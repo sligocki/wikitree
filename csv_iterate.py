@@ -54,6 +54,13 @@ def ParseTimestamp(timestamp_str):
     print(timestamp_str, year, month, day, hour, min, sec)
     raise
 
+def StringOrNone(str):
+  if str:
+    return str
+  else:
+    # If string is empty, return None.
+    return None
+
 
 class Row:
   def __init__(self, row, key):
@@ -99,6 +106,12 @@ class UserRow(Row):
   def death_date(self):
     return ParseDate(self.lookup("Death Date"))
 
+  def birth_location(self):
+    return StringOrNone(self.lookup("Birth Location"))
+
+  def death_location(self):
+    return StringOrNone(self.lookup("Birth Location"))
+
   def no_more_children(self):
     return ParseBool(self.lookup("No Children"))
 
@@ -110,6 +123,21 @@ class UserRow(Row):
 
   def edit_count(self):
     return ParseInt(self.lookup("Edit Count"))
+
+  def privacy_level(self):
+    """ Levels:
+        "UNLISTED": 10,
+        "PRIVATE": 20,
+        "SEMIPRIVATE_BIO": 30,
+        "SEMIPRIVATE_TREE": 35,
+        "SEMIPRIVATE_BIOTREE": 40,
+        "PUBLIC": 50,
+        "OPEN": 60
+    """
+    return ParseInt(self.lookup("Privacy"))
+
+  def manager_num(self):
+    return ParseInt(self.lookup("Manager"))
 
 
 def iterate_users_file(filename):

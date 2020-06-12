@@ -15,9 +15,11 @@ def csv_to_sqlite(only_update_custom=False):
       user_num INT, wikitree_id STRING, birth_name STRING,
       father_num INT, mother_num INT,
       birth_date DATE, death_date DATE,
+      birth_location STRING, death_location STRING,
       gender_code INT, no_more_children BOOL,
       registered_time TIMESTAMP, touched_time TIMESTAMP,
-      edit_count INT,
+      edit_count INT, privacy_level INT,
+      manager_num INT,
       PRIMARY KEY (user_num))""")
     c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
 
@@ -27,14 +29,16 @@ def csv_to_sqlite(only_update_custom=False):
   print("Loading people from CSV", time.process_time())
   for person in csv_iterate.iterate_users(only_update_custom):
     try:
-      c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+      c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (person.user_num(), person.wikitree_id(),
                  person.birth_name(),
                  person.father_num(), person.mother_num(),
                  person.birth_date(), person.death_date(),
+                 person.birth_location(), person.death_location(),
                  person.gender_code(), person.no_more_children(),
                  person.registered_time(), person.touched_time(),
-                 person.edit_count()))
+                 person.edit_count(), person.privacy_level(),
+                 person.manager_num()))
     except Exception as e:
       print("ERROR inserting person:", person.user_num(), person.row)
       print(e)
