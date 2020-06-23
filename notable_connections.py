@@ -4,10 +4,9 @@ Find closest connected people in the "Notables" or any other group.
 
 import argparse
 import collections
-import sqlite3
 
+import category_tools
 import data_reader
-import group_tools
 
 
 def list_distances(db, start, targets, max_num):
@@ -41,11 +40,5 @@ args = parser.parse_args()
 db = data_reader.Database()
 start = db.id2num(args.person_id)
 
-conn = sqlite3.connect("data/categories.db")
-conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
-cursor.execute("SELECT user_num FROM categories WHERE category_name=?",
-               (args.category,))
-targets = frozenset(row["user_num"] for row in cursor.fetchall())
-
+targets = category_tools.list_category(args.category)
 list_distances(db, start, targets, args.max_num)

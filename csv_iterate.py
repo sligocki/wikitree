@@ -172,6 +172,9 @@ class MarriageRow(Row):
   def marriage_date(self):
     return ParseDate(self.lookup("Marriage Date"))
 
+  def marriage_location(self):
+    return self.lookup("Marriage Location")
+
 
 def iterate_marriages_file(filename):
   with open(filename, "r") as f:
