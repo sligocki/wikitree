@@ -60,12 +60,13 @@ def main():
         # Specific towns in Inowrocław.
         "Płonkowo", "Plonkowo",
       ))
+    print()
 
   if args.shapinsay:
     print("Shapinsay")
     category_check(
       category_name="Shapinsay_Parish,_Orkney",
-      target_places=("Shapinsay",)
-    )
+      target_places=("Shapinsay",))
+    print()
 
 main()
