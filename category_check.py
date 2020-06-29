@@ -56,9 +56,10 @@ def main():
         # Inowrocław in Polish and German spelling.
         "Inowrocław", "Inowroclaw", "Inowrazlaw", "Hohensalza", "Jungleslau",
         # Towns in Strelno, Posen that are now in Inowrocław county.
-        "Ludzisk", "Polanowitz", "Piaski",
+        "Ludzisk", "Polanowitz",
+        # Removed "Piaski" because there's Piaski, Warsaw too :/
         # Specific towns in Inowrocław.
-        "Płonkowo", "Plonkowo",
+        "Płonkowo", "Plonkowo", "Pakość", "Pakosc",
       ))
     print()
 
