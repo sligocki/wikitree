@@ -46,14 +46,15 @@ rm -f data/categories.db
 echo process_categories.sh
 bash process_categories.sh
 
-echo sqlite_to_graph.py
-python sqlite_to_graph.py
-
-echo nuclear_family_graph.py
-python nuclear_family_graph.py
-
-echo graph_core.py
-python graph_core.py data/nuclear.main.adj.nx data/nuclear.core.adj.nx
+# Note: Skipping Graph stuff for now because it's pretty intense to do each week.
+# echo sqlite_to_graph.py
+# python sqlite_to_graph.py
+#
+# echo nuclear_family_graph.py
+# python nuclear_family_graph.py
+#
+# echo graph_core.py
+# python graph_core.py data/nuclear.main.adj.nx data/nuclear.core.adj.nx
 
 echo "(5) Print stats about new dump"
 # TODO
