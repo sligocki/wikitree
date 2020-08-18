@@ -38,7 +38,7 @@ def category_check(category_name, target_places):
   print()
   print(f"# Residents not in category = {len(residents_not_in_cat)}")
 
-  for person in residents_not_in_cat:
+  for person in sorted(residents_not_in_cat):
     print(f"* https://www.wikitree.com/wiki/{db.num2id(person)}")
 
 
@@ -59,7 +59,8 @@ def main():
         "Ludzisk", "Polanowitz",
         # Removed "Piaski" because there's Piaski, Warsaw too :/
         # Specific towns in Inowrocław.
-        "Płonkowo", "Plonkowo", "Pakość", "Pakosc",
+        "Płonkowo", "Plonkowo", "Pakość", "Pakosc", "Kościelec", "Koscielec",
+        "Tuczno",
       ))
     print()
 

@@ -56,7 +56,8 @@ bash process_categories.sh
 # echo graph_core.py
 # python graph_core.py data/nuclear.main.adj.nx data/nuclear.core.adj.nx
 
-echo "(5) Print stats about new dump"
-# TODO
+echo "(5) Check categories"
+echo category_check.py
+python category_check.py
 
 echo "Done"
