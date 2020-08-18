@@ -21,22 +21,26 @@ if [ -d data/dumps/$TIMESTAMP ]; then
   exit 0
 fi
 
+echo
 echo "(2) If we don't yet have this dump, download it"
 mkdir data/dumps/$TIMESTAMP
 cd data/dumps/$TIMESTAMP
 echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com
 
+echo
 echo "(3) Unzip (overwriting previous CSVs)"
 for x in people_users people_marriages categories; do
   gunzip dump_${x}.csv.gz -c > ../../dump_${x}.csv
 done
 cd ../../..  # Back to main repo
 
+echo
 echo "(4) Process new dump"
 mv data/wikitree_dump{,.bak}.db
 echo csv_to_sqlite.py
 python csv_to_sqlite.py
 
+echo
 echo csv_to_groups.py
 python csv_to_groups.py
 echo "csv_to_groups.py --sibling-in-law"
@@ -56,8 +60,10 @@ bash process_categories.sh
 # echo graph_core.py
 # python graph_core.py data/nuclear.main.adj.nx data/nuclear.core.adj.nx
 
+echo
 echo "(5) Check categories"
 echo category_check.py
 python category_check.py
 
+echo
 echo "Done"

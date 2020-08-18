@@ -1,4 +1,5 @@
 import argparse
+import datetime
 
 import category_tools
 import csv_iterate
@@ -26,27 +27,41 @@ def category_check(category_name, target_places):
       for user_num in marriage.user_nums():
         residents.add(user_num)
   print(f"# Residents = {len(residents)}")
+  editable_residents = {
+    user_num for user_num in residents
+    if db.get(user_num, "privacy_level") >= 60
+    and (not db.birth_date_of(user_num)
+         or db.birth_date_of(user_num) >= datetime.date(1500, 1, 1))}
+  print(f"# Editable residents = {len(editable_residents)}")
 
   in_category = category_tools.list_category(category_name)
   print(f"# in category = {len(in_category)}")
 
   cat_not_resident = in_category - residents
-  print()
   print(f"# in category, not resident = {len(cat_not_resident)}")
 
   residents_not_in_cat = residents - in_category
-  print()
   print(f"# Residents not in category = {len(residents_not_in_cat)}")
 
-  for person in sorted(residents_not_in_cat):
-    print(f"* https://www.wikitree.com/wiki/{db.num2id(person)}")
+  # Only list editable residents. Can't fix the private ones.
+  editable_residents_not_in_cat = editable_residents - in_category
+  print(f"# Editable residents not in category = {len(editable_residents_not_in_cat)}")
+  for person in sorted(editable_residents_not_in_cat):
+    print(f" * https://www.wikitree.com/wiki/{db.num2id(person)}")
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("--no-inowroclaw", dest="inowroclaw", action="store_false")
   parser.add_argument("--no-shapinsay", dest="shapinsay", action="store_false")
+  parser.add_argument("--no-inowroclaw", dest="inowroclaw", action="store_false")
   args = parser.parse_args()
+
+  if args.shapinsay:
+    print("Shapinsay")
+    category_check(
+      category_name="Shapinsay_Parish,_Orkney",
+      target_places=("Shapinsay",))
+    print()
 
   if args.inowroclaw:
     print("Inowrocław county")
@@ -59,16 +74,8 @@ def main():
         "Ludzisk", "Polanowitz",
         # Removed "Piaski" because there's Piaski, Warsaw too :/
         # Specific towns in Inowrocław.
-        "Płonkowo", "Plonkowo", "Pakość", "Pakosc", "Kościelec", "Koscielec",
-        "Tuczno",
+        "Płonkowo", "Plonkowo", "Pakość", "Pakosc", "Tuczno",
       ))
-    print()
-
-  if args.shapinsay:
-    print("Shapinsay")
-    category_check(
-      category_name="Shapinsay_Parish,_Orkney",
-      target_places=("Shapinsay",))
     print()
 
 main()

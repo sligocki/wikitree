@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 
 
@@ -32,6 +33,11 @@ class Database(object):
 
   def name_of(self, user_num):
     return self.get(user_num, "birth_name")
+
+  def birth_date_of(self, user_num):
+    date_str = self.get(user_num, "birth_date")
+    if date_str:
+      return datetime.date.fromisoformat(date_str)
 
   def father_of(self, user_num):
     return self.get(user_num, "father_num")
