@@ -1,13 +1,15 @@
 """
-Get the topological core of this graph.
+Get the "topological core" of this graph.
 
-The core is defined by iteratively removing leaf nodes and shortening paths.
+The "topological core" is an idea I came up with for isolating the
+"topologically interesting" parts of a graph. We get to it by iteratively
+removing leaf nodes and collapsing linear paths:
  * For leaf nodes (nodes of degree 1): We delete the node and it's one edge.
- * For path nodes (nodes of degree 2): We lift the node (delete it and
+ * For path nodes (nodes of degree 2): We "lift" the node (delete it and
    connect its former neighbors).
- * All self-edges or repeated edges produced this way are omitted.
+ * All self-edges or duplicate edges produced this way are omitted.
  * The process is repeated until all nodes are degree >= 3 (or, vacuously,
-   until there are no nodes left)
+   until there are no nodes left).
 
 This shrinks the graph down to a tight core which is interconnected in
 non-trivial ways.
@@ -22,25 +24,16 @@ edge in the core graph.
    removing nodes D & E from the original graph would separate C from the
    other core nodes. In ohter words, node C is connected into the core
    through both gateway nodes D & E.
- * Any node which is connected to the core through > 2 gateway nodes is
-   by definition a core node itself.
+ * Any node which is connected to the core through >2 gateway nodes will be
+   in the core itself.
 """
 
 import argparse
-import collections
+import csv
 import time
 
 import networkx as nx
 
-
-def PrintDegreeDist(graph, max_degree=4):
-  degree_counts = [0] * (max_degree + 1)
-  for node in graph.nodes:
-    degree = min(graph.degree[node], max_degree)
-    degree_counts[degree] += 1
-  message = [f"{degree}:{degree_counts[degree]:,}"
-             for degree in range(max_degree)]
-  print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:,}")
 
 def CollectRay(graph, node, previous=None):
   path = set()
@@ -62,17 +55,23 @@ def CollectPath(graph, node):
   return (end_a, end_b), (path_a | path_b | set([node]))
 
 def ContractGraph(graph, rep_nodes):
-  print(f"Contracting graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
-  PrintDegreeDist(graph)
+  print(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
 
-  print("Collect leaf/path nodes", time.process_time())
+  print("Finding nodes to delete", time.process_time())
   # Note: We may delete more nodes than to_delete.
   to_delete = set()
+  max_degree = 6
+  degree_counts = [0] * (max_degree + 1)
   for node in graph.nodes:
     if graph.degree[node] <= 2:
       to_delete.add(node)
+    degree = min(graph.degree[node], max_degree)
+    degree_counts[degree] += 1
+  message = [f"{degree}:{degree_counts[degree]:_}"
+             for degree in range(max_degree)]
+  print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
 
-  print(f"Stripping ({len(to_delete):,}+) nodes", time.process_time())
+  print(f"Stripping ({len(to_delete):_}+) nodes", time.process_time())
   for node in to_delete:
     if node in graph.nodes:
       if graph.degree[node] == 0:
@@ -106,29 +105,16 @@ def ContractGraph(graph, rep_nodes):
   # Note: # nodes deleted is >= len(to_delete)
   return len(to_delete) > 0
 
-def print_sizes_summary(core_to_nodes):
-  # List of core nodes sorted by # of nodes collapsed into them.
-  sizes = [(len(nodes), core)
-           for core, nodes in core_to_nodes.items()]
-  sizes.sort()
-  for p in (0.0, 0.5, 0.75, 0.9, 0.99, 0.999, 0.9999, 0.99999, 1.0):
-    index = int(p * (len(sizes) - 1))
-    size, _ = sizes[index]
-    print(f" * {p:8%}  {size:10,}")
-  print("Largest rep nodes:")
-  for n in range(20):
-    size, core = sizes[len(sizes) - 1 - n]
-    print(f" * {size:10,}   {core}")
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("graph_in")
 parser.add_argument("graph_out")
+parser.add_argument("collapse_csv")
 args = parser.parse_args()
 
 print("Loading graph", time.process_time())
 graph = nx.read_adjlist(args.graph_in)
-print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+print(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
 
 # Iteratively contract the graph until we reach the core.
 # Map: core nodes -> nodes that collapse into this core node
@@ -136,39 +122,20 @@ rep_nodes = {node: set([node]) for node in graph.nodes}
 while ContractGraph(graph, rep_nodes):
   pass
 
-print(f"Final graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+print(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
 
 print("Saving to disk", time.process_time())
 nx.write_adjlist(graph, args.graph_out)
 
-print("Summarizing nodes collapsed into each node", time.process_time())
-# Map: all nodes -> set of core nodes they were collapsed into (1 or 2).
-core_of = collections.defaultdict(set)
-for core_node in rep_nodes:
-  for sub_node in rep_nodes[core_node]:
-    core_of[sub_node].add(core_node)
-# Map: all nodes -> # of core nodes they collapse into.
-counts = collections.defaultdict(int)
-for node in core_of:
-  counts[len(core_of[node])] += 1
-print(f"core_of: {len(core_of):,} {counts[1]:,} {counts[2]:,}")
-print("rep_nodes:")
-print_sizes_summary(rep_nodes)
-
-# Map: core node -> nodes that only collapse into this node
-rep_unique_nodes = collections.defaultdict(set)
-# Map: pair of core nodes -> nodes that collapse into both of these nodes
-rep_edges = collections.defaultdict(set)
-for node, core_nodes in core_of.items():
-  if len(core_nodes) == 1:
-    core_node, = tuple(core_nodes)
-    rep_unique_nodes[core_node].add(node)
-  else:
-    assert len(core_nodes) == 2, len(core_nodes)
-    rep_edges[frozenset(core_nodes)].add(node)
-print("rep_unique_nodes:")
-print_sizes_summary(rep_unique_nodes)
-print("rep_edges:")
-print_sizes_summary(rep_edges)
+print("Save node collapse info", time.process_time())
+with open(args.collapse_csv, "w") as f:
+  csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
+  csv_out.writeheader()
+  for core_node in rep_nodes:
+    for sub_node in rep_nodes[core_node]:
+      csv_out.writerow({
+        "core_node": core_node,
+        "sub_node": sub_node,
+      })
 
 print("Done", time.process_time())
