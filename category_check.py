@@ -54,20 +54,21 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--no-shapinsay", dest="shapinsay", action="store_false")
   parser.add_argument("--no-inowroclaw", dest="inowroclaw", action="store_false")
+  parser.add_argument("--honhardt", dest="honhardt", action="store_true")
   args = parser.parse_args()
 
   if args.shapinsay:
-    print("Shapinsay")
+    print("Shapinsay, Orkney")
     category_check(
       category_name="Shapinsay_Parish,_Orkney",
-      target_places=("Shapinsay",))
+      target_places=["Shapinsay"])
     print()
 
   if args.inowroclaw:
-    print("Inowrocław county")
+    print("Inowrocław county, Poland")
     category_check(
       category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship,_Poland",
-      target_places=(
+      target_places=[
         # Inowrocław in Polish and German spelling.
         "Inowrocław", "Inowroclaw", "Inowrazlaw", "Hohensalza", "Jungleslau",
         # Towns in Strelno, Posen that are now in Inowrocław county.
@@ -75,7 +76,14 @@ def main():
         # Removed "Piaski" because there's Piaski, Warsaw too :/
         # Specific towns in Inowrocław.
         "Płonkowo", "Plonkowo", "Pakość", "Pakosc", "Tuczno",
-      ))
+      ])
+    print()
+
+  if args.honhardt:
+    print("Honhardt, Württemberg")
+    category_check(
+      category_name="Honhardt,_Württemberg",
+      target_places=["Honhardt"])
     print()
 
 main()
