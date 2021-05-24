@@ -2,6 +2,7 @@
 
 import argparse
 import collections
+import json
 from pprint import pprint
 import random
 import sqlite3
@@ -19,7 +20,7 @@ def get_distances(db, start):
   queue.append(start)
   total_dist = 0
   max_dist = 0
-  hist_dist = []
+  hist_dist = [1]
   while queue:
     person = queue.popleft()
     dist = dists[person]
@@ -65,16 +66,19 @@ def enum_user_nums(db, args):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--random", action="store_true")
-  parser.add_argument("--show-distribution", action="store_true",
-                      help="Show distribution of connection distances.")
+  parser.add_argument("--save-distribution-json", help="Save Circle sizes to file.")
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
   db = data_reader.Database()
   db.load_connections()
 
+  circle_sizes = {}
   for user_num in enum_user_nums(db, args):
     dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
     print(db.num2id(user_num), mean_dist, max_dist, time.process_time())
-    if args.show_distribution:
-      pprint(hist_dist)
+    circle_sizes[db.num2id(user_num)] = hist_dist
+
+  if args.save_circle_sizes:
+    with open(args.save_distribution_json, "w") as f:
+      json.dump(circle_sizes, f)
