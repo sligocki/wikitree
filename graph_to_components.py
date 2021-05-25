@@ -2,24 +2,13 @@ import math
 
 import networkx as nx
 
-class TopN:
-  """Data structure which only keeps top N items."""
-  def __init__(self, size):
-    self.size = size
-    self.items = []
-
-  def add(self, measure, item):
-    if len(self.items) < self.size or measure > self.items[-1][0]:
-      self.items.append((measure, item))
-      self.items.sort(key=lambda x: x[0], reverse=True)
-      if len(self.items) > self.size:
-        del self.items[-1]
+import utils
 
 
 g = nx.read_adjlist("data/connection_graph.adj.nx")
 
 # Get list of 5 biggest components and one component for each order of magnitude.
-top_n = TopN(5)
+top_n = utils.TopN(5)
 comps_by_size = {}
 num_comps_by_size = {}
 for comp in nx.connected_components(g):

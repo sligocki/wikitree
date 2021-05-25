@@ -79,6 +79,6 @@ if __name__ == "__main__":
     print(db.num2id(user_num), mean_dist, max_dist, time.process_time())
     circle_sizes[db.num2id(user_num)] = hist_dist
 
-  if args.save_circle_sizes:
+  if args.save_distribution_json:
     with open(args.save_distribution_json, "w") as f:
       json.dump(circle_sizes, f)
