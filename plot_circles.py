@@ -20,8 +20,8 @@ def median_index(circle_sizes):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("circles_json")
-parser.add_argument("wikitree_ids", nargs="*")
+parser.add_argument("circles_json", nargs="+")
+parser.add_argument("--wikitree-ids", nargs="*")
 
 parser.add_argument("--log-y", action="store_true")
 parser.add_argument("--rate", action="store_true")
@@ -35,8 +35,10 @@ parser.add_argument("--save-image", type=Path,
 args = parser.parse_args()
 
 utils.log("Loading data")
-with open(args.circles_json, "r") as f:
-  circle_sizes = json.load(f)
+circle_sizes = {}
+for filename in args.circles_json:
+  with open(filename, "r") as f:
+    circle_sizes.update(json.load(f))
 
 
 fig, ax = plt.subplots()
