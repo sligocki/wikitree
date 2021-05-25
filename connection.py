@@ -157,7 +157,6 @@ def main():
                       help="Only consider genetic connections (exclude marriage).")
   parser.add_argument("--sibling-in-law", dest="rel_types", action="store_const", const=frozenset(["sibling", "spouse"]),
                       help="Only consider sibling and spouse relationships (find how two people are sibling-in-laws).")
-
   args = parser.parse_args()
 
   db = data_reader.Database()
