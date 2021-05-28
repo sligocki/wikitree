@@ -18,7 +18,7 @@ echo "Data dump version: $TIMESTAMP"
 if [ -d data/dumps/$TIMESTAMP ]; then
   echo "We already have this dump"
   echo "Done"
-  exit 0
+  exit 1
 fi
 
 echo

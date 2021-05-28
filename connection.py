@@ -140,12 +140,6 @@ def print_connections(args, db, connections, plot_name=None):
     dot.view()
 
 
-def get_person_num(db, id_or_num):
-  try:
-    return int(id_or_num)
-  except ValueError:
-    return db.id2num(id_or_num)
-
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("person_id", nargs='+')
@@ -177,7 +171,7 @@ def main():
     rep = partition_db.find_partition_rep(partition_type, member_num)
     partition_members = partition_db.list_partition(partition_type, rep)
     for start_id in args.person_id:
-      start_num = get_person_num(db, start_id)
+      start_num = db.get_person_num(start_id)
       print("Connections from", db.num2id(start_num), "to partition", args.to_partition)
       plot_name = "results/Connections_%s_%s" % (start_id, args.to_partition)
       connections = find_connections_partition(
@@ -187,8 +181,8 @@ def main():
   else:
     # Find shortest connection between two people.
     for i in range(len(args.person_id) - 1):
-      start_num = get_person_num(db, args.person_id[i])
-      end_num = get_person_num(db, args.person_id[i + 1])
+      start_num = db.get_person_num(args.person_id[i])
+      end_num = db.get_person_num(args.person_id[i + 1])
       print("Connections from", db.num2id(start_num), "to", db.num2id(end_num))
       plot_name = "results/Connections_%s_%s" % (db.num2id(start_num), db.num2id(end_num))
       connections = find_connections(db, start_num, end_num,

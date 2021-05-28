@@ -6,7 +6,7 @@ import utils
 
 
 class Database(object):
-  def __init__(self, version=None):
+  def __init__(self, version):
     self.filename = Path(utils.data_version_dir(version), "wikitree_dump.db")
     try:
       self.conn = sqlite3.connect(self.filename)
@@ -21,6 +21,12 @@ class Database(object):
     if rows:
       assert len(rows) == 1, (child_num, rows)
       return rows[0][0]
+
+  def get_person_num(self, id_or_num):
+    try:
+      return int(id_or_num)
+    except ValueError:
+      return self.id2num(id_or_num)
 
   def id2num(self, wikitree_id):
     self.cursor.execute("SELECT user_num FROM people WHERE wikitree_id=?", (wikitree_id,))

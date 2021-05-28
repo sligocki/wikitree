@@ -13,7 +13,7 @@ import utils
 
 
 class PartitionDb:
-  def __init__(self, version=None):
+  def __init__(self, version):
     self.filename = Path(utils.data_version_dir(version), "partitions.db")
     self.conn = sqlite3.connect(self.filename)
     self.conn.row_factory = sqlite3.Row

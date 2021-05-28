@@ -24,7 +24,7 @@ python3 csv_to_sqlite.py --version=${TIMESTAMP}
 python3 csv_to_partitions.py --version=${TIMESTAMP}
 python3 csv_to_partitions.py --version=${TIMESTAMP} --sibling-in-law
 
-bash process_categories.sh --version=${TIMESTAMP}
+bash process_categories.sh ${TIMESTAMP}
 
 # Note: Skipping Graph stuff for now because it's pretty intense to do each week.
 # python3 sqlite_to_graph.py --version=${TIMESTAMP}

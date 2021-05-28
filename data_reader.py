@@ -49,7 +49,7 @@ def load_connections(version,
   return connections
 
 class Database(sqlite_reader.Database):
-  def __init__(self, version=None):
+  def __init__(self, version):
     super(Database, self).__init__(version)
     self.version = version
     self.connections = None
