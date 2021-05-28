@@ -11,6 +11,7 @@ import time
 
 import graphviz
 
+import category_tools
 import data_reader
 import partition_tools
 
@@ -151,6 +152,8 @@ def main():
                       help="Only print the distance (not connection sequence).")
   parser.add_argument("--max-dist", type=int)
 
+  parser.add_argument("--to-category",
+                      help="Destination is a category rather than specific person.")
   parser.add_argument("--to-partition",
                       help="Destination is partition rather than specific person.")
 
@@ -161,11 +164,23 @@ def main():
                       help="Only consider sibling and spouse relationships (find how two people are sibling-in-laws).")
   args = parser.parse_args()
 
-  db = data_reader.Database(version=args.version)
-  partition_db = partition_tools.PartitionDb(version=args.version)
+  db = data_reader.Database(args.version)
 
-  if args.to_partition:
+  if args.to_category:
+    # Find shortest connection from person to any member of a category.
+    category_db = category_tools.CategoryDb(args.version)
+    category_members = category_db.list_category(args.to_category)
+    for start_id in args.person_id:
+      start_num = db.get_person_num(start_id)
+      print("Connections from", db.num2id(start_num), "to category", args.to_category)
+      plot_name = "results/Connections_%s_%s" % (start_id, args.to_category)
+      connections = find_connections_group(
+        db, start_num, category_members, args.rel_types)
+      print_connections(args, db, connections, plot_name)
+
+  elif args.to_partition:
     # Find shortest connection from person to any member of a partition.
+    partition_db = partition_tools.PartitionDb(args.version)
     partition_type, member_id = args.to_partition.split(":")
     member_num = db.id2num(member_id)
     rep = partition_db.find_partition_rep(partition_type, member_num)
@@ -174,7 +189,7 @@ def main():
       start_num = db.get_person_num(start_id)
       print("Connections from", db.num2id(start_num), "to partition", args.to_partition)
       plot_name = "results/Connections_%s_%s" % (start_id, args.to_partition)
-      connections = find_connections_partition(
+      connections = find_connections_group(
         db, start_num, partition_members, args.rel_types)
       print_connections(args, db, connections, plot_name)
 

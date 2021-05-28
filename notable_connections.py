@@ -19,6 +19,7 @@ def EnumConnections(bfs, targets):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("person_id", help="Person to search from.")
+parser.add_argument("--version", help="Data version (defaults to most recent).")
 parser.add_argument("--relatives", action="store_true",
                     help="Find notable blood relatives (instead of all connections).")
 parser.add_argument("--category", default="Notables",
@@ -27,10 +28,12 @@ parser.add_argument("--max-num", type=int, default=20,
                     help="Max number of people from that category to list.")
 args = parser.parse_args()
 
-db = data_reader.Database()
+db = data_reader.Database(args.version)
+category_db = category_tools.CategoryDb(args.version)
+
 start = db.id2num(args.person_id)
 
-targets = category_tools.list_category(args.category)
+targets = category_db.list_category(args.category)
 if args.relatives:
   bfs = bfs_tools.RelativeBfs(db, start)
 else:
