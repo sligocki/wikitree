@@ -16,13 +16,16 @@
 # The resulting graph will have drastically fewer cliques and running through
 # graph_core.py will be much more effective.
 
+import argparse
 import collections
+from pathlib import Path
 import time
 
 import networkx as nx
 
 import csv_iterate
 import graph_tools
+import utils
 
 
 def UnionNodeName(parents):
@@ -30,9 +33,13 @@ def UnionNodeName(parents):
   return "Union/" + "/".join(str(p) for p in sorted(parents))
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--version", help="Data version (defaults to most recent).")
+args = parser.parse_args()
+
 graph = nx.Graph()
 print("Loading users", time.process_time())
-for i, person_obj in enumerate(csv_iterate.iterate_users()):
+for i, person_obj in enumerate(csv_iterate.iterate_users(version=args.version)):
   parents = [p for p in (person_obj.father_num(), person_obj.mother_num()) if p]
   person_num = person_obj.user_num()
   if parents:
@@ -55,11 +62,12 @@ for marriage in csv_iterate.iterate_marriages():
 print(f"Total graph size: {len(graph.nodes):,} Nodes {len(graph.edges):,} Edges.")
 
 print("Writing graph to file", time.process_time())
-nx.write_adjlist(graph, "data/nuclear.all.adj.nx")
+data_dir = utils.data_version_dir(args.version)
+nx.write_adjlist(graph, Path(data_dir, "nuclear.all.adj.nx"))
 
 print("Finding largest connected component", time.process_time())
 main_component = graph_tools.LargestCombonent(graph)
 print(f"Main component size: {len(main_component.nodes):,} Nodes {len(main_component.edges):,} Edges.")
 
 print("Writing main component to file", time.process_time())
-nx.write_adjlist(main_component, "data/nuclear.main.adj.nx")
+nx.write_adjlist(main_component, Path(data_dir, "nuclear.main.adj.nx"))

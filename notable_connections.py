@@ -1,5 +1,5 @@
 """
-Find closest connected people in the "Notables" or any other group.
+Find closest connected people in the "Notables" or any other category.
 """
 
 import argparse

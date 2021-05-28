@@ -3,25 +3,34 @@ Measure distances between randomly chosen points repeatedly
 """
 
 
+import argparse
 import random
 
 import collections
 import connection
 import data_reader
-import group_tools
 import itertools
 import math
+import partition_tools
 import time
 import utils
 
 
-db = data_reader.Database()
-db.load_connections()
+parser = argparse.ArgumentParser()
+parser.add_argument("--version", help="Data version (defaults to most recent).")
+parser.add_argument("--load-db", action="store_true")
+args = parser.parse_args()
+
+utils.log("Load DB")
+db = data_reader.Database(version=args.version)
+if args.load_db:
+  db.load_connections()
+partition_db = partition_tools.PartitionDb(version=args.version)
 
 utils.log("Loading all user_nums in main tree")
 focus_id = db.id2num("Lothrop-29")
-rep = group_tools.find_group_rep("connected", focus_id)
-main_nums = list(group_tools.list_group("connected", rep))
+rep = partition_db.find_partition_rep("connected", focus_id)
+main_nums = list(partition_db.list_partition("connected", rep))
 utils.log(f"Loaded {len(main_nums):_} nodes")
 
 hist = collections.Counter()
@@ -45,5 +54,5 @@ try:
     utils.log(f"Mean dist = {mean:.1f} ± {stddev:.1f}")
 
 except KeyboardInterrupt:
-  utils.log("Dist", sorted(hist.items()))
+  utils.log("Dist", [hist[i] for i in range(max(hist.keys()) + 1)])
   utils.log("Quiting")

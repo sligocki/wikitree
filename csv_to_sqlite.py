@@ -1,33 +1,35 @@
 import argparse
+from pathlib import Path
 import sqlite3
 import time
 
 import csv_iterate
+import utils
 
 
-def csv_to_sqlite(only_update_custom=False):
-  conn = sqlite3.connect("data/wikitree_dump.db")
+def csv_to_sqlite(args):
+  data_dir = utils.data_version_dir(args.version)
+  conn = sqlite3.connect(Path(data_dir, "wikitree_dump.db"))
   c = conn.cursor()
 
-  if not only_update_custom:
-    # Create output table.
-    c.execute("""CREATE TABLE people (
-      user_num INT, wikitree_id STRING, birth_name STRING,
-      father_num INT, mother_num INT,
-      birth_date DATE, death_date DATE,
-      birth_location STRING, death_location STRING,
-      gender_code INT, no_more_children BOOL,
-      registered_time TIMESTAMP, touched_time TIMESTAMP,
-      edit_count INT, privacy_level INT,
-      manager_num INT,
-      PRIMARY KEY (user_num))""")
-    c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
+  # Create output table.
+  c.execute("""CREATE TABLE people (
+    user_num INT, wikitree_id STRING, birth_name STRING,
+    father_num INT, mother_num INT,
+    birth_date DATE, death_date DATE,
+    birth_location STRING, death_location STRING,
+    gender_code INT, no_more_children BOOL,
+    registered_time TIMESTAMP, touched_time TIMESTAMP,
+    edit_count INT, privacy_level INT,
+    manager_num INT,
+    PRIMARY KEY (user_num))""")
+  c.execute("CREATE TABLE relationships (user_num INT, relative_num INT, relationship_type ENUM)")
 
   # Iterate CSV
   i = 0
   num_rels = 0
   print("Loading people from CSV", time.process_time())
-  for person in csv_iterate.iterate_users(only_update_custom):
+  for person in csv_iterate.iterate_users(version=args.version):
     try:
       c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (person.user_num(), person.wikitree_id(),
@@ -59,7 +61,7 @@ def csv_to_sqlite(only_update_custom=False):
   conn.commit()
 
   print("Loading marriages from CSV", time.process_time())
-  for marriage in csv_iterate.iterate_marriages(only_update_custom):
+  for marriage in csv_iterate.iterate_marriages(version=args.version):
     user1, user2 = marriage.user_nums()
     c.execute("INSERT INTO relationships VALUES (?,?,'spouse')",
               (user1, user2))
@@ -70,10 +72,8 @@ def csv_to_sqlite(only_update_custom=False):
   print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.process_time())
   conn.commit()
 
-  # TODO: Figure out how to update siblings incrementally.
-  if not only_update_custom:
-    print("Computing siblings", time.process_time())
-    c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
+  print("Computing siblings", time.process_time())
+  c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
 
   print("Done", time.process_time())
   conn.commit()
@@ -88,7 +88,7 @@ def csv_to_sqlite(only_update_custom=False):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--only-update-custom", action="store_true")
+parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
-csv_to_sqlite(args.only_update_custom)
+csv_to_sqlite(args)

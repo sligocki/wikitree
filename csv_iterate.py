@@ -1,5 +1,8 @@
 import csv
 import datetime
+from pathlib import Path
+
+import utils
 
 
 def LoadMin(s):
@@ -156,10 +159,12 @@ def iterate_users_file(filename):
       yield UserRow(row, key)
 
 
-def iterate_users(only_custom=False):
+def iterate_users(*, version=None, only_custom=False):
   if not only_custom:
-    for user in iterate_users_file("data/dump_people_users.csv"):
+    for user in iterate_users_file(Path(utils.data_version_dir(version),
+                                        "dump_people_users.csv")):
       yield user
+  # Note: We don't use version dir for custom_users. Just use global one.
   for user in iterate_users_file("data/custom_users.csv"):
     yield user
 
@@ -192,10 +197,12 @@ def iterate_marriages_file(filename):
       yield MarriageRow(row, key)
 
 
-def iterate_marriages(only_custom=False):
+def iterate_marriages(*, version=None, only_custom=False):
   if not only_custom:
-    for marriage in iterate_marriages_file("data/dump_people_marriages.csv"):
+    for marriage in iterate_marriages_file(Path(utils.data_version_dir(version),
+                                                "dump_people_marriages.csv")):
       yield marriage
+  # Note: We don't use version dir for custom_users. Just use global one.
   for marriage in iterate_marriages_file("data/custom_marriages.csv"):
     yield marriage
 

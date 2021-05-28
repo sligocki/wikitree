@@ -12,7 +12,7 @@ import time
 import graphviz
 
 import data_reader
-import group_tools
+import partition_tools
 
 
 class Bfs(object):
@@ -88,7 +88,8 @@ def find_connections(db, person1, person2, rel_types=frozenset(["parent", "child
     len(bfs1.paths), bfs1.num_steps, db.num2id(person1), len(bfs2.paths), bfs2.num_steps, db.num2id(person2)))
 
 
-def find_connections_group(db, start, group, rel_types=frozenset(["parent", "child", "sibling", "spouse"])):
+def find_connections_group(db, start, group,
+                           rel_types=frozenset(["parent", "child", "sibling", "spouse"])):
   bfs = Bfs(db, start, rel_types)
 
   found = False
@@ -149,8 +150,8 @@ def main():
                       help="Only print the distance (not connection sequence).")
   parser.add_argument("--max-dist", type=int)
 
-  parser.add_argument("--to-group",
-                      help="Destination is group rather than specific person.")
+  parser.add_argument("--to-partition",
+                      help="Destination is partition rather than specific person.")
 
   parser.add_argument("--rel-types", nargs='+', default=frozenset(["parent", "child", "sibling", "spouse"]))
   parser.add_argument("--genetic", dest="rel_types", action="store_const", const=frozenset(["parent", "child"]),
@@ -160,19 +161,20 @@ def main():
   args = parser.parse_args()
 
   db = data_reader.Database()
+  partition_db = partition_tools.PartitionDb()
 
-  if args.to_group:
-    # Find shortest connection from person to any member of a group.
-    group_type, member_id = args.to_group.split(":")
+  if args.to_partition:
+    # Find shortest connection from person to any member of a partition.
+    partition_type, member_id = args.to_partition.split(":")
     member_num = db.id2num(member_id)
-    rep = group_tools.find_group_rep(group_type, member_num)
-    group_members = group_tools.list_group(group_type, rep)
+    rep = partition_db.find_partition_rep(partition_type, member_num)
+    partition_members = partition_db.list_partition(partition_type, rep)
     for start_id in args.person_id:
-      print("Connections from", start_id, "to group", args.to_group)
-      plot_name = "results/Connections_%s_%s" % (start_id, args.to_group)
-      connections = find_connections_group(db,
+      print("Connections from", start_id, "to partition", args.to_partition)
+      plot_name = "results/Connections_%s_%s" % (start_id, args.to_partition)
+      connections = find_connections_partition(db,
                                            db.id2num(start_id),
-                                           group_members,
+                                           partition_members,
                                            args.rel_types)
       print_connections(args, db, connections, plot_name)
 

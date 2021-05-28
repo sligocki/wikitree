@@ -1,6 +1,8 @@
 import datetime
 import sqlite3
 
+import utils
+
 
 # TODO:
 #class User(object):
@@ -10,8 +12,9 @@ import sqlite3
 
 
 class Database(object):
-  def __init__(self, filename="data/wikitree_dump.db"):
-    self.conn = sqlite3.connect(filename)
+  def __init__(self, version=None):
+    self.filename = Path(utils.data_version_dir(version), "wikitree_dump.db")
+    self.conn = sqlite3.connect(self.filename)
     self.conn.row_factory = sqlite3.Row
     self.cursor = self.conn.cursor()
 

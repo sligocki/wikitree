@@ -41,10 +41,10 @@ echo csv_to_sqlite.py
 python csv_to_sqlite.py
 
 echo
-echo csv_to_groups.py
-python csv_to_groups.py
-echo "csv_to_groups.py --sibling-in-law"
-python csv_to_groups.py --sibling-in-law
+echo csv_to_partitions.py
+python csv_to_partitions.py
+echo "csv_to_partitions.py --sibling-in-law"
+python csv_to_partitions.py --sibling-in-law
 
 rm -f data/categories.db
 echo process_categories.sh

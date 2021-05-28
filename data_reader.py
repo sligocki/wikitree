@@ -9,7 +9,8 @@ import csv_iterate
 import sqlite_reader
 
 
-def load_connections(include_parents,
+def load_connections(version,
+                     include_parents,
                      include_children,
                      include_siblings,
                      include_spouses):
@@ -18,7 +19,7 @@ def load_connections(include_parents,
 
   print("Loading people", time.process_time())
   num_conns = 0
-  for i, person in enumerate(csv_iterate.iterate_users()):
+  for i, person in enumerate(csv_iterate.iterate_users(version=version)):
     person_num = person.user_num()
     for parent_num in (person.father_num(), person.mother_num()):
       if parent_num:
@@ -39,7 +40,7 @@ def load_connections(include_parents,
 
   if include_spouses:
     print("Loading marriages", time.process_time())
-    for marriage in csv_iterate.iterate_marriages():
+    for marriage in csv_iterate.iterate_marriages(version=version):
       user1, user2 = marriage.user_nums()
       connections[user1].add(user2)
       connections[user2].add(user1)
@@ -48,8 +49,9 @@ def load_connections(include_parents,
   return connections
 
 class Database(sqlite_reader.Database):
-  def __init__(self):
-    super(Database, self).__init__()
+  def __init__(self, version=None):
+    super(Database, self).__init__(version)
+    self.version = version
     self.connections = None
 
   def neighbors_of(self, person):
@@ -59,7 +61,8 @@ class Database(sqlite_reader.Database):
       return super(Database, self).neighbors_of(person)
 
   def load_connections(self):
-    self.connections = load_connections(include_parents=True,
+    self.connections = load_connections(version=args.version,
+                                        include_parents=True,
                                         include_children=True,
                                         include_siblings=True,
                                         include_spouses=True)

@@ -5,10 +5,10 @@ import collections
 import itertools
 import time
 
-import csv_to_groups
+import csv_to_partitions
 import data_reader
 import enum_kin
-import group_tools
+import partition_tools
 
 
 def find_sibling_in_laws(start, sib_spos_of):
@@ -34,7 +34,7 @@ parser.add_argument("--person",
 parser.add_argument("--ancestors", metavar="PERSON",
                     help="Find sibling-in-laws for all ancestors of a person.")
 parser.add_argument("--all", action="store_true",
-                    help="Compute all sibling-in-law groups for entire tree.")
+                    help="Compute all sibling-in-law partitions for entire tree.")
 args = parser.parse_args()
 
 db = data_reader.Database()
@@ -69,22 +69,22 @@ if args.ancestors:
         print(ahn, len(sils), db.name_of(anc), total, sep="\t")
 
 if args.all:
-  groups = csv_to_groups.get_connection_groups(connections)
+  partitions = csv_to_partitions.get_connection_partitions(connections)
 
   # Summarize
-  print("# Groups:", len(groups))
-  ord_reps = [(len(groups[rep]), rep) for rep in groups]
+  print("# Partitions:", len(partitions))
+  ord_reps = [(len(partitions[rep]), rep) for rep in partitions]
   ord_reps.sort(key=lambda x: x[0], reverse=True)
 
-  print("Largest groups:")
+  print("Largest partitions:")
   for i in range(10):
     size, rep = ord_reps[i]
-    print("  %d-th largest group: %d (rep: %s)" % (i + 1, size, db.num2id(rep)))
+    print("  %d-th largest partition: %d (rep: %s)" % (i + 1, size, db.num2id(rep)))
 
-  print("%-iles by groups:")
+  print("%-iles by partitions:")
   for x in (99.999, 99.99, 99.9, 99, 90, 50):
     size, _ = ord_reps[int(len(ord_reps) * (100-x) // 100)]
-    print("  %s%%-ile group size: %d" % (x, size))
+    print("  %s%%-ile partition size: %d" % (x, size))
 
   print("%-ile by people:")
   for x in (99, 90, 75, 50, 25, 10):
@@ -98,4 +98,5 @@ if args.all:
     print("  %s%%-ile # sibling-in-laws: %d" % (x, size))
 
   if args.write_db:
-    group_tools.write_group("sibling_in_law", groups)
+    partition_db = partition_tools.PartitionDb()
+    partition_db.write_partition("sibling_in_law", partitions)
