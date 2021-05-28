@@ -15,7 +15,7 @@ def data_version_dir(version):
   if version:
     return Path("data", "version", version)
   else:
-    return Path("data")
+    return Path("data", "version", "default")
 
 class TopN:
   """Data structure which only keeps top N items."""

@@ -140,9 +140,16 @@ def print_connections(args, db, connections, plot_name=None):
     dot.view()
 
 
+def get_person_num(db, id_or_num):
+  try:
+    return int(id_or_num)
+  except ValueError:
+    return db.id2num(id_or_num)
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("person_id", nargs='+')
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
 
   parser.add_argument("--plot", action="store_true",
                       help="Produce a DOT plot of connections.")
@@ -160,8 +167,8 @@ def main():
                       help="Only consider sibling and spouse relationships (find how two people are sibling-in-laws).")
   args = parser.parse_args()
 
-  db = data_reader.Database()
-  partition_db = partition_tools.PartitionDb()
+  db = data_reader.Database(version=args.version)
+  partition_db = partition_tools.PartitionDb(version=args.version)
 
   if args.to_partition:
     # Find shortest connection from person to any member of a partition.
@@ -170,24 +177,21 @@ def main():
     rep = partition_db.find_partition_rep(partition_type, member_num)
     partition_members = partition_db.list_partition(partition_type, rep)
     for start_id in args.person_id:
-      print("Connections from", start_id, "to partition", args.to_partition)
+      start_num = get_person_num(db, start_id)
+      print("Connections from", db.num2id(start_num), "to partition", args.to_partition)
       plot_name = "results/Connections_%s_%s" % (start_id, args.to_partition)
-      connections = find_connections_partition(db,
-                                           db.id2num(start_id),
-                                           partition_members,
-                                           args.rel_types)
+      connections = find_connections_partition(
+        db, start_num, partition_members, args.rel_types)
       print_connections(args, db, connections, plot_name)
 
   else:
     # Find shortest connection between two people.
     for i in range(len(args.person_id) - 1):
-      start_id = args.person_id[i]
-      end_id = args.person_id[i + 1]
-      print("Connections from", start_id, "to", end_id)
-      plot_name = "results/Connections_%s_%s" % (start_id, end_id)
-      connections = find_connections(db,
-                                     db.id2num(start_id),
-                                     db.id2num(end_id),
+      start_num = get_person_num(db, args.person_id[i])
+      end_num = get_person_num(db, args.person_id[i + 1])
+      print("Connections from", db.num2id(start_num), "to", db.num2id(end_num))
+      plot_name = "results/Connections_%s_%s" % (db.num2id(start_num), db.num2id(end_num))
+      connections = find_connections(db, start_num, end_num,
                                      args.rel_types,
                                      args.max_dist)
       print_connections(args, db, connections, plot_name)

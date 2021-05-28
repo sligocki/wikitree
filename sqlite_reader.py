@@ -1,20 +1,17 @@
 import datetime
+from pathlib import Path
 import sqlite3
 
 import utils
 
 
-# TODO:
-#class User(object):
-#  def __init__(self, db, user_num):
-#    self.db = db
-#    self.user_num = user_num
-
-
 class Database(object):
   def __init__(self, version=None):
     self.filename = Path(utils.data_version_dir(version), "wikitree_dump.db")
-    self.conn = sqlite3.connect(self.filename)
+    try:
+      self.conn = sqlite3.connect(self.filename)
+    except sqlite3.OperationalError:
+      raise sqlite3.OperationalError(f"Unable to open DB file {self.filename}")
     self.conn.row_factory = sqlite3.Row
     self.cursor = self.conn.cursor()
 
