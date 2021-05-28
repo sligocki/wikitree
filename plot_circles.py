@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import utils
 
 
+def mean(xs):
+  return sum(xs) / len(xs)
+
 def median_index(circle_sizes):
   total_count = sum(circle_sizes)
   remaining = total_count // 2
@@ -29,6 +32,9 @@ parser.add_argument("--relative", action="store_true",
                     help="Rescale distances relative to median dist.")
 parser.add_argument("--log-normal-regression", action="store_true",
                     help="Plot a log-normal distribution regression")
+
+parser.add_argument("--smooth", type=int, default=0,
+                    help="Number of points to average around each point for smoothing.")
 
 parser.add_argument("--save-image", type=Path,
                     help="Instead of displaying plot, save it to a file.")
@@ -77,9 +83,13 @@ for wikitree_id in ids:
     xs = [n - median for n in xs]
 
   ys = sizes
+  if args.smooth:
+    ys = [mean(ys[max(i - args.smooth, 0):i + args.smooth + 1]) for i in range(len(ys))]
+
   if args.rate:
     del xs[0]
-    ys = [ys[i+1] / ys[i] for i in range(len(ys) - 1)]
+    ys = [ys[i+1] / ys[i] if ys[i] else None
+          for i in range(len(ys) - 1)]
 
   ax.plot(xs, ys, label=wikitree_id)
 
