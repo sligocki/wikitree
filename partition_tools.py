@@ -47,7 +47,7 @@ class PartitionDb:
           self.conn.commit()
     self.conn.commit()
 
-    self.cursor.execute(f"CREATE INDEX idx_{table}_rep ON sibling_in_law(rep)")
+    self.cursor.execute(f"CREATE INDEX idx_{table}_rep ON {table} (rep)")
     self.conn.commit()
 
 
