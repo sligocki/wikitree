@@ -46,7 +46,7 @@ def csv_to_sqlite(args):
       print(e)
     child_num = person.user_num()
     for parent_num in (person.father_num(), person.mother_num()):
-      if parent_num != 0:
+      if parent_num:
         c.execute("INSERT INTO relationships VALUES (?,?,'parent')",
                   (child_num, parent_num))
         c.execute("INSERT INTO relationships VALUES (?,?,'child')",
@@ -74,17 +74,16 @@ def csv_to_sqlite(args):
 
   print("Computing siblings", time.process_time())
   c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
-
-  print("Done", time.process_time())
   conn.commit()
 
-  # Add additional indexes for fast lookup.
-  # Note: Adding them at the end is the most efficient.
+  print("Indexing", time.process_time())
+  # Add indexes for fast lookup. Note: Adding them at the end is the most efficient.
   c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
   c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
 
   conn.commit()
   conn.close()
+  print("Done", time.process_time())
 
 
 parser = argparse.ArgumentParser()
