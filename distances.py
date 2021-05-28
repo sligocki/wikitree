@@ -5,13 +5,9 @@ import collections
 import json
 from pprint import pprint
 import random
-import sqlite3
 import time
 
 import data_reader
-
-results_conn = sqlite3.connect("data/distances.db")
-results_conn.row_factory = sqlite3.Row
 
 def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
@@ -37,20 +33,8 @@ def get_distances(db, start):
   return dists, hist_dist, mean_dist, max_dist
 
 def get_mean_dists(db, start):
-  c = results_conn.cursor()
-  c.execute("SELECT mean_dist, max_dist FROM distances WHERE user_num=?", (start,))
-  rows = c.fetchall()
-  if rows:
-    assert len(rows) == 1, rows
-    return rows[0]["mean_dist"], rows[0]["max_dist"]
-  else:
-    _, _, mean_dist, max_dist = get_distances(db, start)
-    try:
-      results_conn.execute("INSERT INTO distances VALUES (?,?,?)", (start, mean_dist, max_dist))
-      results_conn.commit()
-    except e:
-      print("Ignoring distances.db write failure:", e)
-    return mean_dist, max_dist
+  _, _, mean_dist, max_dist = get_distances(db, start)
+  return mean_dist, max_dist
 
 def enum_user_nums(db, args):
   if args.random:

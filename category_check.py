@@ -13,15 +13,16 @@ def is_residence(location, places):
   return False
 
 
-def category_check(category_name, target_places):
-  db = data_reader.Database()
+def category_check(version, category_name, target_places):
+  db = data_reader.Database(version)
+  category_db = category_tools.CategoryDb(version)
 
   residents = set()
-  for user in csv_iterate.iterate_users():
+  for user in csv_iterate.iterate_users(version=version):
     for place in (user.birth_location(), user.death_location()):
       if place and is_residence(place, target_places):
         residents.add(user.user_num())
-  for marriage in csv_iterate.iterate_marriages():
+  for marriage in csv_iterate.iterate_marriages(version=version):
     if marriage.marriage_location() and \
        is_residence(marriage.marriage_location(), target_places):
       for user_num in marriage.user_nums():
@@ -34,7 +35,7 @@ def category_check(category_name, target_places):
          or db.birth_date_of(user_num) >= datetime.date(1500, 1, 1))}
   print(f"# Editable residents = {len(editable_residents)}")
 
-  in_category = category_tools.list_category(category_name)
+  in_category = category_db.list_category(category_name)
   print(f"# in category = {len(in_category)}")
 
   cat_not_resident = in_category - residents
@@ -52,6 +53,8 @@ def category_check(category_name, target_places):
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
+
   parser.add_argument("--no-shapinsay", dest="shapinsay", action="store_false")
   parser.add_argument("--no-inowroclaw", dest="inowroclaw", action="store_false")
   parser.add_argument("--honhardt", dest="honhardt", action="store_true")
@@ -60,6 +63,7 @@ def main():
   if args.shapinsay:
     print("Shapinsay, Orkney")
     category_check(
+      args.version,
       category_name="Shapinsay_Parish,_Orkney",
       target_places=["Shapinsay"])
     print()
@@ -67,6 +71,7 @@ def main():
   if args.inowroclaw:
     print("Inowrocław county, Poland")
     category_check(
+      args.version,
       category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship,_Poland",
       target_places=[
         # Inowrocław in Polish and German spelling.
@@ -82,6 +87,8 @@ def main():
   if args.honhardt:
     print("Honhardt, Württemberg")
     category_check(
+      args.version,
+      # TODO: Note: this category does not exist.
       category_name="Honhardt,_Württemberg",
       target_places=["Honhardt"])
     print()

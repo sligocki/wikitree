@@ -1,11 +1,17 @@
+from pathlib import Path
 import sqlite3
 
+import utils
 
-conn = sqlite3.connect("data/categories.db")
-conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
 
-def list_category(category_name):
-  cursor.execute("SELECT user_num FROM categories WHERE category_name=?",
-                 (category_name,))
-  return frozenset(row["user_num"] for row in cursor.fetchall())
+class CategoryDb:
+  def __init__(self, version):
+    self.filename = Path(utils.data_version_dir(version), "categories.db")
+    self.conn = sqlite3.connect(self.filename)
+    self.conn.row_factory = sqlite3.Row
+    self.cursor = self.conn.cursor()
+
+  def list_category(self, category_name):
+    self.cursor.execute("SELECT user_num FROM categories WHERE category_name=?",
+                        (category_name,))
+    return frozenset(row["user_num"] for row in self.cursor.fetchall())

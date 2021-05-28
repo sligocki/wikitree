@@ -5,7 +5,7 @@ import networkx as nx
 import utils
 
 
-g = nx.read_adjlist("data/connection_graph.adj.nx")
+g = nx.read_adjlist("data/version/default/connection_graph.adj.nx")
 
 # Get list of 5 biggest components and one component for each order of magnitude.
 top_n = utils.TopN(5)

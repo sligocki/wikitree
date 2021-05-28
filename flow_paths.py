@@ -107,7 +107,8 @@ def try_decode_wikitree_id(db, node):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("nodes", nargs="+")
-  parser.add_argument("--graph", default="data/connection_graph.main.adj.nx")
+  parser.add_argument("--graph",
+                      default="data/version/default/connection_graph.main.adj.nx")
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
   args = parser.parse_args()
