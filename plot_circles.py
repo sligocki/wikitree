@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 
 import utils
 
@@ -60,14 +61,12 @@ if args.rate:
   ax.set_ylim(0, 10)
   ax.set_yticks(range(0, 11, 1))
 else:
-  ax.set_ylabel("Circle Size")
+  ax.set_ylabel("Circle Size (% of population)")
+  ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 
 if args.log_y:
   ax.set_yscale("log")
-  ax.set_ylim(1, 100_000_000)
-else:
-  # matplotlib does not allow plain format for log axis ...
-  ax.ticklabel_format(style="plain")
+  ax.set_ylim(0.000001, 0.1)
 
 ax.grid(True)
 ax.set_xticks(range(-200, 200, 10))
@@ -82,7 +81,10 @@ for wikitree_id in ids:
     median = median_index(sizes)
     xs = [n - median for n in xs]
 
-  ys = sizes
+  # Normalize distribution
+  total_sizes = sum(sizes)
+  ys = [y / total_sizes for y in sizes]
+
   if args.smooth:
     ys = [mean(ys[max(i - args.smooth, 0):i + args.smooth + 1]) for i in range(len(ys))]
 
@@ -111,7 +113,7 @@ for wikitree_id in ids:
     xs = [x for x in xs if x > 0]
     # Log-normal PDF
     # See https://en.wikipedia.org/wiki/Log-normal_distribution#Probability_density_function
-    ys = [count / (x * stddev * math.sqrt(2 * math.pi)) *
+    ys = [1 / (x * stddev * math.sqrt(2 * math.pi)) *
           math.e**(-(math.log(x) - mean)**2 / (2 * stddev**2))
           for x in xs]
 
