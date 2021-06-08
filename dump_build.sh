@@ -28,14 +28,15 @@ bash process_categories.sh ${TIMESTAMP}
 
 # Note: Skipping Graph stuff for now because it's pretty intense to do each week.
 # python3 sqlite_to_graph.py --version=${TIMESTAMP}
-#
-# python3 nuclear_family_graph.py --version=${TIMESTAMP}
-#
-# python3 graph_core.py ${VERSION_DIR}/nuclear.main.adj.nx ${VERSION_DIR}/nuclear.core.adj.nx
+
+python3 nuclear_family_graph.py --version=${TIMESTAMP}
+python3 graph_core.py ${VERSION_DIR}/nuclear.main.adj.nx \
+                      ${VERSION_DIR}/nuclear.core.adj.nx \
+                      ${VERSION_DIR}/nuclear.core.collapse.csv
 
 echo
 echo "(3) Check categories"
-python3 category_check.py
+python3 category_check.py --version=${TIMESTAMP}
 
 echo
 echo "Done"

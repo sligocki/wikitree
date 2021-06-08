@@ -4,7 +4,8 @@
 set -u
 set -e
 
-bash dump_download.sh
+# source dump_download.sh so that we set $TIMESTAMP
+source dump_download.sh
 bash dump_build.sh $TIMESTAMP
 
 echo "Update default version"
