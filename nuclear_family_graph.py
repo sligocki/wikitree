@@ -53,7 +53,7 @@ for i, person_obj in enumerate(csv_iterate.iterate_users(version=args.version)):
 
 print("Loading marriages", time.process_time())
 # Connect any spouses. Note: This is redundant for couples with children.
-for marriage in csv_iterate.iterate_marriages():
+for marriage in csv_iterate.iterate_marriages(version=args.version):
   couple = marriage.user_nums()
   union_node = UnionNodeName(couple)
   for spouse in couple:
