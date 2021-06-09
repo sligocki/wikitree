@@ -7,7 +7,8 @@ We estimate neighborhood size as:
   G[node, k] = sum(G[neigh, k-1] - G[node, k-2] for neigh in neighbors_of(node)) + G[node, k-2]
 
 If graph is acyclic, I belive this exactly computes neighborhood sizes.
-But for graphs with cycles, this will eventually overcount.
+But for graphs with cycles, this will overcount.
+It does especially bad with endogamy (Ex: Acadia).
 """
 
 
