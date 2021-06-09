@@ -9,7 +9,8 @@ import data_reader
 
 parser = argparse.ArgumentParser()
 parser.add_argument("wikitree_id")
-parser.add_argument("--graph", default="data/nuclear.core.adj.nx")
+parser.add_argument("--version", help="Data version (defaults to most recent).")
+parser.add_argument("--graph", default="data/version/default/nuclear.core.adj.nx")
 parser.add_argument("--plot", action="store_true",
                     help="Produce a DOT plot of connections.")
 parser.add_argument("--distance-only", action="store_true",
@@ -30,7 +31,7 @@ for node in graph.nodes:
       # Ignore non integer "person" values. Ex: "Parent"
       pass
 
-db = data_reader.Database()
+db = data_reader.Database(args.version)
 print(f"Connections from {args.wikitree_id} to core (size {len(core_people):,})", time.process_time())
 connections = connection.find_connections_group(
   db=db, start=db.id2num(args.wikitree_id), group=core_people)

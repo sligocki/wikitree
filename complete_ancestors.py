@@ -7,9 +7,10 @@ import enum_kin
 
 parser = argparse.ArgumentParser()
 parser.add_argument("start_id")
+parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
-db = data_reader.Database()
+db = data_reader.Database(args.version)
 
 start_num = db.id2num(args.start_id)
 for ahn, ancestor in enum_kin.enum_ancestors(db, start_num):

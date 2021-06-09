@@ -61,7 +61,7 @@ class Database(sqlite_reader.Database):
       return super(Database, self).neighbors_of(person)
 
   def load_connections(self):
-    self.connections = load_connections(version=args.version,
+    self.connections = load_connections(version=self.version,
                                         include_parents=True,
                                         include_children=True,
                                         include_siblings=True,

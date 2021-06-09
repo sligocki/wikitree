@@ -26,7 +26,8 @@ class Database(object):
     try:
       return int(id_or_num)
     except ValueError:
-      return self.id2num(id_or_num)
+      pass
+    return self.id2num(id_or_num)
 
   def id2num(self, wikitree_id):
     self.cursor.execute("SELECT user_num FROM people WHERE wikitree_id=?", (wikitree_id,))

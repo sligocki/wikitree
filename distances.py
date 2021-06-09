@@ -49,12 +49,13 @@ def enum_user_nums(db, args):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
   parser.add_argument("--random", action="store_true")
   parser.add_argument("--save-distribution-json", help="Save Circle sizes to file.")
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
-  db = data_reader.Database()
+  db = data_reader.Database(args.version)
   db.load_connections()
 
   circle_sizes = {}

@@ -37,13 +37,14 @@ def descendants_per_ancestor(db, start_num, args):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("wikitree_id")
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
   parser.add_argument("--ignore-my-line", action="store_true")
   parser.add_argument("--print-all", action="store_true")
   parser.add_argument("--num-gens", type=int,
                       help="Restrict num gens to look down")
   args = parser.parse_args()
 
-  db = data_reader.Database()
+  db = data_reader.Database(args.version)
   start_num = db.id2num(args.wikitree_id)
 
   descendants_per_ancestor(db, start_num, args)

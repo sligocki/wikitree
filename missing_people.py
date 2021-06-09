@@ -10,11 +10,12 @@ import data_reader
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("dna_connections_file"
+parser.add_argument("dna_connections_file",
                     help="Response to an API request: api.php?action=getConnectedProfilesByDNATest&key=<person>&dna_id=<id>")
+parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
-db = data_reader.Database()
+db = data_reader.Database(args.version)
 
 with open(args.dna_connections_file) as f:
   results = json.load(f)
