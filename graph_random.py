@@ -12,22 +12,30 @@ import random
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy
 
 import utils
 
 
 def build_exponential(num_nodes, edges_per_node):
+  # We always add one edge to each added node. Then we can add some extras anywhere.
+  extra_edges_per_node = edges_per_node - 1
+  assert extra_edges_per_node >= 0
   # After adding each node, we repeatedly try adding edges until we fail
   # each time adding an edge with prob_edge chance.
   # So the expected number of edges added (per node) is
   #   prob_edge + prob_edge^2 + prob_edge^3 + ... = prob_edge / (1 - prob_edge)
-  # Setting that equal to edges_per_node and re-arranging we get:
-  prob_edge = edges_per_node / (1 + edges_per_node)
+  # Setting that equal to extra_edges_per_node and re-arranging we get:
+  prob_edge = extra_edges_per_node / (1 + extra_edges_per_node)
 
   graph = nx.Graph()
   for node in range(num_nodes):
     graph.add_node(node)
-    # Add edges stochastically
+    # Add anchor edge
+    if node > 0:
+      other_node = random.randrange(node)
+      graph.add_edge(node, other_node)
+    # Add more edges stochastically
     while random.random() < prob_edge:
       # Use non-preferential attachment:
       #   Pick two end of edge uniformly at random among all nodes.
@@ -59,15 +67,15 @@ def draw_degree_distr(deg_distr):
 
   # Plot degree distribution
   xs = sorted(deg_distr.keys())
-  ys = [deg_distr[x] for x in xs]
-  ax.plot(xs, normalize(ys), ".-", label = "Degree Distribution")
+  ys = normalize([deg_distr[x] for x in xs])
+  ax.plot(xs, ys, ".-", label = "Degree Distribution")
 
   # Plot exponential regression line
-  sum_deg = sum(ys)
-  mean_deg = sum(k * deg_distr[k] for k in xs) / sum_deg
-  print("Mean Degree", mean_deg)
-  reg_ys = [math.e**(- k / mean_deg) for k in xs]
-  ax.plot(xs, normalize(reg_ys), label = "Exponential Regression")
+  m, b = numpy.polyfit(xs, numpy.log(ys), deg = 1)
+  # ln(y) = m * x + b
+  print(f"Exponential regression: ln(y) = {m:f} x + {b:f}")
+  reg_ys = [math.e**(m * x + b) for x in xs]
+  ax.plot(xs, reg_ys, label = "Exponential Regression")
 
   ax.legend()
 
