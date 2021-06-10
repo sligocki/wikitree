@@ -8,11 +8,10 @@ exponential degree distribution). We might extend to other methods later.
 import argparse
 import collections
 import math
+from pathlib import Path
 import random
 
-import matplotlib.pyplot as plt
 import networkx as nx
-import numpy
 
 import utils
 
@@ -46,73 +45,20 @@ def build_exponential(num_nodes, edges_per_node):
   return graph
 
 
-def degree_distribution(graph):
-  degree_counts = collections.Counter()
-  for node in graph.nodes():
-    degree = graph.degree[node]
-    degree_counts[degree] += 1
-  return degree_counts
-
-
-def normalize(ys):
-  total = sum(ys)
-  return [y / total for y in ys]
-
-def draw_degree_distr(deg_distr):
-  fig, ax = plt.subplots()
-  # Plot with y-log to see exponential degree distribution as linear.
-  ax.set_yscale("log")
-  ax.set_ylabel("Fraction of nodes")
-  ax.set_xlabel("Degree")
-
-  # Plot degree distribution
-  xs = sorted(deg_distr.keys())
-  ys = normalize([deg_distr[x] for x in xs])
-  ax.plot(xs, ys, ".-", label = "Degree Distribution")
-
-  # Plot exponential regression line
-  m, b = numpy.polyfit(xs, numpy.log(ys), deg = 1)
-  # ln(y) = m * x + b
-  print(f"Exponential regression: ln(y) = {m:f} x + {b:f}")
-  reg_ys = [math.e**(m * x + b) for x in xs]
-  ax.plot(xs, reg_ys, label = "Exponential Regression")
-
-  ax.legend()
-
-
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("type", choices=["exponential"])
   parser.add_argument("num_nodes", type=int)
   parser.add_argument("edges_per_node", type=float)
-  parser.add_argument("--draw-network", action="store_true")
+  parser.add_argument("output_graph", type=Path)
   args = parser.parse_args()
 
   utils.log("Building graph")
   graph = build_exponential(num_nodes = args.num_nodes,
                             edges_per_node = args.edges_per_node)
 
-  utils.log("Loading degree distribution")
-  deg_distr = degree_distribution(graph)
-
-  utils.log("Loading components")
-  components = list(nx.connected_components(graph))
-
-  print(f"# Nodes = {graph.number_of_nodes():_}")
-  print(f"# Edges = {graph.number_of_edges():_}")
-  print(f"# Components = {len(components):_}")
-  print(f"Largest component size = {max(len(c) for c in components):_}")
-  print("Degree Distribution", sorted(deg_distr.items()))
-  print("Pearson Correlation Coefficient",
-        nx.degree_pearson_correlation_coefficient(graph))
-
-  if args.draw_network:
-    nx.draw_planar(graph)
-    plt.show()
-
-  utils.log("Drawing plots")
-  draw_degree_distr(deg_distr)
-  plt.show()
+  utils.log("Writing graph")
+  nx.write_adjlist(graph, args.output_graph)
 
 if __name__ == "__main__":
   main()
