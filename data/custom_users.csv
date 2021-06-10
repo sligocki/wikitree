@@ -6,11 +6,13 @@ User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last
 19445016	Peterson-9316	5605484	12233043	Michael		Peterson	Peterson	1	1
 19445030	Peterson-9317	5605484	12233043	Rocky		Peterson	Peterson	1	1
 19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2	1
--1	Ligocki-15	19444694	0	Jonathan	Terry	Ligocki	Ligocki	1	1
 19470776	Ligocki-16	19441613	20190252	Dean		Ligocki	Ligocki	1	1
 19980450	Edgar-1938	0	19980477	Diann		Edgar	Wilson	2	1
 20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
 24354180	Peterson-11772	19445030	0	Vanessa		Peterson	Peterson	2	1
+30570372	Ligocki-15	19444694	30570389	Jonathan	Terry	Ligocki	Ligocki	1	1
+30570389	Pounds-429	0	0	Erica		Pounds	Pounds	2	1
+30570400	Mejia-620	0	30570389	Elijah	J.	Mejia	Mejia	1	1
 20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2	1
 20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1	1
 20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2	1
