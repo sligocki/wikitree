@@ -1,38 +1,46 @@
 // Find all people connected directly to a specific person.
 function get_neighbors(id, callback) {
   let xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://api.wikitree.com/api.php?action=getProfile&fields=Name,Father,Mother,Parents,Children,Siblings,Spouses&key=" + id, /* async = */ true);  // TODO: Sanitize
+  xhr.open("GET", "https://api.wikitree.com/api.php?action=getProfile&fields=Name,Id,Manager,Father,Mother,Parents,Children,Siblings,Spouses&key=" + id, /* async = */ true);  // TODO: Sanitize
+  // Send credentials to allow loading private people.
+  xhr.withCredentials = true;
 
   xhr.onload = function (e) {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
 
         let result = JSON.parse(xhr.responseText);
-        result = result[0]["profile"];
+        if (result[0]["status"] === 0) {
+          result = result[0]["profile"];
 
-        let neighbors = [];
-        for (let key in result["Parents"]) {
-          neighbors.push(result["Parents"][key]["Name"]);
-        }
-        for (let key in result["Children"]) {
-          neighbors.push(result["Children"][key]["Name"]);
-        }
-        for (let key in result["Siblings"]) {
-          neighbors.push(result["Siblings"][key]["Name"]);
-        }
-        for (let key in result["Spouses"]) {
-          neighbors.push(result["Spouses"][key]["Name"]);
-        }
+          let neighbors = [];
+          for (let relation of ["Parents", "Children", "Siblings", "Spouses"]) {
+            for (let key in result[relation]) {
+              let data = result[relation][key]
+              neighbors.push({
+                "id": data["Name"],
+                "num": data["Id"],
+                "is_user": (data["Id"] == data["Manager"]),
+              });
+            }
+          }
 
-        callback(neighbors);
+          callback(neighbors);
 
-      } else {
+        } else {  // result[0]["status"] != 0
+          console.error("WikiTree API error loading id " + id);
+          console.error(result[0]["status"]);
+          console.error(result);
+        }
+      } else {  // xhr.status != 200
+        console.error("HTTP error loading id " + id);
         console.error(xhr.statusText);
       }
     }
   };
 
   xhr.onerror = function (e) {
+    console.error("XHR error loading id " + id);
     console.error(xhr.statusText);
   };
 
@@ -43,7 +51,7 @@ class Bfs {
   constructor(start) {
     this.start = start;
     this.visited = new Set();
-    this.visited.add(start)
+    this.visited.add(start.id)
     this.todo = [start];
     this.circle_num = 0;
   }
@@ -54,15 +62,16 @@ class Bfs {
     // of this differently within callbacks!
     let self = this;
     self.circle_num += 1;
-    let this_circle = new Set();
+    let this_circle = [];
     let xhrs_waiting_for = self.todo.length;
     for (let person of self.todo) {
-      get_neighbors(person, function(neighbors) {
+      get_neighbors(person.id, function(neighbors) {
         // console.log("neighbors of " + person + " : " + neighbors);
         for (let neigh of neighbors) {
-          if (!self.visited.has(neigh)) {
+          if (!self.visited.has(neigh.id)) {
             // Person not seen in previous circles.
-            this_circle.add(neigh)
+            self.visited.add(neigh.id)
+            this_circle.push(neigh)
           }
         }
 
@@ -71,11 +80,10 @@ class Bfs {
           // All XHRs have finished.
           // Update object properties.
           self.todo = [...this_circle];
-          self.visited = new Set([...self.visited, ...this_circle])
           // Call callback with all new people.
           callback({
             "circle_num": self.circle_num,
-            "circle_ids": this_circle,
+            "circle_nodes": this_circle,
             "cumulative_size": self.visited.size,
           });
         } else {
@@ -86,8 +94,11 @@ class Bfs {
   }
 }
 
-function load_circles(focus, max_depth) {
-  let bfs = new Bfs(focus);
+function load_circles(focus_id, max_depth) {
+  focus_node = {
+    "id": focus_id,
+  }
+  let bfs = new Bfs(focus_node);
 
   function next_circle_callback(message) {
     postMessage(message)
@@ -99,13 +110,13 @@ function load_circles(focus, max_depth) {
 
   next_circle_callback({
     "circle_num": 0,
-    "circle_ids": new Set([focus]),
+    "circle_nodes": [focus_node],
     "cumulative_size": 1,
   });
 }
 
 onmessage = function(e) {
   let message = e.data;
-  console.log("Worker: Loading circles for " + message.focus + " " + message.depth);
-  load_circles(message.focus, message.depth);
+  console.log("Worker: Loading circles for " + message.focus_id + " " + message.depth);
+  load_circles(message.focus_id, message.depth);
 }
