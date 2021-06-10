@@ -33,6 +33,8 @@ python3 nuclear_family_graph.py --version=${TIMESTAMP}
 python3 graph_core.py ${VERSION_DIR}/nuclear.main.adj.nx \
                       ${VERSION_DIR}/nuclear.core.adj.nx \
                       ${VERSION_DIR}/nuclear.core.collapse.csv
+python3 bipartite_project.py ${VERSION_DIR}/nuclear.main.adj.nx \
+                             ${VERSION_DIR}/family.adj.nx
 
 echo
 echo "(3) Check categories"
