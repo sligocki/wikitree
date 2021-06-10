@@ -3,7 +3,7 @@
 // Find all people connected directly to a specific person.
 function getNeighbors(id, callback) {
   let xhr = new XMLHttpRequest();
-  xhr.open("GET", "/api.php?action=getProfile&fields=Name,Father,Mother,Parents,Children,Siblings,Spouses&key=" + id, /* async = */ true);  // TODO: Sanitize
+  xhr.open("GET", "https://api.wikitree.com/api.php?action=getProfile&fields=Name,Father,Mother,Parents,Children,Siblings,Spouses&key=" + id, /* async = */ true);  // TODO: Sanitize
 
   xhr.onload = function (e) {
     if (xhr.readyState === 4) {

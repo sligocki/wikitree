@@ -12,9 +12,9 @@
       <input type="submit">
     </form>
 
-    <p>Number of profiles searched: <div id="num_profiles_searched">0</div></p>
-    <p>Searching at distance: <div id="search_distance">0</div></p>
-    <p>Status: <div id="status">No search started yet</div></p>
+    <p>Number of profiles searched: <span id="num_profiles_searched">0</span></p>
+    <p>Searching at distance: <span id="search_distance">0</span></p>
+    <p>Status: <span id="status">No search started yet</span></p>
     <ul id="result_list">
     </ul>
 
