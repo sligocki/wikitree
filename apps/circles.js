@@ -37,7 +37,7 @@ worker.onmessage = function(e) {
   let e_new = document.createElement("div");
   let e_summary = document.createElement("button");
   e_summary.type = "button";
-  e_summary.textContent = "Circle " + response.circle_num + " / Size " + response.circle_nodes.length + " / Cumulative " + response.cumulative_size + "  / " + time_diff + " seconds elapsed";
+  e_summary.textContent = "Circle " + response.circle_num + " / Size " + response.circle_nodes.length + " / Cumulative " + response.cumulative_size + "  / " + time_diff + " total seconds elapsed";
   e_new.appendChild(e_summary);
 
   console.log("Circle " + response.circle_num + " :")
