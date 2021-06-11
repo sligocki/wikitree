@@ -18,4 +18,11 @@ User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last
 20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2	1
 20304064	Treibergs-3	20304018	20304037	Lija		Treibergs	Treibergs	2	1
 4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1	0
+5605158	Hallberg-69	4792350	7349069	Sara		Hallberg	Byers	2	0
+5605159	Hallberg-70	4792350	7349069	Ethan		Hallberg	Hallberg	1	0
+5605185	Hallberg-84	5605102	5605435	Judith	Ann	Hallberg	Hallberg	2	0
+5605186	Hallberg-85	5605102	5605435	Robert		Hallberg	Hallberg	1	0
 7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2	0
+9114075	Ellinger-116	0	0	Max	Miller	Ellinger	Ellinger	1	0
+-1	Wilcox-x1	0	-2	Megan		Wilcox	Hallberg	2	0
+-2	Wilcox-x2	9114075	9114076	Marie		Ellinger	Wilcox	2	0
