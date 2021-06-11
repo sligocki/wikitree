@@ -33,10 +33,10 @@ User ID	WikiTree ID	Father	Mother	First Name	Middle Name	Last Name at Birth	Last
 20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
 22357831	Wood-29877	22365550	0	Barry		Wood	Wood	1	0
 24354180	Peterson-11772	19445030	0	Vanessa		Peterson	Peterson	2	1
-24453993	Smith-195929	24454518	24454605	Kay		Marsh	Marsh	2 0
-24454605	Marsh-8353	20998740	24454659	Kay		Marsh	Marsh	2 0
-24741384	Bell-26529	24741352	24741336	Florence		Bell	Craven	2 0
-24741401	Craven-1910	24823519	24454659	Renee	Michelle	Craven	Deierling	2 0
+24453993	Smith-195929	24454518	24454605	Kay		Marsh	Marsh	2	0
+24454605	Marsh-8353	20998740	24454659	Kay		Marsh	Marsh	2	0
+24741384	Bell-26529	24741352	24741336	Florence		Bell	Craven	2	0
+24741401	Craven-1910	24823519	24454659	Renee	Michelle	Craven	Deierling	2	0
 26961805	Wisniewski-313	26961705	24741384	Paul	M.	Wisniewski	Wisniewski	1	0
 29900304	Kubisz-5	29900473	0	Krystyna		Kubisz	Bacaksizlar	2	0
 30570372	Ligocki-15	19444694	30570389	Jonathan	Terry	Ligocki	Ligocki	1	1
