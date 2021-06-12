@@ -40,8 +40,12 @@ worker.onmessage = function(e) {
   e_summary.textContent = "Circle " + response.circle_num + " / Size " + response.circle_nodes.length + " / Cumulative " + response.cumulative_size + "  / " + time_diff + " total seconds elapsed";
   e_new.appendChild(e_summary);
 
-  console.log("Circle " + response.circle_num + " :")
-  console.log(response.circle_nodes)
+  // Sort by ID.
+  response.circle_nodes.sort(function(a, b) {
+    if (a.id > b.id) { return 1; }
+    else if (a.id < b.id) { return -1;}
+    else { return 0; }
+  })
   let e_list = document.createElement("ul");
   e_list.style.display = "none";
   for (let node of response.circle_nodes) {
