@@ -160,13 +160,18 @@ def iterate_users_file(filename):
 
 
 def iterate_users(*, version, only_custom=False):
+  custom_user_nums = set()
+  # Note: We don't use version dir for custom_users. Just use global one.
+  for user in iterate_users_file("data/custom_users.csv"):
+    custom_user_nums.add(user.user_num())
+    yield user
+
   if not only_custom:
     for user in iterate_users_file(Path(utils.data_version_dir(version),
                                         "dump_people_users.csv")):
-      yield user
-  # Note: We don't use version dir for custom_users. Just use global one.
-  for user in iterate_users_file("data/custom_users.csv"):
-    yield user
+      # Ignore "official" versions of any custom defined users.
+      if user.user_num() not in custom_user_nums:
+        yield user
 
 
 class MarriageRow(Row):
