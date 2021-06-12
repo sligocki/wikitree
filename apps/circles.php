@@ -25,14 +25,15 @@
       				$('.logged_in').show();
       				$('#user_name_label').html(wikitree.session.user_name);
       				$('#user_id_label').html(wikitree.session.user_id);
+
+              document.getElementById("focus").value = wikitree.session.user_name;
       			}
       			else {
       				// The checkLogin failed, so the user isn't already logged in (doesn't have a session cookie at api.wikitree.com).
       				// Our application URL here might have been returned to by a clientLogin attempt, however.
       				// See if we have an authorization code we can use to complete the login.
-
       				var x = window.location.href.split('?');
-      				var queryParams = new URLSearchParams( x[1] );
+      				var queryParams = new URLSearchParams(x[1]);
       				if (queryParams.has('authcode')) {
       					// We have an authcode. Send that to the API's "clientLogin" action to see if it's valid.
       					// On success, the wikitree.js clientLogin function will set "loggedIn" to true and store the user_id and user_name.
@@ -42,7 +43,7 @@
       							if (wikitree.session.loggedIn) {
       								// If we're logged in, let's redirect back to ourselves just to clean out the authcode from
       								// the URL. We don't want user's to bookmark that since it's temporary.
-      								window.location = 'api_demo_new.php';
+      								window.location = '?';
       							}
       							else {
       								// Our clientLogin action failed. So the user is not in fact logged in.
@@ -70,16 +71,16 @@
   		</form>
     </div>
     <div class="logged_in">
-      You are logged in.
+      You are logged in as <b id=user_name_label>(loading)</b>.
     </div>
     <hr/>
 
     <form id="input">
       <div>
         <label for="focus">Focus id: </label>
-        <input type="text" id="focus" value="Ligocki-7"/>
+        <input type="text" id="focus" value="Lothrop-29"/>
         <label for="depth">Number of circles: </label>
-        <input type="text" id="depth" value="6"/>
+        <input type="text" id="depth" value="5"/>
       </div>
       <input type="submit"/>
     </form>
