@@ -21,7 +21,12 @@ with urllib.request.urlopen(url) as resp:
   data_text = resp.read().decode("ascii")
 
 utils.log("Parsing JSON")
-data = json.loads(data_text)
+try:
+  data = json.loads(data_text)
+except json.decoder.JSONDecodeError:
+  print("Error while parsing JSON response:")
+  print(data_text)
+  raise
 
 utils.log("Extracting circle sizes")
 circle_sizes = []

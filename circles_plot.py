@@ -77,13 +77,18 @@ ids = args.wikitree_ids if args.wikitree_ids else circle_sizes.keys()
 for wikitree_id in ids:
   sizes = circle_sizes[wikitree_id]
   xs = list(range(len(sizes)))
-  if args.relative:
-    median = median_index(sizes)
-    xs = [n - median for n in xs]
 
   # Normalize distribution
   total_sizes = sum(sizes)
   ys = [y / total_sizes for y in sizes]
+
+  mean_dist = sum(xs[i] * ys[i] for i in range(len(xs)))
+  print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
+
+
+  if args.relative:
+    median = median_index(sizes)
+    xs = [n - median for n in xs]
 
   if args.smooth:
     ys = [mean(ys[max(i - args.smooth, 0):i + args.smooth + 1]) for i in range(len(ys))]
