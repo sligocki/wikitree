@@ -51,6 +51,8 @@ worker.onmessage = function(e) {
   for (let node of response.circle_nodes) {
     let e_item = document.createElement("li");
     let e_person_link = document.createElement("a");
+    // Open link in separate tab so that we don't lose list.
+    e_person_link.target = "_blank";
     e_person_link.href = "https://www.wikitree.com/wiki/" + node.id;
     e_person_link.textContent = node.id;
     e_item.appendChild(e_person_link);
