@@ -6,7 +6,7 @@ set -e
 
 # source dump_download.sh so that we set $TIMESTAMP
 source dump_download.sh
-bash dump_build.sh $TIMESTAMP
+time bash dump_build.sh $TIMESTAMP
 
 echo "Update default version"
 rm -f data/version/default

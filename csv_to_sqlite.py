@@ -28,7 +28,7 @@ def csv_to_sqlite(args):
   # Iterate CSV
   i = 0
   num_rels = 0
-  print("Loading people from CSV", time.process_time())
+  utils.log("Loading people from CSV")
   for person in csv_iterate.iterate_users(version=args.version):
     try:
       c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -55,12 +55,12 @@ def csv_to_sqlite(args):
 
     i += 1
     if (i % 1000000) == 0:
-      print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.process_time())
+      utils.log(f"People: {i:_} Relationships: {num_rels:_}")
       conn.commit()
-  print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.process_time())
+  utils.log(f"People: {i:_} Relationships: {num_rels:_}")
   conn.commit()
 
-  print("Loading marriages from CSV", time.process_time())
+  utils.log("Loading marriages from CSV")
   for marriage in csv_iterate.iterate_marriages(version=args.version):
     user1, user2 = marriage.user_nums()
     c.execute("INSERT INTO relationships VALUES (?,?,'spouse')",
@@ -69,10 +69,10 @@ def csv_to_sqlite(args):
               (user2, user1))
     num_rels += 2
     # Note: We are ignoring the marriage dates.
-  print("People: {:,}".format(i), "Relationships: {:,}".format(num_rels), "Runtime:", time.process_time())
+  utils.log(f"People: {i:_} Relationships: {num_rels:_}")
   conn.commit()
 
-  print("Computing siblings", time.process_time())
+  utils.log("Computing siblings")
   # Siblings are two people who are both children of a third person (share a parent).
   c.execute("""
     INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling'
@@ -84,7 +84,7 @@ def csv_to_sqlite(args):
         AND a.relative_num <> b.relative_num""")
   conn.commit()
 
-  print("Computing co-parents", time.process_time())
+  utils.log("Computing co-parents")
   # Co-parents are two people who are both parents of a third person (share a child).
   # They may or may not be married.
   c.execute("""
@@ -97,14 +97,14 @@ def csv_to_sqlite(args):
         AND a.relative_num <> b.relative_num""")
   conn.commit()
 
-  print("Indexing", time.process_time())
+  utils.log("Indexing")
   # Add indexes for fast lookup. Note: Adding them at the end is the most efficient.
   c.execute("CREATE INDEX idx_people_wikitree_id ON people(wikitree_id)")
   c.execute("CREATE INDEX idx_relationships_user ON relationships(user_num)")
 
   conn.commit()
   conn.close()
-  print("Done", time.process_time())
+  utils.log("Done")
 
 
 parser = argparse.ArgumentParser()

@@ -34,6 +34,8 @@ import time
 
 import networkx as nx
 
+import utils
+
 
 def CollectRay(graph, node, previous=None):
   path = set()
@@ -55,9 +57,9 @@ def CollectPath(graph, node):
   return (end_a, end_b), (path_a | path_b | set([node]))
 
 def ContractGraph(graph, rep_nodes):
-  print(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
+  utils.log(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
-  print("Finding nodes to delete", time.process_time())
+  utils.log("Finding nodes to delete")
   # Note: We may delete more nodes than to_delete.
   to_delete = set()
   max_degree = 6
@@ -71,7 +73,7 @@ def ContractGraph(graph, rep_nodes):
              for degree in range(max_degree)]
   print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
 
-  print(f"Stripping ({len(to_delete):_}+) nodes", time.process_time())
+  utils.log(f"Stripping ({len(to_delete):_}+) nodes")
   for node in to_delete:
     if node in graph.nodes:
       if graph.degree[node] == 0:
@@ -112,9 +114,9 @@ parser.add_argument("graph_out")
 parser.add_argument("collapse_csv")
 args = parser.parse_args()
 
-print("Loading graph", time.process_time())
+utils.log("Loading graph")
 graph = nx.read_adjlist(args.graph_in)
-print(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
+utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
 # Iteratively contract the graph until we reach the core.
 # Map: core nodes -> nodes that collapse into this core node
@@ -122,12 +124,12 @@ rep_nodes = {node: set([node]) for node in graph.nodes}
 while ContractGraph(graph, rep_nodes):
   pass
 
-print(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}", time.process_time())
+utils.log(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
-print("Saving to disk", time.process_time())
+utils.log("Saving to disk")
 nx.write_adjlist(graph, args.graph_out)
 
-print("Save node collapse info", time.process_time())
+utils.log("Save node collapse info")
 with open(args.collapse_csv, "w") as f:
   csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
   csv_out.writeheader()
@@ -138,4 +140,4 @@ with open(args.collapse_csv, "w") as f:
         "sub_node": sub_node,
       })
 
-print("Done", time.process_time())
+utils.log("Done")

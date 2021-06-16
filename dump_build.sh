@@ -19,28 +19,26 @@ done
 
 echo
 echo "(2) Process new dump"
-python3 csv_to_sqlite.py --version=${TIMESTAMP}
+time python3 csv_to_sqlite.py --version=${TIMESTAMP}
 
-python3 csv_to_partitions.py --version=${TIMESTAMP}
-python3 csv_to_partitions.py --version=${TIMESTAMP} --sibling-in-law
+time bash process_categories.sh ${TIMESTAMP}
 
-bash process_categories.sh ${TIMESTAMP}
+time python3 family_graph.py --version=${TIMESTAMP}
+time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
+                           ${VERSION_DIR}/family.core.adj.nx \
+                           ${VERSION_DIR}/family.core.collapse.csv
 
-# Note: Skipping Graph stuff for now because it's pretty intense to do each week.
-# python3 sqlite_to_graph.py --version=${TIMESTAMP}
+# Note: Skipping big graphs
+# time python3 sqlite_to_graph.py --version=${TIMESTAMP}
+# time python3 family_bipartite_graph.py --version=${TIMESTAMP}
 
-python3 family_graph.py --version=${TIMESTAMP}
-python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
-                      ${VERSION_DIR}/family.core.adj.nx \
-                      ${VERSION_DIR}/family.core.collapse.csv
-python3 family_bipartite_graph.py --version=${TIMESTAMP}
-python3 graph_core.py ${VERSION_DIR}/fam_bipartite.main.adj.nx \
-                      ${VERSION_DIR}/fam_bipartite.core.adj.nx \
-                      ${VERSION_DIR}/fam_bipartite.core.collapse.csv
+# Load connected components of graph
+time python3 csv_to_partitions.py --version=${TIMESTAMP}
+# time python3 csv_to_partitions.py --version=${TIMESTAMP} --sibling-in-law
 
 echo
 echo "(3) Check categories"
-python3 category_check.py --version=${TIMESTAMP}
+time python3 category_check.py --version=${TIMESTAMP}
 
 echo
 echo "Done"
