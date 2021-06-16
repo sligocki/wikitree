@@ -33,7 +33,7 @@ data_dir = utils.data_version_dir(args.version)
 nx.write_adjlist(graph, Path(data_dir, "connection_graph.adj.nx"))
 
 print("Finding largest connected component", time.process_time())
-main_subgraph = graph_tools.LargestCombonent(graph)
+main_subgraph = graph_tools.LargestComponent(graph)
 print(f"Main component size: {len(main_subgraph.nodes):,} Nodes {len(main_subgraph.edges):,} Edges.")
 
 print("Writing main component to file", time.process_time())

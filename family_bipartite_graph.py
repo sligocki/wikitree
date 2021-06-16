@@ -1,10 +1,13 @@
-# Produces a graph representing "Nuclear family units".
+# Produces a graph representing "nuclear family units".
 #
 # Represented as a bipartite graph where each node is either:
 #  * a person or
 #  * a family unit (representing 2 parents and all their children
 #                   or a married couple with no children)
 # Every person is connected to every family unit they are a member of.
+#
+# Note: This is similar to the graph created by family_graph.py, see the
+# comments in that file to understand the difference.
 #
 # In the traditional connection graph, there are many highly connected blocks.
 # For example, given 2 parents with 4 children, all 6 will be directly connected
@@ -63,11 +66,11 @@ print(f"Total graph size: {len(graph.nodes):,} Nodes {len(graph.edges):,} Edges.
 
 print("Writing graph to file", time.process_time())
 data_dir = utils.data_version_dir(args.version)
-nx.write_adjlist(graph, Path(data_dir, "nuclear.all.adj.nx"))
+nx.write_adjlist(graph, Path(data_dir, "fam_bipartite.all.adj.nx"))
 
 print("Finding largest connected component", time.process_time())
-main_component = graph_tools.LargestCombonent(graph)
+main_component = graph_tools.LargestComponent(graph)
 print(f"Main component size: {len(main_component.nodes):,} Nodes {len(main_component.edges):,} Edges.")
 
 print("Writing main component to file", time.process_time())
-nx.write_adjlist(main_component, Path(data_dir, "nuclear.main.adj.nx"))
+nx.write_adjlist(main_component, Path(data_dir, "fam_bipartite.main.adj.nx"))

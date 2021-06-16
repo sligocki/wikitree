@@ -29,12 +29,14 @@ bash process_categories.sh ${TIMESTAMP}
 # Note: Skipping Graph stuff for now because it's pretty intense to do each week.
 # python3 sqlite_to_graph.py --version=${TIMESTAMP}
 
-python3 nuclear_family_graph.py --version=${TIMESTAMP}
-python3 graph_core.py ${VERSION_DIR}/nuclear.main.adj.nx \
-                      ${VERSION_DIR}/nuclear.core.adj.nx \
-                      ${VERSION_DIR}/nuclear.core.collapse.csv
-python3 bipartite_project.py ${VERSION_DIR}/nuclear.main.adj.nx \
-                             ${VERSION_DIR}/family.adj.nx
+python3 family_graph.py --version=${TIMESTAMP}
+python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
+                      ${VERSION_DIR}/family.core.adj.nx \
+                      ${VERSION_DIR}/family.core.collapse.csv
+python3 family_bipartite_graph.py --version=${TIMESTAMP}
+python3 graph_core.py ${VERSION_DIR}/fam_bipartite.main.adj.nx \
+                      ${VERSION_DIR}/fam_bipartite.core.adj.nx \
+                      ${VERSION_DIR}/fam_bipartite.core.collapse.csv
 
 echo
 echo "(3) Check categories"

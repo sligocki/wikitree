@@ -93,8 +93,11 @@ class Database(object):
   def siblings_of(self, user_num):
     return self.relative_of(user_num, "sibling")
 
-  def spouses_of(self, user_num):
-    return self.relative_of(user_num, "spouse")
+  def partners_of(self, user_num):
+    """Return set of spouses and co-parents."""
+    self.cursor.execute("SELECT relative_num FROM relationships WHERE user_num = ? AND relationship_type IN ('spouse', 'coparent')", (user_num,))
+    rows = self.cursor.fetchall()
+    return frozenset(row["relative_num"] for row in rows)
 
   def relationship_type(self, user_num, relative_num):
     self.cursor.execute("SELECT relationship_type FROM relationships WHERE user_num=? AND relative_num=?", (user_num, relative_num))

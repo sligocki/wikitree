@@ -73,7 +73,28 @@ def csv_to_sqlite(args):
   conn.commit()
 
   print("Computing siblings", time.process_time())
-  c.execute("INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling' FROM relationships AS a, relationships AS b WHERE a.relationship_type = 'child' AND b.relationship_type = 'child' AND a.user_num = b.user_num AND a.relative_num <> b.relative_num")
+  # Siblings are two people who are both children of a third person (share a parent).
+  c.execute("""
+    INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'sibling'
+      FROM relationships AS a,
+           relationships AS b
+      WHERE a.relationship_type = 'child'
+        AND b.relationship_type = 'child'
+        AND a.user_num = b.user_num
+        AND a.relative_num <> b.relative_num""")
+  conn.commit()
+
+  print("Computing co-parents", time.process_time())
+  # Co-parents are two people who are both parents of a third person (share a child).
+  # They may or may not be married.
+  c.execute("""
+    INSERT INTO relationships SELECT a.relative_num, b.relative_num, 'coparent'
+      FROM relationships AS a,
+           relationships AS b
+      WHERE a.relationship_type = 'parent'
+        AND b.relationship_type = 'parent'
+        AND a.user_num = b.user_num
+        AND a.relative_num <> b.relative_num""")
   conn.commit()
 
   print("Indexing", time.process_time())
