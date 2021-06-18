@@ -27,6 +27,11 @@ time python3 family_graph.py --version=${TIMESTAMP}
 time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
                            ${VERSION_DIR}/family.core.adj.nx \
                            ${VERSION_DIR}/family.core.collapse.csv
+time python3 graph_core_annotate.py ${VERSION_DIR}/family.main.adj.nx \
+                                    ${VERSION_DIR}/family.core.adj.nx \
+                                    ${VERSION_DIR}/family.core.weighted.edgelist.nx.gz \
+                                    ${VERSION_DIR}/family.core.collapse.csv \
+                                    ${VERSION_DIR}/family.dist_to_core.db
 
 # Note: Skipping big graphs
 # time python3 sqlite_to_graph.py --version=${TIMESTAMP}

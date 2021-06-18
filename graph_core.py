@@ -34,13 +34,17 @@ import time
 
 import networkx as nx
 
+import graph_tools
 import utils
 
 
 def CollectRay(graph, node, previous=None):
   path = set()
-  # Follow path until we reach a fork (or dead end).
+  # Follow path until we reach a fork (or dead end or loop).
   while not previous or graph.degree[node] == 2:
+    if node in path:
+      # We found a loop!
+      return None, path
     path.add(node)
     (neighbor,) = set(graph.adj[node].keys()) - set([previous])
     previous = node
@@ -57,9 +61,9 @@ def CollectPath(graph, node):
   return (end_a, end_b), (path_a | path_b | set([node]))
 
 def ContractGraph(graph, rep_nodes):
-  utils.log(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  # utils.log(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
-  utils.log("Finding nodes to delete")
+  # utils.log("Finding nodes to delete")
   # Note: We may delete more nodes than to_delete.
   to_delete = set()
   max_degree = 6
@@ -69,11 +73,11 @@ def ContractGraph(graph, rep_nodes):
       to_delete.add(node)
     degree = min(graph.degree[node], max_degree)
     degree_counts[degree] += 1
-  message = [f"{degree}:{degree_counts[degree]:_}"
-             for degree in range(max_degree)]
-  print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
+  # message = [f"{degree}:{degree_counts[degree]:_}"
+  #            for degree in range(max_degree)]
+  # print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
 
-  utils.log(f"Stripping ({len(to_delete):_}+) nodes")
+  # utils.log(f"Stripping ({len(to_delete):_}+) nodes")
   for node in to_delete:
     if node in graph.nodes:
       if graph.degree[node] == 0:
@@ -94,7 +98,8 @@ def ContractGraph(graph, rep_nodes):
         (end_a, end_b), path = CollectPath(graph, node)
         for n in path:
           for end in (end_a, end_b):
-            rep_nodes[end].update(rep_nodes[n])
+            if end is not None:
+              rep_nodes[end].update(rep_nodes[n])
           del rep_nodes[n]
         # Directly connect the two ends together (unless that would be a
         # self-edge or multi-edge, in which case we omit it.)
@@ -107,37 +112,46 @@ def ContractGraph(graph, rep_nodes):
   # Note: # nodes deleted is >= len(to_delete)
   return len(to_delete) > 0
 
+def FindCore(graph):
+  # Iteratively contract the graph until we reach the core.
+  # Map: core nodes -> nodes that collapse into this core node
+  rep_nodes = {node: set([node]) for node in graph.nodes}
+  while ContractGraph(graph, rep_nodes):
+    pass
+  return rep_nodes
 
-parser = argparse.ArgumentParser()
-parser.add_argument("graph_in")
-parser.add_argument("graph_out")
-parser.add_argument("collapse_csv")
-args = parser.parse_args()
 
-utils.log("Loading graph")
-graph = nx.read_adjlist(args.graph_in)
-utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graph_in")
+  parser.add_argument("graph_out")
+  parser.add_argument("collapse_csv")
+  args = parser.parse_args()
 
-# Iteratively contract the graph until we reach the core.
-# Map: core nodes -> nodes that collapse into this core node
-rep_nodes = {node: set([node]) for node in graph.nodes}
-while ContractGraph(graph, rep_nodes):
-  pass
+  utils.log("Loading graph")
+  graph = graph_tools.load_graph(args.graph_in)
+  utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
-utils.log(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  utils.log("Contracting graph")
+  # Map: core nodes -> nodes that collapse into this core node
+  rep_nodes = FindCore(graph)
+  utils.log(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
 
-utils.log("Saving to disk")
-nx.write_adjlist(graph, args.graph_out)
+  utils.log("Saving graph core to disk")
+  nx.write_adjlist(graph, args.graph_out)
 
-utils.log("Save node collapse info")
-with open(args.collapse_csv, "w") as f:
-  csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
-  csv_out.writeheader()
-  for core_node in rep_nodes:
-    for sub_node in rep_nodes[core_node]:
-      csv_out.writerow({
-        "core_node": core_node,
-        "sub_node": sub_node,
-      })
+  utils.log("Save node collapse info")
+  with open(args.collapse_csv, "w") as f:
+    csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
+    csv_out.writeheader()
+    for core_node in rep_nodes:
+      for sub_node in rep_nodes[core_node]:
+        csv_out.writerow({
+          "core_node": core_node,
+          "sub_node": sub_node,
+        })
 
-utils.log("Done")
+  utils.log("Done")
+
+if __name__ == "__main__":
+  main()

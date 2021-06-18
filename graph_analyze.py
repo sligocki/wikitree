@@ -120,45 +120,49 @@ def main():
   parser.add_argument("--fraction-degree-regression", type=float, default=0.3,
                       help="Fraction of degrees to consider when doing regression (Starting from smallest degree). Used to ignore outliers")
   parser.add_argument("--num-distance-samples", type=int, default=10_000)
+  parser.add_argument("--circle-sizes", type=int, default=1,
+                      help="Calculate circle size distribution up to this distance.")
+  parser.add_argument("--correlation", action="store_true",
+                      help="Calculate Pearson Correlation Coefficient.")
+  parser.add_argument("--components", action="store_true",
+                      help="Find largest connected component.")
   args = parser.parse_args()
 
-  utils.log("Load graph")
+  utils.log("Loading graph")
   graph = nx.read_adjlist(args.graph)
 
-  print(f"# Nodes = {graph.number_of_nodes():_}")
-  print(f"# Edges = {graph.number_of_edges():_}")
+  utils.log(f"# Nodes = {graph.number_of_nodes():_}")
+  utils.log(f"# Edges = {graph.number_of_edges():_}")
 
   if args.draw_network:
     nx.draw_spring(graph)
     plt.show()
 
-  utils.log("Loading components")
-  components = list(nx.connected_components(graph))
-
-  print(f"# Components = {len(components):_}")
-  print(f"Largest component size = {max(len(c) for c in components):_}")
+  if args.components:
+    utils.log("Loading components")
+    components = list(nx.connected_components(graph))
+    utils.log(f"# Components = {len(components):_}")
+    utils.log(f"Largest component size = {max(len(c) for c in components):_}")
 
   utils.log("Loading degree distribution")
   deg_distr = degree_distribution(graph)
-  print("Mean Degree", mean_distr(deg_distr))
-  print("Second moment (degree)", moment_distr(deg_distr, 2))
+  utils.log("Mean Degree", mean_distr(deg_distr))
+  utils.log("Second moment (degree)", moment_distr(deg_distr, 2))
 
-  utils.log("Loading Circle-2 size distributions")
-  circle2_distr = circle_distribution(graph, 2)
-  print("Mean Circle-2 size (z2)", mean_distr(circle2_distr))
+  for k in range(2, args.circle_sizes + 1):
+    utils.log(f"Loading Circle-{k} size distributions")
+    circle_k_distr = circle_distribution(graph, k)
+    utils.log(f"Mean Circle-{k} size (z{k})", mean_distr(circle_k_distr))
 
-  utils.log("Loading Circle-3 size distributions")
-  circle3_distr = circle_distribution(graph, 3)
-  print("Mean Circle-3 size (z3)", mean_distr(circle3_distr))
+  if args.correlation:
+    utils.log("Calculating correlation")
+    utils.log("Pearson Correlation Coefficient",
+              nx.degree_pearson_correlation_coefficient(graph))
 
   utils.log(f"Estimating distance distribution with {args.num_distance_samples:_} samples")
   dist_distr = sample_distance_distribution(graph, args.num_distance_samples)
-  print("Mean Distance", mean_distr(dist_distr))
-  print("Second moment (distance)", moment_distr(dist_distr, 2))
-
-  # utils.log("Calculating correlation")
-  # print("Pearson Correlation Coefficient",
-  #       nx.degree_pearson_correlation_coefficient(graph))
+  utils.log("Mean Distance", mean_distr(dist_distr))
+  utils.log("Second moment (distance)", moment_distr(dist_distr, 2))
 
   if args.draw_plots:
     utils.log("Drawing plots")
@@ -166,6 +170,8 @@ def main():
     draw_degree_distr(deg_distr, ax1, args.fraction_degree_regression)
     draw_distance_distr(dist_distr, ax2)
     plt.show()
+
+  utils.log("Done")
 
 if __name__ == "__main__":
   main()

@@ -14,6 +14,7 @@ import sqlite3
 
 import networkx as nx
 
+import graph_tools
 import utils
 
 
@@ -42,9 +43,9 @@ utils.log("Creating output DB")
 db = DistancesDb(args.output_dist_to_core_db)
 
 utils.log("Loading graphs")
-full_graph = nx.read_adjlist(args.input_full_graph)
+full_graph = graph_tools.load_graph(args.input_full_graph)
 utils.log(f"Loaded full graph:  # Nodes: {len(full_graph.nodes):_}  # Edges: {len(full_graph.edges):_}")
-core_graph = nx.read_adjlist(args.input_core_graph)
+core_graph = graph_tools.load_graph(args.input_core_graph)
 utils.log(f"Loaded core graph:  # Nodes: {len(core_graph.nodes):_}  # Edges: {len(core_graph.edges):_}")
 
 utils.log("Loading removed nodes data")

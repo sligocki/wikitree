@@ -107,9 +107,9 @@ class Database(object):
 
   def enum_connections(self):
     cursor = self.conn.cursor()
-    cursor.execute("SELECT user_num, relative_num FROM relationships")
+    cursor.execute("SELECT user_num, relative_num, relationship_type FROM relationships")
     while True:
       row = cursor.fetchone()
       if not row:
         return
-      yield (row["user_num"], row["relative_num"])
+      yield (row["user_num"], row["relative_num"], row["relationship_type"])

@@ -8,6 +8,7 @@ import random
 import time
 
 import data_reader
+import utils
 
 def get_distances(db, start):
   """Get distances to all other items in graph via breadth-first search."""
@@ -60,10 +61,15 @@ if __name__ == "__main__":
 
   circle_sizes = {}
   for user_num in enum_user_nums(db, args):
+    utils.log("Loading distances from", db.num2id(user_num))
     dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
-    print(db.num2id(user_num), mean_dist, max_dist, time.process_time())
+    utils.log(db.num2id(user_num), mean_dist, max_dist)
     circle_sizes[db.num2id(user_num)] = hist_dist
+    utils.log(hist_dist)
 
   if args.save_distribution_json:
+    utils.log("Writing results")
     with open(args.save_distribution_json, "w") as f:
       json.dump(circle_sizes, f)
+
+  utils.log("Done")

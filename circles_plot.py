@@ -25,7 +25,7 @@ def median_index(circle_sizes):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("circles_json", nargs="+")
-parser.add_argument("--wikitree-ids", nargs="*")
+parser.add_argument("--wikitree-ids", "--ids", nargs="*")
 
 parser.add_argument("--log-y", action="store_true")
 parser.add_argument("--rate", action="store_true")
