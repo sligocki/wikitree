@@ -12,6 +12,24 @@ def load_graph(filename):
   elif ".edgelist" in filename.suffixes:
     return nx.read_weighted_edgelist(filename)
 
+  elif ".gml" in filename.suffixes:
+    return nx.read_gml(filename)
+
+  else:
+    raise Exception(f"Invalid graph filename: {filename}")
+
+def write_graph(graph, filename):
+  """Write a graph into various formats depending on the extension."""
+  filename = Path(filename)
+  if ".adj" in filename.suffixes:
+    nx.write_adjlist(graph, filename)
+
+  elif ".edgelist" in filename.suffixes:
+    nx.write_weighted_edgelist(graph, filename)
+
+  elif ".gml" in filename.suffixes:
+    nx.write_gml(graph, filename)
+
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 

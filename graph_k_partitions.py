@@ -81,7 +81,6 @@ def articulation_points(graph):
         parent_node.update_min_seen(finished_node.min_seen)
 
 
-
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("graph")
