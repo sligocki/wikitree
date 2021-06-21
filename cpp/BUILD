@@ -63,3 +63,16 @@ cc_binary(
     ":util",
   ],
 )
+
+cc_binary(
+  name = "triconnectivity",
+  srcs = ["triconnectivity.cc"],
+  deps = [
+    ":timer",
+    ":util",
+    "@ogdf//:all",
+  ],
+  copts = [
+    "-Iexternal/ogdf/include/",
+  ],
+)

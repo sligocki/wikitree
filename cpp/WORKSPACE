@@ -1,0 +1,15 @@
+new_local_repository(
+    name = "ogdf",
+    path = "/Users/sl929/lib/OGDF",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "all",
+    srcs = [
+      "libOGDF.a",
+      "libCOIN.a",
+    ],
+    hdrs = glob(["include/**"])
+)
+"""
+)
