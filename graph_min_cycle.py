@@ -68,7 +68,9 @@ def main():
     max_min_cycle = -1
     for i, node in enumerate(nodes):
       cycle = min_cycle(graph, node)
-      if cycle and len(cycle) > max_min_cycle:
+      if not cycle:
+        utils.log("No cycle through", node)
+      elif len(cycle) > max_min_cycle:
         utils.log("Min cycle", i, node, len(cycle))
         max_min_cycle = len(cycle)
 

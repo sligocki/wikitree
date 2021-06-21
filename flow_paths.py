@@ -111,9 +111,10 @@ def main():
                       default="data/version/default/connection_graph.main.adj.nx")
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
-  db = data_reader.Database()
+  db = data_reader.Database(args.version)
   print("Loading graph", args.graph, time.process_time())
   graph = nx.read_adjlist(args.graph)
 
