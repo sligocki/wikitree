@@ -14,53 +14,6 @@
 #include "util.h"
 
 
-ogdf::node get_or_add_node(ogdf::Graph* graph,
-                           std::map<std::string, ogdf::node>* label2id,
-                           const std::string& label) {
-  if (label2id->find(label) == label2id->end()) {
-    (*label2id)[label] = graph->newNode();
-  }
-  return (*label2id)[label];
-}
-
-bool load_graph_from_adj_list(
-    const std::string& filename,
-    ogdf::Graph* graph) {
-  // Map: node label/name -> index.
-  std::map<std::string, ogdf::node> label2id;
-
-  std::ifstream file;
-  file.open(filename);
-  if (!file.is_open()) {
-    throw std::runtime_error("File does not exist.");
-  }
-  std::string line;
-  while (std::getline(file, line)) {
-    if (line.size() > 0 && line[0] != '#') {
-      std::istringstream line_stream(line);
-      bool first_field = true;
-      ogdf::node start_node;
-      std::string field;
-      while (std::getline(line_stream, field, ' ')) {
-        if (first_field) {
-          // First number is start_node.
-          start_node = get_or_add_node(graph, &label2id, field);
-          first_field = false;
-        } else {
-          // Subsequent numbers are neighbors of start_node.
-          const ogdf::node end_node = get_or_add_node(graph, &label2id, field);
-          // Unweighted edges.
-          graph->newEdge(start_node, end_node);
-        }
-      }
-    }
-  }
-  file.close();
-
-  return graph;
-}
-
-
 int main(int argc, char* argv[]) {
   Timer timer;
 
@@ -72,7 +25,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Loading graph from " << graph_filename
     << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
   ogdf::Graph graph;
-  bool success = load_graph_from_adj_list(graph_filename, &graph);
+  bool success = ogdf::GraphIO::read(graph, graph_filename, ogdf::GraphIO::read);
   if (!success) {
     std::cout << "Error loading file" << std::endl;
     return 1;

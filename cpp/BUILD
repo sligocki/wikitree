@@ -64,6 +64,21 @@ cc_binary(
   ],
 )
 
+# OGDF-based stuff
+
+cc_binary(
+  name = "graph_reformat",
+  srcs = ["graph_reformat.cc"],
+  deps = [
+    ":timer",
+    ":util",
+    "@ogdf//:all",
+  ],
+  copts = [
+    "-Iexternal/ogdf/include/",
+  ],
+)
+
 cc_binary(
   name = "triconnectivity",
   srcs = ["triconnectivity.cc"],
