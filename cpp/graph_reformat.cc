@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
   Timer timer;
 
   if (argc != 3) {
-    throw std::invalid_argument("Usage: adj2gml graph_in graph_out");
+    throw std::invalid_argument("Usage: graph_reformat graph_in graph_out");
   }
   const std::string infilename = argv[1];
   const std::string outfilename = argv[2];

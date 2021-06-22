@@ -6,6 +6,7 @@
 #include <string>
 
 #include <ogdf/basic/Graph_d.h>
+#include <ogdf/basic/extended_graph_alg.h>
 #include <ogdf/basic/simple_graph_alg.h>
 #include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/graphalg/Triconnectivity.h>
@@ -18,7 +19,7 @@ int main(int argc, char* argv[]) {
   Timer timer;
 
   if (argc != 2) {
-    throw std::invalid_argument("Parameter required.");
+    throw std::invalid_argument("Usage: triconnectivity graph_in");
   }
   const std::string graph_filename = argv[1];
 
@@ -59,17 +60,34 @@ int main(int argc, char* argv[]) {
       bicomponents.at(id).insert(v);
     }
   }
+  int best_bicomp_index = -1;
   int max_bicomp_size = -1;
-  for (const auto& comp : bicomponents) {
-    max_bicomp_size = std::max(max_bicomp_size, (int)comp.size());
+  for (int id = 0; id < bicomponents.size(); ++id) {
+    const auto& comp = bicomponents[id];
+    if ((int)comp.size() > max_bicomp_size) {
+      max_bicomp_size = (int)comp.size();
+      best_bicomp_index = id;
+    }
   }
   std::cout << "# bi-connected components: " << num_bicomponents
             << " Max bi-component size: " << max_bicomp_size
             << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
 
+  std::cout << "Replacing graph with largest bi-component ("
+            << timer.ElapsedSeconds() << "s)" << std::endl;
+  ogdf::List<ogdf::node> subgraph_nodes;
+  for (const ogdf::node v : bicomponents[best_bicomp_index]) {
+    subgraph_nodes.pushBack(v);
+  }
+  ogdf::Graph big_bicomp;
+  ogdf::inducedSubGraph(graph, subgraph_nodes.begin(), big_bicomp);
+  std::cout << "Reduced graph to:  # Nodes: " << big_bicomp.numberOfNodes()
+            << " # Edges: " << big_bicomp.numberOfEdges()
+            << " (" << timer.ElapsedSeconds() << "s)" << std::endl;
+
 
   std::cout << "Finding Tri-connected Components (" << timer.ElapsedSeconds() << "s)" << std::endl;
-  ogdf::Triconnectivity tri_conn(graph);
+  ogdf::Triconnectivity tri_conn(big_bicomp);
   std::vector<std::set<ogdf::node>> tricomponents(tri_conn.m_numComp);
   for (int id = 0; id < tri_conn.m_numComp; ++id) {
     const ogdf::Triconnectivity::CompStruct& comp = tri_conn.m_component[id];

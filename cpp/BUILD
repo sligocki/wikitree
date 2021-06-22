@@ -3,12 +3,21 @@
 # Libraries
 
 cc_library(
+  name = "util",
+  srcs = ["timer.cc"],
+  hdrs = [
+    "random.h",
+    "timer.h",
+    "util.h",
+  ],
+)
+
+cc_library(
   name = "clustering",
   srcs = ["clustering.cc"],
   hdrs = ["clustering.h"],
   deps = [
     ":graph",
-    ":timer",
     ":util",
   ],
 )
@@ -19,17 +28,6 @@ cc_library(
   hdrs = ["graph.h"],
 )
 
-cc_library(
-  name = "timer",
-  srcs = ["timer.cc"],
-  hdrs = ["timer.h"],
-)
-
-cc_library(
-  name = "util",
-  hdrs = ["util.h"]
-)
-
 # Binaries
 
 cc_binary(
@@ -38,7 +36,6 @@ cc_binary(
   deps = [
     ":clustering",
     ":graph",
-    ":timer",
     ":util",
   ],
 )
@@ -48,7 +45,6 @@ cc_binary(
   srcs = ["degree_distribution.cc"],
   deps = [
     ":graph",
-    ":timer",
     ":util",
   ],
 )
@@ -59,7 +55,6 @@ cc_binary(
   deps = [
     ":clustering",
     ":graph",
-    ":timer",
     ":util",
   ],
 )
@@ -70,7 +65,18 @@ cc_binary(
   name = "graph_reformat",
   srcs = ["graph_reformat.cc"],
   deps = [
-    ":timer",
+    ":util",
+    "@ogdf//:all",
+  ],
+  copts = [
+    "-Iexternal/ogdf/include/",
+  ],
+)
+
+cc_binary(
+  name = "graph_shrink",
+  srcs = ["graph_shrink.cc"],
+  deps = [
     ":util",
     "@ogdf//:all",
   ],
@@ -83,7 +89,6 @@ cc_binary(
   name = "triconnectivity",
   srcs = ["triconnectivity.cc"],
   deps = [
-    ":timer",
     ":util",
     "@ogdf//:all",
   ],

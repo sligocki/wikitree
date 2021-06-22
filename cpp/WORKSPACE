@@ -1,6 +1,6 @@
 new_local_repository(
     name = "ogdf",
-    path = "/Users/sl929/lib/OGDF",
+    path = "/Users/sl929/lib/ogdf",
     build_file_content = """
 package(default_visibility = ["//visibility:public"])
 cc_library(
