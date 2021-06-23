@@ -23,6 +23,7 @@ if [ -d data/dumps/$TIMESTAMP ]; then
 else
   echo "We don't yet have this dump: downloading it"
   mkdir data/dumps/$TIMESTAMP
-  cd data/dumps/$TIMESTAMP
-  echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com
+  # cd in a subshell so that we don't permanently change directories.
+  (cd data/dumps/$TIMESTAMP;
+   echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com)
 fi
