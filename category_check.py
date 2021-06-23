@@ -8,7 +8,7 @@ import data_reader
 
 def is_residence(location, places):
   for name in places:
-    if name in location:
+    if name.lower() in location.lower():
       return True
   return False
 
@@ -74,13 +74,22 @@ def main():
       args.version,
       category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship,_Poland",
       target_places=[
-        # Inowrocław in Polish and German spelling.
+        # Inowrocław in various Polish and German spellings
         "Inowrocław", "Inowroclaw", "Inowrazlaw", "Hohensalza", "Jungleslau",
-        # Towns in Strelno, Posen that are now in Inowrocław county.
-        "Ludzisk", "Polanowitz",
+        # Gminas in Inowrocław county
+        "Kruszwica", "Kruschwitz",
+        "Gniewkowo", # "Argenau", TODO: matches Margenau
+        "Janikowo", # "Amsee", TODO: matches Zallamsee
+        "Pakość", "Pakosc", "Pakosch",
+        "Złotniki Kujawskie", "Güldenhof", "Guldenhof",
+        "Dąbrowa Biskupia", "Luisenfelde",
+        # "Rojewo", TODO: matches Dobrojewo #"Roneck", TODO: matches Mamaroneck
+        # Towns in Strelno, Posen that are now in Inowrocław county
+        "Ludzisko", "Ludzisk",
+        "Polanowitz",  # Removed "Polanowice" (there are several: https://pl.wikipedia.org/wiki/Polanowice)
         # Removed "Piaski" because there's Piaski, Warsaw too :/
-        # Specific towns in Inowrocław.
-        "Płonkowo", "Plonkowo", "Pakość", "Pakosc", "Tuczno",
+        # Specific towns in Inowrocław
+        "Płonkowo", "Plonkowo", "Tuczno",
       ])
     print()
 
@@ -88,9 +97,15 @@ def main():
     print("Honhardt, Württemberg")
     category_check(
       args.version,
-      # TODO: Note: this category does not exist.
+      # TODO: Note: this category does not yet exist.
       category_name="Honhardt,_Württemberg",
-      target_places=["Honhardt"])
+      target_places=[
+        "Honhardt",
+        # Honhardt is now part of the town Frankenhardt
+        "Frankenhardt",
+        # Location within Honhardt
+        "Hirschhof",
+      ])
     print()
 
 main()
