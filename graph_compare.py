@@ -3,6 +3,7 @@ Compare two graphs. Describes nodes/edges added/removed.
 """
 
 import argparse
+import collections
 from pathlib import Path
 
 import networkx as nx
@@ -58,6 +59,21 @@ def main():
   print(f"# Edges Removed (Stable) = {len(edges_removed_stable_nodes):_}")
   print(f"# Edges Added (New Nodes) = {len(edges_added_new_nodes):_}")
   print(f"# Edges Removed (Old Nodes) = {len(edges_removed_old_nodes):_}")
+
+  degree_nodes_added = collections.Counter()
+  for edge in edges_added_new_nodes:
+    for node in edge:
+      if node in nodes_added:
+        degree_nodes_added[node] += 1
+  nodes_added_of_degree = collections.defaultdict(set)
+  for node, degree in degree_nodes_added.items():
+    nodes_added_of_degree[degree].add(node)
+  degree_distribution_added = {degree: len(nodes_added_of_degree[degree])
+                               for degree in sorted(nodes_added_of_degree.keys())}
+
+  print()
+  utils.log("Degree distribution of added nodes (counting only added edges)")
+  print(degree_distribution_added)
 
   print()
   utils.log("Examples")
