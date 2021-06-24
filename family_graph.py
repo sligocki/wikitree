@@ -28,6 +28,9 @@ def UnionNodeName(parents):
   """Name for node which represents the union (marriage or co-parentage)."""
   return "Union/" + "/".join(str(p) for p in sorted(parents))
 
+def VirtualParentNodeName(person):
+  return f"Parents/{person}"
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="Data version (defaults to most recent).")
@@ -39,14 +42,26 @@ graph = nx.Graph()
 utils.log("Loading families")
 for i, person in enumerate(db.enum_people()):
   parents = db.parents_of(person)
+  partners = db.partners_of(person)
+
   if parents:
     parent_node = UnionNodeName(parents)
-    for partner in db.partners_of(person):
+  elif len(partners) > 1:
+    # If no parents are listed, but this person has multiple unions, then we
+    # create a virtual node for this person's birth family. We do this so that
+    # the multiple unions of person will all be connected together.
+    parent_node = VirtualParentNodeName(person)
+  else:
+    parent_node = None
+
+  if parent_node:
+    for partner in partners:
       partner_node = UnionNodeName([person, partner])
       if partner_node != parent_node:
-        # Avoid self-loops ... this shouldn't happen because a couple cannot
-        # be their own parent ... but mistakes happen in WikiTree ...
+        # Avoid self-loops ... this shouldn't happen in reality because a
+        # couple cannot be their own parent ... but mistakes happen in WikiTree ...
         graph.add_edge(partner_node, parent_node)
+
   if i % 1_000_000 == 0:
     utils.log(f" ... {i:_}  {len(graph.nodes):_}  {len(graph.edges):_}")
 
