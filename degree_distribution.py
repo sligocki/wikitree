@@ -1,5 +1,7 @@
 import argparse
 import collections
+import json
+from pathlib import Path
 
 import networkx as nx
 
@@ -8,6 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("graph")
 parser.add_argument("--bipartite", action="store_true",
                     help="Analyze as a bipartite graph (distinguishing parts by leading 'Union/' in name ...)")
+parser.add_argument("--save-to-json", type=Path)
 args = parser.parse_args()
 
 graph = nx.read_adjlist(args.graph, create_using=nx.MultiGraph)
@@ -36,6 +39,14 @@ if args.bipartite:
   for degree in range(1, max_degree + 1):
     print(" ", degree, degree_counts[degree], degree_counts_family[degree])
   print("Node of max degree:", max_node)
+
+  if args.save_to_json:
+    with open(args.save_to_json, "w") as f:
+      json.dump({
+        "Person_Nodes": [degree_counts[i] for i in range(max_degree + 1)],
+        "Family_Nodes": [degree_counts_family[i] for i in range(max_degree + 1)],
+      }, f)
+
 else:
   # Normal (non-bipartite) graph
   print(f"Number of nodes: {len(graph.nodes):_}")
@@ -44,3 +55,9 @@ else:
   for degree, count in sorted(degree_counts.items()):
     print(" ", degree, count)
   print("Node of max degree:", max_node)
+
+  if args.save_to_json:
+    with open(args.save_to_json, "w") as f:
+      json.dump({
+        "Nodes": [degree_counts[i] for i in range(max_degree + 1)],
+      }, f)

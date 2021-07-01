@@ -72,7 +72,7 @@ def main():
                                for degree in sorted(nodes_added_of_degree.keys())}
 
   print()
-  utils.log("Degree distribution of added nodes (counting only added edges)")
+  utils.log("Degree distribution of added nodes")
   print(degree_distribution_added)
 
   print()
