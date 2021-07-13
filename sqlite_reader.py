@@ -46,6 +46,17 @@ class Database(object):
     if date_str:
       return datetime.date.fromisoformat(date_str)
 
+  def death_date_of(self, user_num):
+    date_str = self.get(user_num, "death_date")
+    if date_str:
+      return datetime.date.fromisoformat(date_str)
+
+  def age_at_death_of(self, user_num):
+    birth_date = self.birth_date_of(user_num)
+    death_date = self.death_date_of(user_num)
+    if birth_date and death_date:
+      return death_date - birth_date
+
   def father_of(self, user_num):
     return self.get(user_num, "father_num")
 
@@ -64,6 +75,15 @@ class Database(object):
   def enum_people(self):
     cursor = self.conn.cursor()
     cursor.execute("SELECT user_num FROM people")
+    while True:
+      row = cursor.fetchone()
+      if not row:
+        return
+      yield row["user_num"]
+
+  def enum_people_no_more_children(self):
+    cursor = self.conn.cursor()
+    cursor.execute("SELECT user_num FROM people WHERE no_more_children")
     while True:
       row = cursor.fetchone()
       if not row:

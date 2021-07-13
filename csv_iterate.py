@@ -176,8 +176,8 @@ def iterate_users(*, version, only_custom=False):
 
 class MarriageRow(Row):
   def user_nums(self):
-    return set([int(self.lookup("User ID1")),
-                int(self.lookup("UserID2"))])
+    return [int(self.lookup("User ID1")),
+            int(self.lookup("UserID2"))]
 
   def marriage_date(self):
     return ParseDate(self.lookup("Marriage Date"))
