@@ -4,6 +4,7 @@ import argparse
 import datetime
 import json
 from pathlib import Path
+from pprint import pprint
 import urllib.parse
 import urllib.request
 
@@ -28,16 +29,21 @@ except json.decoder.JSONDecodeError:
   print(data_text)
   raise
 
-utils.log("Extracting circle sizes")
-circle_sizes = []
-for step in data["debug"]["steps"]:
-  # Format: circle_num ":" circle_size ":" cumulative_size ":" ???
-  this_size = step.split(":")[1]
-  circle_sizes.append(int(this_size))
+try:
+  utils.log("Extracting circle sizes")
+  circle_sizes = []
+  for step in data["debug"]["steps"]:
+    circle_num, circle_size, cumulative_size, _ = step
+    circle_sizes.append(circle_size)
 
-utils.log("Writing results")
-date = datetime.date.today().strftime("%Y-%m-%d")
-with open(Path("results", "circles", f"{args.wikitree_id}_{date}.json"), "w") as f:
-  json.dump({args.wikitree_id: circle_sizes}, f)
+  utils.log("Writing results")
+  date = datetime.date.today().strftime("%Y-%m-%d")
+  with open(Path("results", "circles", f"{args.wikitree_id}_{date}.json"), "w") as f:
+    json.dump({args.wikitree_id: circle_sizes}, f)
 
-utils.log("Finished")
+  utils.log("Finished")
+
+except:
+  print("Error while processing data")
+  pprint(data)
+  raise
