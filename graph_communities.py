@@ -16,7 +16,7 @@ args = parser.parse_args()
 db = data_reader.Database(args.version)
 
 utils.log("Reading graph")
-G, names_db = graph_tools.load_graph(args.graph)
+G, names_db = graph_tools.load_graph_nk(args.graph)
 utils.log(f"Loaded graph with {G.numberOfNodes():_} nodes / {G.numberOfEdges():_} edges")
 
 utils.log("Calculating communities")
