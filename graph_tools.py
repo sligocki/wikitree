@@ -32,13 +32,22 @@ class NamesDb:
     cursor.execute("SELECT node_name FROM nodes WHERE graph_index=?",
                    (graph_index,))
     rows = cursor.fetchall()
-    assert len(rows) == 1, (index, rows)
+    assert len(rows) == 1, (graph_index, rows)
     return rows[0]["node_name"]
+
+  def name2index(self, node_name):
+    cursor = self.conn.cursor()
+    cursor.execute("SELECT graph_index FROM nodes WHERE node_name=?",
+                   (node_name,))
+    rows = cursor.fetchall()
+    assert len(rows) == 1, (node_name, rows)
+    return rows[0]["graph_index"]
 
 
 def load_graph_nk(filename):
   """Returns pair (G, names_db) of graph and the tool for converting
   node indexes to names."""
+  filename = Path(filename)
   if ".graph" in filename.suffixes:
     # TODO: Submit bug to nk team about accepting Path as arg.
     return (nk.graphio.readGraph(str(filename), nk.Format.METIS),
