@@ -35,7 +35,7 @@ def category_check(version, category_name, target_places):
          or db.birth_date_of(user_num) >= datetime.date(1500, 1, 1))}
   print(f"# Editable residents = {len(editable_residents)}")
 
-  in_category = category_db.list_category(category_name)
+  in_category = category_db.list_people_in_category(category_name)
   print(f"# in category = {len(in_category)}")
 
   cat_not_resident = in_category - residents

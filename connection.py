@@ -169,7 +169,7 @@ def main():
   if args.to_category:
     # Find shortest connection from person to any member of a category.
     category_db = category_tools.CategoryDb(args.version)
-    category_members = category_db.list_category(args.to_category)
+    category_members = category_db.list_people_in_category(args.to_category)
     for start_id in args.person_id:
       start_num = db.get_person_num(start_id)
       print("Connections from", db.num2id(start_num), "to category", args.to_category)

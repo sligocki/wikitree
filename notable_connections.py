@@ -33,7 +33,7 @@ category_db = category_tools.CategoryDb(args.version)
 
 start = db.id2num(args.person_id)
 
-targets = category_db.list_category(args.category)
+targets = category_db.list_people_in_category(args.category)
 if args.relatives:
   bfs = bfs_tools.RelativeBfs(db, start)
 else:
