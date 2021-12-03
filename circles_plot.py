@@ -27,10 +27,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("circles_json", nargs="+", type=Path)
 parser.add_argument("--wikitree-ids", "--ids", nargs="*")
 
-parser.add_argument("--log-y", action="store_true")
-parser.add_argument("--rate", action="store_true")
+parser.add_argument("--log-y", action="store_true",
+                    help="Plot with log-Y axis.")
+parser.add_argument("--rate", action="store_true",
+                    help="Plot with Y axis as rate of change.")
 parser.add_argument("--relative", action="store_true",
-                    help="Rescale distances relative to median dist.")
+                    help="Shift distances relative to median dist.")
+parser.add_argument("--absolute", action="store_true",
+                    help="Plot with absolute (not %) circle sizes.")
 parser.add_argument("--log-normal-regression", action="store_true",
                     help="Plot a log-normal distribution regression")
 
@@ -65,13 +69,16 @@ if args.rate:
   # Restrict range so we can actually see the interesting parts
   ax.set_ylim(0, 10)
   ax.set_yticks(range(0, 11, 1))
+elif args.absolute:
+  ax.set_ylabel("Circle Size (absolute)")
 else:
   ax.set_ylabel("Circle Size (% of population)")
   ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 
 if args.log_y:
   ax.set_yscale("log")
-  ax.set_ylim(0.000001, 0.1)
+  if not args.absolute:
+    ax.set_ylim(0.000001, 0.1)
 
 ax.grid(True)
 ax.set_xticks(range(-200, 200, 10))
@@ -83,9 +90,14 @@ for wikitree_id in ids:
   sizes = circle_sizes[wikitree_id]
   xs = list(range(len(sizes)))
 
-  # Normalize distribution
   total_sizes = sum(sizes)
-  ys = [y / total_sizes for y in sizes]
+  print(f"Total population size for {wikitree_id}: {total_sizes:_d}")
+
+  if args.absolute:
+    ys = [y for y in sizes]
+  else:
+    # Normalize distribution
+    ys = [y / total_sizes for y in sizes]
 
   mean_dist = sum(xs[i] * ys[i] for i in range(len(xs)))
   print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
@@ -106,32 +118,42 @@ for wikitree_id in ids:
   ax.plot(xs, ys, label=wikitree_id)
 
   if args.log_normal_regression:
+    shift_log = 0
+
     count = 0
-    total = 0
-    total2 = 0
+    total_log = 0
+    total_log2 = 0
     for dist, this_count in enumerate(sizes):
+      dist -= shift_log
       if dist > 0:
         count += this_count
-        total += math.log(dist) * this_count
-        total2 += math.log(dist)**2 * this_count
+        total_log += math.log(dist) * this_count
+        total_log2 += math.log(dist)**2 * this_count
 
-    mean = total / count
-    stddev = math.sqrt(total2 / count - mean**2)
+    mu_hat = total_log / count
+    sigma_hat = math.sqrt(total_log2 / count - mu_hat**2)
+    
+    # mu_hat = math.log(19.0)
+    # sigma_hat = 0.23
+    mean_reg = math.exp(mu_hat + sigma_hat**2 / 2)
+    stddev_reg = math.sqrt((math.exp(sigma_hat**2) - 1)) * mean_reg
 
-    print("Plotting with regression", mean, stddev)
+    print(f"Plotting with regression {mu_hat=:.2f} {sigma_hat=:.2f} {shift_log} mean={mean_reg + shift_log:.1f} stddev={stddev_reg:.1f}")
     # Log-normal only works for positive values!
-    xs = [x for x in xs if x > 0]
+    reg_xs = [x for x in xs if x > 0]
     # Log-normal PDF
     # See https://en.wikipedia.org/wiki/Log-normal_distribution#Probability_density_function
-    ys = [1 / (x * stddev * math.sqrt(2 * math.pi)) *
-          math.e**(-(math.log(x) - mean)**2 / (2 * stddev**2))
-          for x in xs]
+    sum_ys = sum(ys)
+    reg_ys = [sum_ys * 1 / (x * sigma_hat * math.sqrt(2 * math.pi)) *
+              math.e**(-(math.log(x) - mu_hat)**2 / (2 * sigma_hat**2))
+              for x in reg_xs]
+    reg_xs = [x + shift_log for x in reg_xs]
 
     if args.rate:
-      del xs[0]
-      ys = [ys[i+1] / ys[i] for i in range(len(ys) - 1)]
+      del reg_xs[0]
+      reg_ys = [reg_ys[i+1] / reg_ys[i] for i in range(len(ys) - 1)]
 
-    ax.plot(xs, ys, label=f"Regression_{wikitree_id}")
+    ax.plot(reg_xs, reg_ys, label=f"Regression_{wikitree_id}_{shift_log}")
 
 ax.legend()
 fig.set_size_inches(8, 8)
