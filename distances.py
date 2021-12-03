@@ -7,31 +7,24 @@ from pprint import pprint
 import random
 import time
 
+import bfs_tools
 import data_reader
 import utils
 
-def get_distances(db, start):
+def get_distances(db, start, ignore_people=frozenset()):
   """Get distances to all other items in graph via breadth-first search."""
-  dists = {start: 0}
-  queue = collections.deque()
-  queue.append(start)
+  dists = {}
   total_dist = 0
   max_dist = 0
-  hist_dist = [1]
-  while queue:
-    person = queue.popleft()
-    dist = dists[person]
-    for neigh in db.neighbors_of(person):
-      if neigh not in dists:
-        dists[neigh] = dist + 1
-        total_dist += dist + 1
-        max_dist = dist + 1
-        while len(hist_dist) <= dist + 1:
-          hist_dist.append(0)
-        hist_dist[dist + 1] += 1
-        queue.append(neigh)
+  hist_dist = collections.defaultdict(int)
+  for (person, dist) in bfs_tools.ConnectionBfs(db, start, ignore_people):
+    dists[person] = dist
+    hist_dist[dist] += 1
+    max_dist = dist
+    total_dist += dist
   mean_dist = float(total_dist) / len(dists)
-  return dists, hist_dist, mean_dist, max_dist
+  hist_dist_list = [hist_dist[i] for i in range(max(hist_dist.keys()) + 1)]
+  return dists, hist_dist_list, mean_dist, max_dist
 
 def get_mean_dists(db, start):
   _, _, mean_dist, max_dist = get_distances(db, start)
@@ -53,16 +46,21 @@ if __name__ == "__main__":
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   parser.add_argument("--random", action="store_true")
   parser.add_argument("--save-distribution-json", help="Save Circle sizes to file.")
+  parser.add_argument("--ignore-people",
+                      help="Comma separated list of people to ignore in BFS.")
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
   db = data_reader.Database(args.version)
   db.load_connections()
+  
+  ignore_ids = args.ignore_people.split(",")
+  ignore_nums = frozenset(db.id2num(id) for id in ignore_ids)
 
   circle_sizes = {}
   for user_num in enum_user_nums(db, args):
     utils.log("Loading distances from", db.num2id(user_num))
-    dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num)
+    dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num, ignore_nums)
     utils.log(db.num2id(user_num), mean_dist, max_dist)
     circle_sizes[db.num2id(user_num)] = hist_dist
     utils.log(hist_dist)

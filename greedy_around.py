@@ -1,5 +1,4 @@
-
-
+import argparse
 import collections
 import sys
 import time
@@ -36,10 +35,16 @@ def greedy_path(db, start, visited):
 
 
 if __name__ == "__main__":
-  db = data_reader.Database()
-  start_id = sys.argv[1]
-  start = db.id2num(start_id)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("start_id", nargs="+")
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
+  args = parser.parse_args()
+
+  db = data_reader.Database(args.version)
   # Load connections into memory so that it's faster to do BFS.
   db.load_connections()
-  print("Searching around", start_id, time.process_time())
-  greedy_path(db, start, visited=set())
+
+  for start_id in args.start_id:
+    start = db.id2num(start_id)
+    print("Searching around", start_id, time.process_time())
+    greedy_path(db, start, visited=set())

@@ -6,7 +6,7 @@ import collections
 import data_reader
 
 
-def ConnectionBfs(db, start):
+def ConnectionBfs(db, start, ignore_people=frozenset()):
   todos = collections.deque()
   dists = {}
 
@@ -18,7 +18,7 @@ def ConnectionBfs(db, start):
     dist = dists[person]
     yield (person, dist)
     for neigh in db.neighbors_of(person):
-      if neigh not in dists:
+      if neigh not in ignore_people and neigh not in dists:
         todos.append(neigh)
         dists[neigh] = dist + 1
 
