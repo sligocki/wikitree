@@ -3,8 +3,8 @@
 #
 # Each family is connected to the childhood family of each of the parents.
 #
-# Note: This is similar to the graph created by family_bipartite_graph.py, but
-# without having person nodes. It is close, but not quite the same as the
+# Note: This is similar to the graph created by graph_make_family_bipartite.py,
+# but without having person nodes. It is close, but not quite the same as the
 # "bipartite graph projection" from the family_bipartite onto the family nodes.
 # The difference there is that that projection includes edges between
 # re-marriage families (two families sharing one parent in common) of the

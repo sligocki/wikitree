@@ -23,7 +23,7 @@ time python3 csv_to_sqlite.py --version=${TIMESTAMP}
 
 time bash process_categories.sh ${TIMESTAMP}
 
-time python3 family_graph.py --version=${TIMESTAMP}
+time python3 graph_make_family.py --version=${TIMESTAMP}
 time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
                            ${VERSION_DIR}/family.core.adj.nx \
                            ${VERSION_DIR}/family.core.collapse.csv
@@ -35,7 +35,7 @@ time python3 graph_core_annotate.py ${VERSION_DIR}/family.main.adj.nx \
 
 # Note: Skipping big graphs
 # time python3 sqlite_to_graph.py --version=${TIMESTAMP}
-# time python3 family_bipartite_graph.py --version=${TIMESTAMP}
+# time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
 
 # Load connected components of graph
 time python3 csv_to_partitions.py --version=${TIMESTAMP}

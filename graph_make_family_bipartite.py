@@ -6,7 +6,7 @@
 #                   or a married couple with no children)
 # Every person is connected to every family unit they are a member of.
 #
-# Note: This is similar to the graph created by family_graph.py, see the
+# Note: This is similar to the graph created by graph_make_family.py, see the
 # comments in that file to understand the difference.
 #
 # In the traditional connection graph, there are many highly connected blocks.
