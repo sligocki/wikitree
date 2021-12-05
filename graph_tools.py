@@ -87,8 +87,28 @@ def write_graph(graph, filename):
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
+def write_graph_nk(graph, names, filename):
+  filename = Path(filename)
+  if ".graph" in filename.suffixes:
+    # TODO: Submit bug to nk team about accepting Path as arg.
+    nk.graphio.writeGraph(graph, str(filename), nk.Format.METIS)
+    # Write names into sibling db file.
+    names_db = NamesDb(f"{filename}.names.db")
+    names_db.create_table()
+    for index, node_name in enumerate(names):
+      names_db.insert(index, node_name)
+    names_db.commit()
+
+  else:
+    raise Exception(f"Invalid graph filename: {filename}")
+
 def LargestComponent(graph):
   max_size, main_component = max(
     ((len(comp), comp) for comp in nx.connected_components(graph)),
     key = lambda x: x[0])
   return graph.subgraph(main_component)
+
+def largest_component_nk(graph):
+  assert isinstance(graph, nk.Graph), graph
+  cc = nk.components.ConnectedComponents(graph)
+  return cc.extractLargestConnectedComponent(graph)

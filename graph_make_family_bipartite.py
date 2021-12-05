@@ -24,53 +24,88 @@ import collections
 from pathlib import Path
 import time
 
-import networkx as nx
+import networkit as nk
 
-import csv_iterate
+import data_reader
 import graph_tools
 import utils
 
 
-def UnionNodeName(parents):
+def UnionNodeName(db, parent_nums):
   """Name for node which represents the union (marriage or co-parentage)."""
-  return "Union/" + "/".join(str(p) for p in sorted(parents))
+  parent_ids = []
+  for num in parent_nums:
+    id = db.num2id(num)
+    if id:
+      parent_ids.append(id)
+    else:
+      # Fallback to num if we can't find ID (should be rare).
+      #print(" Warning: No ID found for", num)
+      parent_ids.append(str(num))
+
+  return "Union/" + "/".join(str(p) for p in sorted(parent_ids))
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
-graph = nx.Graph()
-print("Loading users", time.process_time())
-for i, person_obj in enumerate(csv_iterate.iterate_users(version=args.version)):
-  parents = [p for p in (person_obj.father_num(), person_obj.mother_num()) if p]
-  person_num = person_obj.user_num()
-  if parents:
-    union_node = UnionNodeName(parents)
-    graph.add_edge(person_num, union_node)
-    # Note: Parents will be double added, Graph ignores redundant edges.
-    for parent in parents:
-      graph.add_edge(parent, union_node)
-  if i % 1000000 == 0:
-    print(f" ... {i:,}  {len(graph.nodes):,}  {len(graph.edges):,}", time.process_time())
+db = data_reader.Database(args.version)
 
-print("Loading marriages", time.process_time())
-# Connect any spouses. Note: This is redundant for couples with children.
-for marriage in csv_iterate.iterate_marriages(version=args.version):
-  couple = marriage.user_nums()
-  union_node = UnionNodeName(couple)
-  for spouse in couple:
-    graph.add_edge(spouse, union_node)
 
-print(f"Total graph size: {len(graph.nodes):,} Nodes {len(graph.edges):,} Edges.")
+utils.log("Building list of all nodes and edges")
+people_ids = []
+union_ids = set()
+edge_ids = []
+for index, self_num in enumerate(db.enum_people()):
+  # Add person node for self.
+  self_id = db.num2id(self_num)
+  people_ids.append(self_id)
 
-print("Writing graph to file", time.process_time())
+  # Add union node for parents and connect to it.
+  parent_nums = db.parents_of(self_num)
+  if parent_nums:
+    union_id = UnionNodeName(db, parent_nums)
+    union_ids.add(union_id)
+    edge_ids.append((self_id, union_id))
+
+  # Add partner node for each partner and connect to it.
+  for partner_num in db.partners_of(self_num):
+    union_id = UnionNodeName(db, [self_num, partner_num])
+    union_ids.add(union_id)
+    edge_ids.append((self_id, union_id))
+
+  if index % 1_000_000 == 0:
+    utils.log(f" ... {len(people_ids):_}  {len(union_ids):_}")
+utils.log(f"Found {len(people_ids):_} people nodes, {len(union_ids):_} union nodes and {len(edge_ids):_} edges.")
+
+utils.log("Extracting id2index mapping")
+ids = people_ids + list(union_ids)
+id2index = {}
+for node_index, wikitree_id in enumerate(ids):
+  id2index[wikitree_id] = node_index
+
+
+graph = nk.Graph(len(ids))
+utils.log("Building graph")
+for (id1, id2) in edge_ids:
+  graph.addEdge(id2index[id1], id2index[id2])
+utils.log(f"Built graph with {graph.numberOfNodes():_} Nodes / {graph.numberOfEdges():_} Edges")
+
+
+utils.log("Saving full graph")
 data_dir = utils.data_version_dir(args.version)
-nx.write_adjlist(graph, Path(data_dir, "fam_bipartite.all.adj.nx"))
+filename = Path(data_dir, "fam_bipartite.all.graph")
+graph_tools.write_graph_nk(graph, ids, filename)
 
-print("Finding largest connected component", time.process_time())
-main_component = graph_tools.LargestComponent(graph)
-print(f"Main component size: {len(main_component.nodes):,} Nodes {len(main_component.edges):,} Edges.")
+utils.log("Finding largest connected component")
+main_component = graph_tools.largest_component_nk(graph)
+print(f"Main component size: {main_component.numberOfNodes():,} Nodes / {main_component.numberOfEdges():,} Edges")
 
-print("Writing main component to file", time.process_time())
-nx.write_adjlist(main_component, Path(data_dir, "fam_bipartite.main.adj.nx"))
+utils.log("Saving main component")
+filename = Path(data_dir, "fam_bipartite.main.graph")
+# Subset ids to those in main_component ... hopefully this order is correct/consistent ...
+component_ids = [ids[index] for index in main_component.iterNodes()]
+graph_tools.write_graph_nk(main_component, component_ids, filename)
+
+utils.log("Finished")
