@@ -26,6 +26,7 @@ def median_index(circle_sizes):
 parser = argparse.ArgumentParser()
 parser.add_argument("circles_json", nargs="+", type=Path)
 parser.add_argument("--wikitree-ids", "--ids", nargs="*")
+parser.add_argument("--max-plots", type=int, default=20)
 
 parser.add_argument("--log-y", action="store_true",
                     help="Plot with log-Y axis.")
@@ -85,7 +86,7 @@ ax.set_xticks(range(-200, 200, 10))
 
 
 utils.log("Plotting Graph")
-ids = args.wikitree_ids if args.wikitree_ids else circle_sizes.keys()
+ids = args.wikitree_ids if args.wikitree_ids else list(circle_sizes.keys())[:args.max_plots]
 for wikitree_id in ids:
   sizes = circle_sizes[wikitree_id]
   xs = list(range(len(sizes)))

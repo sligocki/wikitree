@@ -118,14 +118,20 @@ def summarize_community(index):
   if size <= 50_000:
     closeness = nk.centrality.Closeness(subG, False, nk.centrality.ClosenessVariant.Generalized)
   else:
-    # If we have too many nodes, excact closeness is too slow.
+    # If we have too many nodes, exact closeness is too slow.
     closeness = nk.centrality.ApproxCloseness(subG, 100)
   closeness.run()
+
+  center, _ = closeness.ranking()[0]
+  bfs = nk.distance.BFS(subG, center)
+  bfs.run()
+
   for node_index, score in closeness.ranking()[:10]:
     node_name = names_db.index2name(node_index)
     user_nums = name2users(node_name)
     id_str = "/".join(db.num2id(user_num) for user_num in user_nums)
-    print(f" - {1/score:6.2f}  {id_str}")
+    dist_center = int(bfs.distance(node_index))
+    print(f" - {1/score:6.2f}  {dist_center:3d}  {id_str}")
   
 
 print()
@@ -146,9 +152,8 @@ else:
       "Gardahaut-1",
       "Vatant-5",
       "Andersson-5056",
-      # "Mars-121",
-      # "Lothrop-29",
-      # "Windsor-1",
+      "Mars-121",
+      "Lothrop-29",
     ]:
     node_index = names_db.name2index(node_name)
     community_index = communities[node_index]

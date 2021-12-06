@@ -20,25 +20,38 @@ done
 echo
 echo "(2) Process new dump"
 time python3 csv_to_sqlite.py --version=${TIMESTAMP}
-
 time bash process_categories.sh ${TIMESTAMP}
 
-time python3 graph_make_family.py --version=${TIMESTAMP}
-time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
-                           ${VERSION_DIR}/family.core.adj.nx \
-                           ${VERSION_DIR}/family.core.collapse.csv
-time python3 graph_core_annotate.py ${VERSION_DIR}/family.main.adj.nx \
-                                    ${VERSION_DIR}/family.core.adj.nx \
-                                    ${VERSION_DIR}/family.core.weighted.edgelist.nx.gz \
-                                    ${VERSION_DIR}/family.core.collapse.csv \
-                                    ${VERSION_DIR}/family.dist_to_core.db
+# time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
+# mkdir -p ${VERSION_DIR}/communities/
+# for x in $(seq 0 9); do
+#   time python3 community_generate.py \
+#     ${VERSION_DIR}/fam_bipartite.main.graph \
+#     ${VERSION_DIR}/communities/fam_bipartite.main.comm_${x}
+# done
+# time python3 community_intersect.py \
+#   ${VERSION_DIR}/fam_bipartite.main.graph \
+#   ${VERSION_DIR}/communities/fam_bipartite.main.comm_* \
+#   --out-communities=${VERSION_DIR}/communities/fam_bipartite.main.inter_10
+# time python3 community_analyze.py \
+#   ${VERSION_DIR}/fam_bipartite.main.graph \
+#   ${VERSION_DIR}/communities/fam_bipartite.main.inter_10
+
+# time python3 graph_make_family.py --version=${TIMESTAMP}
+# time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
+#                            ${VERSION_DIR}/family.core.adj.nx \
+#                            ${VERSION_DIR}/family.core.collapse.csv
+# time python3 graph_core_annotate.py ${VERSION_DIR}/family.main.adj.nx \
+#                                     ${VERSION_DIR}/family.core.adj.nx \
+#                                     ${VERSION_DIR}/family.core.weighted.edgelist.nx.gz \
+#                                     ${VERSION_DIR}/family.core.collapse.csv \
+#                                     ${VERSION_DIR}/family.dist_to_core.db
 
 # Note: Skipping big graphs
 # time python3 sqlite_to_graph.py --version=${TIMESTAMP}
-# time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
 
 # Load connected components of graph
-time python3 csv_to_partitions.py --version=${TIMESTAMP}
+# time python3 csv_to_partitions.py --version=${TIMESTAMP}
 # time python3 csv_to_partitions.py --version=${TIMESTAMP} --sibling-in-law
 
 echo
