@@ -14,7 +14,8 @@ import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument("graph")
-parser.add_argument("num_partitions", type=int)
+parser.add_argument("communities")
+parser.add_argument("community_index", nargs="*", type=int)
 parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
@@ -25,22 +26,15 @@ utils.log("Reading graph")
 G, names_db = graph_tools.load_graph_nk(args.graph)
 utils.log(f"Loaded graph with {G.numberOfNodes():_} nodes / {G.numberOfEdges():_} edges")
 
-utils.log(f"Calculating {args.num_partitions} partitions")
-partitions = [nk.community.detectCommunities(G) for _ in range(args.num_partitions)]
+utils.log("Reading communities")
+communities = nk.community.readCommunities(args.communities)
 
-utils.log("Calculating the intersection of all partitions")
-intersect_partition = collections.defaultdict(list)
-for node in G.iterNodes():
-  all_comms = [partition[node] for partition in partitions]
-  intersect_name = ",".join(str(comm) for comm in all_comms)
-  intersect_partition[intersect_name].append(node)
-utils.log(f"Found {len(intersect_partition)} partition intersections")
-
-utils.log("Finding the largest intersections")
-size_part = [(len(nodes), name) for (name, nodes) in intersect_partition.items()]
-size_part.sort(reverse=True)
-
-large_sizes = [size for (size, _) in size_part[:20]]
+print()
+utils.log("Community info")
+community_size_index = [(size, index)
+                        for (index, size) in enumerate(communities.subsetSizes())]
+community_size_index.sort(reverse=True)
+large_sizes = [size for (size, _) in community_size_index[:20]]
 print("Largest Community sizes:", large_sizes)
 total_nodes = G.numberOfNodes()
 percent_sizes = [size / total_nodes for size in large_sizes]
@@ -49,7 +43,7 @@ print("Largest Community sizes (percent of network):", percent_sizes)
 print("Count of communities by magnitude:")
 com_size_hist_mag = collections.Counter()
 com_size_mag_cum = collections.defaultdict(int)
-for (size, _) in size_part:
+for (size, _) in community_size_index:
   magnitude = math.floor(math.log10(size))
   com_size_hist_mag[magnitude] += 1
   com_size_mag_cum[magnitude] += size
@@ -58,7 +52,7 @@ for k in range(max(com_size_hist_mag.keys()) + 1):
 
 
 def name2users(node_name):
-  if node_name.startswith("Union/") or node_name.startswith("Parents/"):
+  if node_name.startswith("Union/"):
     # For Union, return all parents.
     names = node_name.split("/")[1:]
   else:
@@ -85,10 +79,10 @@ def get_locations(user_num):
           locs.add(section)
   return locs
 
-def summarize_community(subset):
-  # TODO: Ignoring Union nodes for Bijective graph.
+def summarize_community(index):
+  subset = communities.getMembers(index)
   size = len(subset)
-  utils.log(f"Collecting metadata for community of size {size:_}")
+  utils.log(f"Collecting metadata for community {index} of size {size:_}")
   # Note: Count is per-person, not per-node.
   counts = {
     "category": collections.Counter(),
@@ -135,27 +129,30 @@ def summarize_community(subset):
   
 
 print()
-utils.log("Examine Large Communities")
-print()
-for order, (_, part_name) in enumerate(size_part[:20]):
-  print("Community", order)
-  summarize_community(intersect_partition[part_name])
-  print()
+if args.community_index:
+  for community_index in args.community_index:
+    summarize_community(community_index)
+    print()
 
-# utils.log("Examine Particular Communities")
-# for node_name in [
-#     "Ligocki-7",
-#     "Gardahaut-1",
-#     "Vatant-5",
-#     "Andersson-5056",
-#     # "Mars-121",
-#     # "Lothrop-29",
-#     # "Windsor-1",
-#   ]:
-#   node_index = names_db.name2index(node_name)
-#   community_index = communities[node_index]
-#   summarize_community(community_index)
-#   print()
+else:
+  utils.log("Examine Large Communities")
+  for order, (size, index) in enumerate(community_size_index[:20]):
+    summarize_community(index)
+    print()
 
+  utils.log("Examine Particular Communities")
+  for node_name in [
+      "Ligocki-7",
+      "Gardahaut-1",
+      "Vatant-5",
+      "Andersson-5056",
+      # "Mars-121",
+      # "Lothrop-29",
+      # "Windsor-1",
+    ]:
+    node_index = names_db.name2index(node_name)
+    community_index = communities[node_index]
+    summarize_community(community_index)
+    print()
 
 utils.log("Finished")
