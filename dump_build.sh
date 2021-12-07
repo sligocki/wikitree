@@ -22,18 +22,18 @@ echo "(2) Process new dump"
 time python3 csv_to_sqlite.py --version=${TIMESTAMP}
 time bash process_categories.sh ${TIMESTAMP}
 
-# time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
-# mkdir -p ${VERSION_DIR}/communities/
-# for x in $(seq 0 9); do
-#   time python3 community_generate.py \
-#     ${VERSION_DIR}/fam_bipartite.main.graph \
-#     ${VERSION_DIR}/communities/fam_bipartite.main.comm_${x}
-# done
-# time python3 community_intersect.py \
-#   ${VERSION_DIR}/fam_bipartite.main.graph \
-#   ${VERSION_DIR}/communities/fam_bipartite.main.comm_* \
-#   --out-communities=${VERSION_DIR}/communities/fam_bipartite.main.inter_10
-# time python3 community_analyze.py \
+time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
+mkdir -p ${VERSION_DIR}/communities/
+for x in $(seq 0 9); do
+  time python3 community_generate.py \
+    ${VERSION_DIR}/fam_bipartite.main.graph \
+    ${VERSION_DIR}/communities/fam_bipartite.main.comm_${x}
+done
+time python3 community_intersect.py \
+  ${VERSION_DIR}/fam_bipartite.main.graph \
+  ${VERSION_DIR}/communities/fam_bipartite.main.comm_* \
+  --out-communities=${VERSION_DIR}/communities/fam_bipartite.main.inter_10
+# time python3 community_analyze.py --version=${TIMESTAMP} \
 #   ${VERSION_DIR}/fam_bipartite.main.graph \
 #   ${VERSION_DIR}/communities/fam_bipartite.main.inter_10
 
@@ -48,7 +48,7 @@ time bash process_categories.sh ${TIMESTAMP}
 #                                     ${VERSION_DIR}/family.dist_to_core.db
 
 # Note: Skipping big graphs
-# time python3 sqlite_to_graph.py --version=${TIMESTAMP}
+# time python3 graph_make_person.py --version=${TIMESTAMP}
 
 # Load connected components of graph
 # time python3 csv_to_partitions.py --version=${TIMESTAMP}

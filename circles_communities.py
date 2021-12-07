@@ -58,7 +58,8 @@ circles_json = {}
 for comm in ["all"] + sorted_comms:
   name = f"{args.focus}/Community_{comm}"
   circles_json[name] = [comm_circles[comm][i]
-                        for i in range(max(comm_circles[comm].keys()) + 1)]
+                        for i in range(max(comm_circles[comm].keys()) + 1)
+                        if (i % 2) == 0]  # TODO: Only do this for bipartite?
 
 with open(args.out_circles, "w") as f:
   json.dump(circles_json, f)

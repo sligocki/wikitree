@@ -1,28 +1,29 @@
-# Produces a graph representing "nuclear family units".
-#
-# Represented as a bipartite graph where each node is either:
-#  * a person or
-#  * a family unit (representing 2 parents and all their children
-#                   or a married couple with no children)
-# Every person is connected to every family unit they are a member of.
-#
-# Note: This is similar to the graph created by graph_make_family.py, see the
-# comments in that file to understand the difference.
-#
-# In the traditional connection graph, there are many highly connected blocks.
-# For example, given 2 parents with 4 children, all 6 will be directly connected
-# to each other. But does this really represent 15 different connections?
-#
-# Instead, in this representation it would be represented as a star of 6 person
-# nodes attached to a central family node.
-#
-# The resulting graph will have drastically fewer cliques and running through
-# graph_core.py will be much more effective.
+"""
+Produces a graph representing "nuclear family units".
+
+Represented as a bipartite graph where each node is either:
+ * a person or
+ * a family unit (representing 2 parents and all their children
+                  or a married couple with no children)
+Every person is connected to every family unit they are a member of.
+
+Note: This is similar to the graph created by graph_make_family.py, see the
+comments in that file to understand the difference.
+
+In the traditional connection graph, there are many highly connected blocks.
+For example, given 2 parents with 4 children, all 6 will be directly connected
+to each other. But does this really represent 15 different connections?
+
+Instead, in this representation it would be represented as a star of 6 person
+nodes attached to a central family node.
+
+The resulting graph will have drastically fewer cliques and running through
+graph_core.py will be much more effective.
+"""
 
 import argparse
 import collections
 from pathlib import Path
-import time
 
 import networkit as nk
 
