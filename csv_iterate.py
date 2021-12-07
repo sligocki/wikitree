@@ -82,7 +82,7 @@ class UserRow(Row):
     return ParseInt(self.lookup("User ID"))
 
   def wikitree_id(self):
-    return self.lookup("WikiTree ID")
+    return self.lookup("WikiTree ID_DB")
 
   def father_num(self):
     return ParseInt(self.lookup("Father"))
