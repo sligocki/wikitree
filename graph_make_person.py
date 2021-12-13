@@ -12,27 +12,32 @@ import graph_tools
 import utils
 
 
+def try_num2id(db, num):
+  id = db.num2id(num)
+  if id:
+    return id
+  else:
+    # Fallback to num if we can't find ID (should be rare).
+    return str(num)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="Data version (defaults to most recent).")
 args = parser.parse_args()
 
-utils.log("Loading DB")
 db = data_reader.Database(args.version)
 
 utils.log("Building list of all nodes and edges")
 people_ids = set()
 edge_ids = set()
-i = 0
-for person, neigh, rel_type in db.enum_connections():
+for i, (person, neigh, rel_type) in enumerate(db.enum_connections()):
   # Make sure to avoid "coparent" which is not considered a connection by connection-finder.
-  if person < neigh and rel_type in ["child", "parent", "sibling", "spouse"]:
-    person_id = db.num2id(person)
-    neigh_id = db.num2id(neigh)
+  if rel_type != "coparent":
+    person_id = try_num2id(db, person)
+    neigh_id = try_num2id(db, neigh)
     people_ids.update([person_id, neigh_id])
-    edge_ids.add((person_id, neigh_id))
-    i += 1
-    if i % 1000000 == 0:
-      utils.log(f" ... {i:,} connections loaded")
+    edge_ids.add(tuple(sorted((person_id, neigh_id))))
+  if i % 10_000_000 == 0:
+    utils.log(f" ... {i:_}  {len(people_ids):_}  {len(edge_ids):_}")
 utils.log(f"Loaded {len(people_ids):_} nodes / {len(edge_ids):_} edges")
 
 utils.log("Index nodes")
