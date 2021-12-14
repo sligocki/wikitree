@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import webbrowser
 
 import category_tools
 import csv_iterate
@@ -13,7 +14,7 @@ def is_residence(location, places):
   return False
 
 
-def category_check(version, category_name, target_places):
+def category_check(version, args, *, target_places, category_name=None):
   db = data_reader.Database(version)
   category_db = category_tools.CategoryDb(version)
 
@@ -27,51 +28,58 @@ def category_check(version, category_name, target_places):
        is_residence(marriage.marriage_location(), target_places):
       for user_num in marriage.user_nums():
         residents.add(user_num)
-  print(f"# Residents = {len(residents)}")
+  print(f"# Residents = {len(residents):_}")
   editable_residents = {
     user_num for user_num in residents
     if db.get(user_num, "privacy_level") >= 60
     and (not db.birth_date_of(user_num)
          or db.birth_date_of(user_num) >= datetime.date(1500, 1, 1))}
-  print(f"# Editable residents = {len(editable_residents)}")
+  print(f"# Editable residents = {len(editable_residents):_}")
 
-  in_category = category_db.list_people_in_category(category_name)
-  print(f"# in category = {len(in_category)}")
+  if category_name:
+    in_category = category_db.list_people_in_category(category_name)
+    print(f"# in category = {len(in_category):_}")
 
-  cat_not_resident = in_category - residents
-  print(f"# in category, not resident = {len(cat_not_resident)}")
+    cat_not_resident = in_category - residents
+    print(f"# in category, not resident = {len(cat_not_resident):_}")
 
-  residents_not_in_cat = residents - in_category
-  print(f"# Residents not in category = {len(residents_not_in_cat)}")
+    residents_not_in_cat = residents - in_category
+    print(f"# Residents not in category = {len(residents_not_in_cat):_}")
 
-  # Only list editable residents. Can't fix the private ones.
-  editable_residents_not_in_cat = editable_residents - in_category
-  print(f"# Editable residents not in category = {len(editable_residents_not_in_cat)}")
-  for person in sorted(editable_residents_not_in_cat):
-    print(f" * https://www.wikitree.com/wiki/{db.num2id(person)}")
+    # Only list editable residents. Can't fix the private ones.
+    editable_residents_not_in_cat = editable_residents - in_category
+    print(f"# Editable residents not in category = {len(editable_residents_not_in_cat):_}")
+    for person in sorted(editable_residents_not_in_cat):
+      url = f"https://www.wikitree.com/wiki/{db.num2id(person)}"
+      print(" *", url)
+      if args.open_links:
+        webbrowser.open(url)
 
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--version", help="Data version (defaults to most recent).")
 
+  parser.add_argument("--open-links", action="store_true")
+
   parser.add_argument("--no-shapinsay", dest="shapinsay", action="store_false")
   parser.add_argument("--no-inowroclaw", dest="inowroclaw", action="store_false")
-  parser.add_argument("--honhardt", dest="honhardt", action="store_true")
+  parser.add_argument("--no-kalmar", dest="kalmar", action="store_false")
+  parser.add_argument("--no-honhardt", dest="honhardt", action="store_false")
   args = parser.parse_args()
 
   if args.shapinsay:
-    print("Shapinsay, Orkney")
+    print("Shapinsay parish, Orkney, Scotland (pop 1,000)")
     category_check(
-      args.version,
+      args.version, args,
       category_name="Shapinsay_Parish,_Orkney",
       target_places=["Shapinsay"])
     print()
 
   if args.inowroclaw:
-    print("Inowrocław county, Poland")
+    print("Inowrocław county, Poland (pop 70,000)")
     category_check(
-      args.version,
+      args.version, args,
       category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship,_Poland",
       target_places=[
         # Inowrocław in various Polish and German spellings
@@ -93,12 +101,20 @@ def main():
       ])
     print()
 
-  if args.honhardt:
-    print("Honhardt, Württemberg")
+  if args.kalmar:
+    print("Kalmar county, Sweden (pop 240,000)")
     category_check(
-      args.version,
-      # TODO: Note: this category does not yet exist.
-      category_name="Honhardt,_Württemberg",
+      args.version, args,
+      # TODO: We really want all subcategories of this ...
+      # category_name="Kalmar_County",
+      target_places=["Kalmar"])
+    print()
+
+  if args.honhardt:
+    print("Honhardt parish, Württemberg, Germany (pop 5,000)")
+    category_check(
+      args.version, args,
+      # TODO: category_name="Honhardt,_Württemberg",
       target_places=[
         "Honhardt",
         # Honhardt is now part of the town Frankenhardt
