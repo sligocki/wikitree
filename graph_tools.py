@@ -42,6 +42,12 @@ class NamesDb:
     rows = cursor.fetchall()
     assert len(rows) == 1, (node_name, rows)
     return rows[0]["graph_index"]
+  
+  def all_index2names(self):
+    cursor = self.conn.cursor()
+    cursor.execute("SELECT graph_index, node_name FROM nodes")
+    rows = cursor.fetchall()
+    return {row["graph_index"]: row["node_name"] for row in rows}
 
 
 def load_graph_nk(filename):

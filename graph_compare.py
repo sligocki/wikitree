@@ -6,10 +6,20 @@ import argparse
 import collections
 from pathlib import Path
 
-import networkx as nx
+import networkit as nk
 
+import graph_tools
 import utils
 
+
+def load_node_edge_sets(filename):
+  graph, names_db = graph_tools.load_graph_nk(filename)
+  names = names_db.all_index2names()
+
+  node_set = set(names[node] for node in graph.iterNodes())
+  edge_set = set(frozenset([names[u], names[v]])
+                 for (u, v) in graph.iterEdges())
+  return node_set, edge_set
 
 def main():
   parser = argparse.ArgumentParser()
@@ -18,18 +28,12 @@ def main():
   args = parser.parse_args()
 
   utils.log("Load graph_before")
-  graph_before = nx.read_adjlist(args.graph_before)
-  nodes_before = set(graph_before.nodes())
-  edges_before = set(frozenset(edge) for edge in graph_before.edges())
-  del graph_before
+  nodes_before, edges_before = load_node_edge_sets(args.graph_before)
   utils.log(f"Loaded graph with {len(nodes_before):_} nodes and {len(edges_before):_} edges")
 
   print()
   utils.log("Load graph_after")
-  graph_after = nx.read_adjlist(args.graph_after)
-  nodes_after = set(graph_after.nodes())
-  edges_after = set(frozenset(edge) for edge in graph_after.edges())
-  del graph_after
+  nodes_after, edges_after = load_node_edge_sets(args.graph_after)
   utils.log(f"Loaded graph with {len(nodes_after):_} nodes and {len(edges_after):_} edges")
 
   print()
