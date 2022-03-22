@@ -91,10 +91,10 @@ def main():
         "Pakość", "Pakosc", "Pakosch",
         "Złotniki Kujawskie", "Güldenhof", "Guldenhof",
         "Dąbrowa Biskupia", "Luisenfelde",
-        # "Rojewo", TODO: matches Dobrojewo #"Roneck", TODO: matches Mamaroneck
+        # "Rojewo", TODO: matches Dobrojewo # "Roneck", TODO: matches Mamaroneck
         # Towns in Strelno, Posen that are now in Inowrocław county
         "Ludzisko", "Ludzisk",
-        "Polanowitz",  # Removed "Polanowice" (there are several: https://pl.wikipedia.org/wiki/Polanowice)
+        # Removed: "Polanowitz", "Polanowice" (there are several: https://pl.wikipedia.org/wiki/Polanowice)
         # Removed "Piaski" because there's Piaski, Warsaw too :/
         # Specific towns in Inowrocław
         "Płonkowo", "Plonkowo", "Tuczno",

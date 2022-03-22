@@ -18,9 +18,11 @@ echo "Data dump version: $TIMESTAMP"
 export TIMESTAMP
 
 if [ -d data/dumps/$TIMESTAMP ]; then
+  DOWNLOADED=false
   echo "We already have this dump"
   echo "Done"
 else
+  DOWNLOADED=true
   echo "We don't yet have this dump: downloading it"
   mkdir data/dumps/$TIMESTAMP
   # cd in a subshell so that we don't permanently change directories.
