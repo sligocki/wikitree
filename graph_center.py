@@ -10,8 +10,6 @@ import time
 
 import networkx as nx
 
-import graph_distances
-
 
 def FindCentroid(graph, seed_nodes, num_overlap):
   # BFS from all of them until we find a node which is within the BFS
@@ -56,13 +54,14 @@ if args.absolute:
 
 else:
   print(f"Estimating center based on {args.num_seed_nodes} points", time.process_time())
-  for i in itertools.count():
-    print("Try", i, time.process_time())
+  if args.num_seed_nodes == 0 or args.num_seed_nodes >= len(graph.nodes):
+    seed_nodes = list(graph.nodes)
+  else:
     # Pick N random nodes.
     seed_nodes = random.sample(list(graph.nodes), args.num_seed_nodes)
 
-    for node in FindCentroid(graph, seed_nodes, args.num_overlap):
-      centrality = graph_distances.MeasureAndLogCentrality(graph, args.graph, node, randomly_sampled=False)
-      print(f"Centrality  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
+  for node in FindCentroid(graph, seed_nodes, args.num_overlap):
+    centrality = nx.closeness_centrality(graph, u=node)
+    print(f"Centrality  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
 
 print("Done", time.process_time())

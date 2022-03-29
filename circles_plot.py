@@ -35,7 +35,7 @@ parser.add_argument("--rate", action="store_true",
 parser.add_argument("--relative", action="store_true",
                     help="Shift distances relative to median dist.")
 parser.add_argument("--absolute", action="store_true",
-                    help="Plot with absolute (not %) circle sizes.")
+                    help="Plot with absolute (not %%) circle sizes.")
 parser.add_argument("--log-normal-regression", action="store_true",
                     help="Plot a log-normal distribution regression")
 
@@ -79,7 +79,7 @@ else:
 if args.log_y:
   ax.set_yscale("log")
   if not args.absolute:
-    ax.set_ylim(0.000001, 0.1)
+    ax.set_ylim(0.000001, 1.0)
 
 ax.grid(True)
 ax.set_xticks(range(-200, 200, 10))
@@ -133,7 +133,7 @@ for wikitree_id in ids:
 
     mu_hat = total_log / count
     sigma_hat = math.sqrt(total_log2 / count - mu_hat**2)
-    
+
     # mu_hat = math.log(19.0)
     # sigma_hat = 0.23
     mean_reg = math.exp(mu_hat + sigma_hat**2 / 2)

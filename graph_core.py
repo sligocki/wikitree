@@ -61,23 +61,12 @@ def CollectPath(graph, node):
   return (end_a, end_b), (path_a | path_b | set([node]))
 
 def ContractGraph(graph, rep_nodes):
-  # utils.log(f"Contracting graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
-
-  # utils.log("Finding nodes to delete")
   # Note: We may delete more nodes than to_delete.
   to_delete = set()
-  max_degree = 6
-  degree_counts = [0] * (max_degree + 1)
   for node in graph.nodes:
     if graph.degree[node] <= 2:
       to_delete.add(node)
-    degree = min(graph.degree[node], max_degree)
-    degree_counts[degree] += 1
-  # message = [f"{degree}:{degree_counts[degree]:_}"
-  #            for degree in range(max_degree)]
-  # print(" Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
 
-  # utils.log(f"Stripping ({len(to_delete):_}+) nodes")
   for node in to_delete:
     if node in graph.nodes:
       if graph.degree[node] == 0:
@@ -120,6 +109,19 @@ def FindCore(graph):
     pass
   return rep_nodes
 
+def degree_distr(graph, max_degree):
+  degree_counts = [0] * (max_degree + 1)
+  for node in graph.nodes:
+    degree = min(graph.degree[node], max_degree)
+    degree_counts[degree] += 1
+  return degree_counts
+
+def degree_distr_str(graph, max_degree=6):
+  degree_counts = degree_distr(graph, max_degree)
+  message = [f"{degree}:{degree_counts[degree]:_}"
+             for degree in range(max_degree)]
+  utils.log("  Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -131,11 +133,13 @@ def main():
   utils.log("Loading graph")
   graph = graph_tools.load_graph(args.graph_in)
   utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  utils.log(degree_distr_str(graph))
 
   utils.log("Contracting graph")
   # Map: core nodes -> nodes that collapse into this core node
   rep_nodes = FindCore(graph)
   utils.log(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  utils.log(degree_distr_str(graph))
 
   utils.log("Saving graph core to disk")
   nx.write_adjlist(graph, args.graph_out)

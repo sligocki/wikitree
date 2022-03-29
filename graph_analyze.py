@@ -31,6 +31,7 @@ def circle_size(graph, node, circle_num):
     for node in prev_circle:
       next_circle |= set(graph.neighbors(node)) - visited
     prev_circle = next_circle
+    visited |= prev_circle
   return len(prev_circle)
 
 def circle_distribution(graph, circle_num):
