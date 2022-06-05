@@ -16,7 +16,7 @@ import graph_tools
 import utils
 
 
-def log_incompleteness_stats(cat_nums):
+def log_incompleteness_stats(db, cat_nums):
   num_born = 0
   num_no_parents = 0
   recent_no_parents = set()
@@ -91,7 +91,7 @@ def main():
   utils.log(f"Loaded {len(cat_nums):_} people")
 
   if args.incompleteness_stats:
-    log_incompleteness_stats(cat_nums)
+    log_incompleteness_stats(db, cat_nums)
 
   graph = build_bipartite_graph(cat_nums, db)
   utils.log(f"Computed graph with {len(graph.nodes):_} nodes and "

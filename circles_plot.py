@@ -27,6 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("circles_json", nargs="+", type=Path)
 parser.add_argument("--wikitree-ids", "--ids", nargs="*")
 parser.add_argument("--max-plots", type=int, default=20)
+parser.add_argument("--max-circle", type=int)
 
 parser.add_argument("--log-y", action="store_true",
                     help="Plot with log-Y axis.")
@@ -82,7 +83,6 @@ if args.log_y:
     ax.set_ylim(0.000001, 1.0)
 
 ax.grid(True)
-ax.set_xticks(range(-200, 200, 10))
 
 
 utils.log("Plotting Graph")
@@ -90,6 +90,9 @@ ids = args.wikitree_ids if args.wikitree_ids else list(circle_sizes.keys())[:arg
 for wikitree_id in ids:
   sizes = circle_sizes[wikitree_id]
   xs = list(range(len(sizes)))
+  if args.max_circle:
+    xs = [x for x in xs if x <= args.max_circle]
+    sizes = [sizes[x] for x in xs]
 
   total_sizes = sum(sizes)
   print(f"Total population size for {wikitree_id}: {total_sizes:_d}")
@@ -100,7 +103,7 @@ for wikitree_id in ids:
     # Normalize distribution
     ys = [y / total_sizes for y in sizes]
 
-  mean_dist = sum(xs[i] * ys[i] for i in range(len(xs)))
+  mean_dist = sum(xs[i] * ys[i] for i in range(len(xs))) / sum(ys)
   print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
 
 
@@ -115,6 +118,8 @@ for wikitree_id in ids:
     del xs[0]
     ys = [ys[i+1] / ys[i] if ys[i] else None
           for i in range(len(ys) - 1)]
+    # Skip c1 / 1 which is always disproportionately large.
+    del xs[0], ys[0]
 
   ax.plot(xs, ys, label=wikitree_id)
 

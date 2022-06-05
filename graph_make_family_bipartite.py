@@ -51,7 +51,7 @@ class BipartiteBuilder:
     self.db = db
     self.people_ids = []
     self.union_ids = set()
-    self.edge_ids = []
+    self.edge_ids = set()
 
   def compute_node_ids(self):
     return self.people_ids + list(self.union_ids)
@@ -66,13 +66,18 @@ class BipartiteBuilder:
     if parent_nums:
       union_id = UnionNodeName(self.db, parent_nums)
       self.union_ids.add(union_id)
-      self.edge_ids.append((self_id, union_id))
+      self.edge_ids.add((self_id, union_id))
+      # Make sure parents are connected ... this will generally happen
+      # automatically below with the partners iteration (unless one parent is unknown).
+      for parent_num in parent_nums:
+        parent_id = self.db.num2id(parent_num)
+        self.edge_ids.add((parent_id, union_id))
 
     # Add partner node for each partner and connect to it.
     for partner_num in self.db.partners_of(self_num):
       union_id = UnionNodeName(self.db, [self_num, partner_num])
       self.union_ids.add(union_id)
-      self.edge_ids.append((self_id, union_id))
+      self.edge_ids.add((self_id, union_id))
 
 
 def main():

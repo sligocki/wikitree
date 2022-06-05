@@ -50,8 +50,12 @@ def sample_distance_distribution(graph, num_samples):
   for _ in range(num_samples):
     node_a = random.choice(nodes)
     node_b = random.choice(nodes)
-    dist = nx.shortest_path_length(graph, node_a, node_b)
-    dist_distr[dist] += 1
+    try:
+      dist = nx.shortest_path_length(graph, node_a, node_b)
+      dist_distr[dist] += 1
+    except nx.exception.NetworkXNoPath:
+      # Ignore unconnected nodes.
+      pass
   return dist_distr
 
 
@@ -66,7 +70,7 @@ def normalize(ys):
   total = sum(ys)
   return [y / total for y in ys]
 
-def draw_degree_distr(deg_distr, ax, fraction_degree_regression):
+def draw_degree_distr_exp(deg_distr, ax, fraction_degree_regression):
   ax.set_title("Degree Distribution")
   ax.set_ylabel("Fraction of nodes")
   ax.set_xlabel("Degree")
@@ -90,6 +94,31 @@ def draw_degree_distr(deg_distr, ax, fraction_degree_regression):
 
   ax.legend()
 
+def draw_degree_distr_power(deg_distr, ax, fraction_degree_regression):
+  ax.set_title("Degree Distribution")
+  ax.set_ylabel("Fraction of nodes")
+  ax.set_xlabel("Degree")
+
+  # Plot with y-log to see exponential degree distribution as linear.
+  ax.set_yscale("log")
+  ax.set_xscale("log")
+
+  # Plot degree distribution
+  xs = sorted(deg_distr.keys())
+  ys = normalize([deg_distr[x] for x in xs])
+  ax.plot(xs, ys, ".-", label = "Degree Distribution")
+
+  # Plot exponential regression line
+  # Note: We ignore the tail since it can have noise
+  cutoff = math.floor(max(xs) * fraction_degree_regression)
+  m, b = numpy.polyfit(numpy.log(xs[:cutoff]), numpy.log(ys[:cutoff]), deg = 1)
+  # ln(y) = m * x + b
+  print(f"Power regression: ln(y) = {m:f} ln(x) + {b:f}")
+  reg_ys = [math.e**(m * math.log(x) + b) for x in xs]
+  ax.plot(xs, reg_ys, label = "Power Regression")
+
+  ax.legend()
+
 def draw_distance_distr(dist_distr, ax):
   ax.set_title("Distance Distribution")
   ax.set_ylabel("Percent of distances")
@@ -101,14 +130,14 @@ def draw_distance_distr(dist_distr, ax):
   ys = normalize([dist_distr[x] for x in xs])
   ax.plot(xs, ys, ".-", label = "Distance Distribution")
 
-  # Plot log-normal regression
-  log_distr = {math.log(dist): count for dist, count in dist_distr.items()}
-  mean_log = mean_distr(log_distr)
-  stddev_log = math.sqrt(moment_distr(log_distr, 2) - mean_log**2)
-  reg_ys = [1 / (x * stddev_log * math.sqrt(2 * math.pi)) *
-            math.e**(-(math.log(x) - mean_log)**2 / (2 * stddev_log**2))
-            for x in xs]
-  ax.plot(xs, reg_ys, label = "Log-Normal Regression")
+  # # Plot log-normal regression
+  # log_distr = {math.log(dist): count for dist, count in dist_distr.items()}
+  # mean_log = mean_distr(log_distr)
+  # stddev_log = math.sqrt(moment_distr(log_distr, 2) - mean_log**2)
+  # reg_ys = [1 / (x * stddev_log * math.sqrt(2 * math.pi)) *
+  #           math.e**(-(math.log(x) - mean_log)**2 / (2 * stddev_log**2))
+  #           for x in xs]
+  # ax.plot(xs, reg_ys, label = "Log-Normal Regression")
 
   ax.legend()
 
@@ -147,6 +176,7 @@ def main():
 
   utils.log("Loading degree distribution")
   deg_distr = degree_distribution(graph)
+  print(deg_distr)
   utils.log("Mean Degree", mean_distr(deg_distr))
   utils.log("Second moment (degree)", moment_distr(deg_distr, 2))
 
@@ -167,9 +197,10 @@ def main():
 
   if args.draw_plots:
     utils.log("Drawing plots")
-    fig, (ax1, ax2) = plt.subplots(2)
-    draw_degree_distr(deg_distr, ax1, args.fraction_degree_regression)
-    draw_distance_distr(dist_distr, ax2)
+    fig, (ax1, ax2, ax3) = plt.subplots(3)
+    draw_degree_distr_exp(deg_distr, ax1, args.fraction_degree_regression)
+    draw_degree_distr_power(deg_distr, ax2, args.fraction_degree_regression)
+    draw_distance_distr(dist_distr, ax3)
     plt.show()
 
   utils.log("Done")
