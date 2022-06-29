@@ -44,6 +44,7 @@ time python3 csv_to_partitions.py --version=${TIMESTAMP}
 
 echo
 echo "(3) Check categories"
+# 15m
 time python3 category_check.py --version=${TIMESTAMP} --open-links
 
 echo

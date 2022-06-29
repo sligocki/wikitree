@@ -51,6 +51,11 @@ class Database(object):
     if date_str:
       return datetime.date.fromisoformat(date_str)
 
+  def touched_time_of(self, user_num):
+    datetime_str = self.get(user_num, "touched_time")
+    if datetime_str:
+      return datetime.datetime.fromisoformat(datetime_str)
+
   def age_at_death_of(self, user_num):
     birth_date = self.birth_date_of(user_num)
     death_date = self.death_date_of(user_num)
