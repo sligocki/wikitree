@@ -121,7 +121,7 @@ for wikitree_id in ids:
     # Skip c1 / 1 which is always disproportionately large.
     del xs[0], ys[0]
 
-  ax.plot(xs, ys, label=wikitree_id)
+  ax.plot(xs, ys, label=wikitree_id, marker=".")
 
   if args.log_normal_regression:
     shift_log = 0

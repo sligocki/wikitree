@@ -13,6 +13,8 @@ import utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument("wikitree_id")
+parser.add_argument("--time", action="store_true",
+                    help="Include time-of-day in filename.")
 args = parser.parse_args()
 
 utils.log("Loading URL")
@@ -37,11 +39,15 @@ try:
     circle_sizes.append(circle_size)
 
   utils.log("Writing results")
-  date = datetime.date.today().strftime("%Y-%m-%d")
-  with open(Path("results", "circles", f"{args.wikitree_id}_{date}.json"), "w") as f:
+  if args.time:
+    date = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M")
+  else:
+    date = datetime.date.today().strftime("%Y-%m-%d")
+  filename = Path("results", "circles", f"{args.wikitree_id}_{date}.json")
+  with open(filename, "w") as f:
     json.dump({args.wikitree_id: circle_sizes}, f)
 
-  utils.log("Finished")
+  utils.log(f"Wrote {filename}")
 
 except:
   print("Error while processing data")
