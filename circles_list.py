@@ -25,5 +25,5 @@ for person, dist in bfs_tools.ConnectionBfs(db, focus_num):
 
 for dist in range(args.num_circles + 1):
   print("Circle", dist)
-  for id in sorted([db.num2id(person_num) for person_num in circles[dist]]):
-    print(id)
+  for i, id in enumerate(sorted([db.num2id(person_num) for person_num in circles[dist]])):
+    print(" *", i, id)

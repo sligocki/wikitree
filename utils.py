@@ -24,8 +24,14 @@ class TopN:
     self.items = []
 
   def add(self, measure, item):
-    if len(self.items) < self.size or measure > self.items[-1][0]:
+    if len(self.items) < self.size or measure > self.min_val():
       self.items.append((measure, item))
       self.items.sort(key=lambda x: x[0], reverse=True)
       if len(self.items) > self.size:
         del self.items[-1]
+
+  def min_val(self):
+    if self.items:
+      return self.items[-1][0]
+    else:
+      return 0
