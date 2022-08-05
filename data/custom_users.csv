@@ -28,7 +28,7 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1	1
 19445016	Peterson-9316	5605484	12233043	Michael		Peterson	Peterson	1	1
 19445030	Peterson-9317	5605484	12233043	Rocky		Peterson	Peterson	1	1
-19470719	Winston-1023	0	19980450	Kimberly	Justine	Winston	Ligocki	2	1
+19470719	Winston-1023	35307048	19980450	Kimberly	Justine	Winston	Ligocki	2	1
 19470776	Ligocki-16	19441613	20190252	Dean		Ligocki	Ligocki	1	1
 19799505	Wolters-385	0	0	Geraldine		Wolters	Gestaut	2	0
 19980450	Edgar-1938	24018761	19980477	Diann		Edgar	Wilson	2	1
@@ -53,4 +53,13 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 30570372	Ligocki-153	19444694	30570389	Jonathan	Terry	Ligocki	Ligocki	1	1
 30570389	Pounds-429	0	0	Erica		Pounds	Pounds	2	1
 30570400	Mejia-620	0	30570389	Elijah	J.	Mejia	Mejia	1	1
+35307026	Winston-1769	35306515	35306910	Margaret	A.	Winston	Cole	2	0
+35307048	Winston-1770	35307010	35324848	Gary	Richard	Winston	Winston	1	0
+35307092	Winston-1771	35307010	35324848	Gail		Winston	Felice	2	0
+35307099	Winston-1772	35307010	35324848	Barbara		Winston	Eckstein	2	0
+35307111	Winston-1773	35307010	35324848	Debra		Winston	Van Duyne	2	0
+35307065	Benedict-3777	0	0	Kay	Genevieve	Benedict	Winston	2	0
+35324185	Wilson-96386	0	0	Randall		Wilson	Wilson	1	1
+35343715	Winston-1782	35307048	35307065	Jennifer		Winston	Winston	2	0
+35343721	Winston-1783	35307048	35307065	Grant		Winston	Winston	1	0
 -1	Wilcox-x1	0	9114070	Megan		Wilcox	Hallberg	2	0
