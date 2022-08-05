@@ -34,7 +34,7 @@ class LayerTracker:
   def set_layer_size(self, node, layer, size):
     self.layer_sizes[layer][node] = size
 
-def calc_circle(graph, node, circle_num):
+def calc_circle_cum(graph, node, circle_num):
   prev_circle = set([node])
   visited = set([node])
   for _ in range(circle_num):
@@ -43,7 +43,7 @@ def calc_circle(graph, node, circle_num):
       next_circle |= set(graph.iterNeighbors(node))
     prev_circle = next_circle - visited
     visited |= prev_circle
-  return len(prev_circle)
+  return len(visited)
 
 
 def main():
@@ -74,9 +74,9 @@ def main():
     num_exact = 0
     for node, est_size in sorted(lt.layer_sizes[layer].items(),
                                  key=lambda x: x[1], reverse=True):
-      if est_size < top_n.min_val():
+      if top_n.is_full() and est_size < top_n.min_val():
         break
-      exact_size = calc_circle(graph, node, layer)
+      exact_size = calc_circle_cum(graph, node, layer)
       lt.set_layer_size(node, layer, exact_size)
       top_n.add(exact_size, node)
       num_exact += 1
@@ -84,6 +84,9 @@ def main():
 
     utils.log(f"Best nodes layer {layer}:")
     for size, node_index in top_n.items:
-      print(f" * {names_db.index2name(node_index):40s} : {size:7_d}")
+      id = names_db.index2name(node_index)
+      if not id:
+        id = f"unnamed_{node_index}"
+      print(f" * {id:40s} : {size:7_d}")
 
 main()

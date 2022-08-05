@@ -32,34 +32,36 @@ import graph_tools
 import utils
 
 
+def id_or_num(db, num):
+  id = db.num2id(num)
+  if id:
+    return id
+  else:
+    # Fallback to num if we can't find ID (should be rare).
+    return str(num)
+
 def UnionNodeName(db, parent_nums):
   """Name for node which represents the union (marriage or co-parentage)."""
   parent_ids = []
   for num in parent_nums:
-    id = db.num2id(num)
-    if id:
-      parent_ids.append(id)
-    else:
-      # Fallback to num if we can't find ID (should be rare).
-      #print(" Warning: No ID found for", num)
-      parent_ids.append(str(num))
+    parent_ids.append(id_or_num(db, num))
 
   return "Union/" + "/".join(str(p) for p in sorted(parent_ids))
 
 class BipartiteBuilder:
   def __init__(self, db):
     self.db = db
-    self.people_ids = []
+    self.people_ids = set()
     self.union_ids = set()
     self.edge_ids = set()
 
   def compute_node_ids(self):
-    return self.people_ids + list(self.union_ids)
+    return list(self.people_ids) + list(self.union_ids)
 
   def add_person(self, self_num):
     # Add person node for self.
-    self_id = self.db.num2id(self_num)
-    self.people_ids.append(self_id)
+    self_id = id_or_num(self.db, self_num)
+    self.people_ids.add(self_id)
 
     # Add union node for parents and connect to it.
     parent_nums = self.db.parents_of(self_num)
@@ -70,7 +72,8 @@ class BipartiteBuilder:
       # Make sure parents are connected ... this will generally happen
       # automatically below with the partners iteration (unless one parent is unknown).
       for parent_num in parent_nums:
-        parent_id = self.db.num2id(parent_num)
+        parent_id = id_or_num(self.db, parent_num)
+        self.people_ids.add(parent_id)
         self.edge_ids.add((parent_id, union_id))
 
     # Add partner node for each partner and connect to it.
@@ -78,6 +81,11 @@ class BipartiteBuilder:
       union_id = UnionNodeName(self.db, [self_num, partner_num])
       self.union_ids.add(union_id)
       self.edge_ids.add((self_id, union_id))
+      # Explicitly add partner as well ... this shouldn't be necessary, but
+      # some private partners may not be in the DB.
+      partner_id = id_or_num(self.db, partner_num)
+      self.people_ids.add(partner_id)
+      self.edge_ids.add((partner_id, union_id))
 
 
 def main():
@@ -106,7 +114,11 @@ def main():
   graph = nk.Graph(len(ids))
   utils.log("Building graph")
   for (id1, id2) in graph_info.edge_ids:
-    graph.addEdge(id2index[id1], id2index[id2])
+    try:
+      graph.addEdge(id2index[id1], id2index[id2])
+    except KeyError:
+      print("Unexpected ID among:", id1, id2)
+      raise
   utils.log(f"Built graph with {graph.numberOfNodes():_} Nodes / {graph.numberOfEdges():_} Edges")
 
 

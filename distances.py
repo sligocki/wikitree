@@ -51,11 +51,11 @@ if __name__ == "__main__":
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
+  ignore_ids = args.ignore_people.split(",") if args.ignore_people else []
+  ignore_nums = frozenset(db.id2num(id) for id in ignore_ids)
+
   db = data_reader.Database(args.version)
   db.load_connections()
-  
-  ignore_ids = args.ignore_people.split(",")
-  ignore_nums = frozenset(db.id2num(id) for id in ignore_ids)
 
   circle_sizes = {}
   for user_num in enum_user_nums(db, args):

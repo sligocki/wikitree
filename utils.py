@@ -24,7 +24,7 @@ class TopN:
     self.items = []
 
   def add(self, measure, item):
-    if len(self.items) < self.size or measure > self.min_val():
+    if not self.is_full() or measure > self.min_val():
       self.items.append((measure, item))
       self.items.sort(key=lambda x: x[0], reverse=True)
       if len(self.items) > self.size:
@@ -35,3 +35,6 @@ class TopN:
       return self.items[-1][0]
     else:
       return 0
+
+  def is_full(self):
+    return len(self.items) == self.size

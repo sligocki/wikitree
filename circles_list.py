@@ -8,6 +8,14 @@ import bfs_tools
 import data_reader
 
 
+def try_id(db, person_num) -> str:
+  id = db.num2id(person_num)
+  if id:
+    return id
+  else:
+    return str(person_num)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("focus_id")
 parser.add_argument("--num-circles", type=int, default=10)
@@ -25,5 +33,6 @@ for person, dist in bfs_tools.ConnectionBfs(db, focus_num):
 
 for dist in range(args.num_circles + 1):
   print("Circle", dist)
-  for i, id in enumerate(sorted([db.num2id(person_num) for person_num in circles[dist]])):
+  for i, id in enumerate(sorted([try_id(db, person_num)
+                                 for person_num in circles[dist]])):
     print(" *", i, id)

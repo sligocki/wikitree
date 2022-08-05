@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import sqlite3
 
@@ -15,6 +16,7 @@ class NamesDb:
 
   def create_table(self):
     cursor = self.conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS nodes")
     cursor.execute("""CREATE TABLE nodes (
       graph_index INT,
       node_name STRING,
@@ -42,7 +44,7 @@ class NamesDb:
     rows = cursor.fetchall()
     assert len(rows) == 1, (node_name, rows)
     return rows[0]["graph_index"]
-  
+
   def all_index2names(self):
     cursor = self.conn.cursor()
     cursor.execute("SELECT graph_index, node_name FROM nodes")
