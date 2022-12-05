@@ -113,7 +113,7 @@ class UserRow(Row):
     return StringOrNone(self.lookup("Birth Location"))
 
   def death_location(self):
-    return StringOrNone(self.lookup("Birth Location"))
+    return StringOrNone(self.lookup("Death Location"))
 
   def no_more_children(self):
     return ParseBool(self.lookup("No Children"))

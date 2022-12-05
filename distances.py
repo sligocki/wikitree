@@ -11,13 +11,15 @@ import bfs_tools
 import data_reader
 import utils
 
-def get_distances(db, start, ignore_people=frozenset()):
+def get_distances(db, start, ignore_people=frozenset(), dist_cutoff=None):
   """Get distances to all other items in graph via breadth-first search."""
   dists = {}
   total_dist = 0
   max_dist = 0
   hist_dist = collections.defaultdict(int)
   for (person, dist) in bfs_tools.ConnectionBfs(db, start, ignore_people):
+    if max_dist and dist > dist_cutoff:
+      break
     dists[person] = dist
     hist_dist[dist] += 1
     max_dist = dist
@@ -48,6 +50,8 @@ if __name__ == "__main__":
   parser.add_argument("--save-distribution-json", help="Save Circle sizes to file.")
   parser.add_argument("--ignore-people",
                       help="Comma separated list of people to ignore in BFS.")
+  parser.add_argument("--max-distance", type=int,
+                      help="Limit BFS search to a max distance (instead of finding the distance to all people in the connected tree).")
   parser.add_argument("wikitree_id", nargs="*")
   args = parser.parse_args()
 
@@ -60,7 +64,8 @@ if __name__ == "__main__":
   circle_sizes = {}
   for user_num in enum_user_nums(db, args):
     utils.log("Loading distances from", db.num2id(user_num))
-    dists, hist_dist, mean_dist, max_dist = get_distances(db, user_num, ignore_nums)
+    dists, hist_dist, mean_dist, max_dist = get_distances(
+      db, user_num, ignore_nums, dist_cutoff=args.max_distance)
     utils.log(db.num2id(user_num), mean_dist, max_dist)
     circle_sizes[db.num2id(user_num)] = hist_dist
     utils.log(hist_dist)

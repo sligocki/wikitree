@@ -49,7 +49,8 @@ def category_check(version, args, *, target_places, category_name=None):
     # Only list editable residents. Can't fix the private ones.
     editable_residents_not_in_cat = editable_residents - in_category
     print(f"# Editable residents not in category = {len(editable_residents_not_in_cat):_}")
-    for person in sorted(editable_residents_not_in_cat):
+    # Limit to opening 100 URLs!
+    for person in sorted(editable_residents_not_in_cat)[:100]:
       url = f"https://www.wikitree.com/wiki/{db.num2id(person)}"
       print(" *", url)
       if args.open_links:
@@ -80,7 +81,7 @@ def main():
     print("Inowrocław county, Poland (pop 70,000)")
     category_check(
       args.version, args,
-      category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship,_Poland",
+      category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship",
       target_places=[
         # Inowrocław in various Polish and German spellings
         "Inowrocław", "Inowroclaw", "Inowrazlaw", "Hohensalza", "Jungleslau",

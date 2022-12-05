@@ -5,6 +5,7 @@ Produce and analyze a graph consisting of members of a Shapinsay category.
 import argparse
 import datetime
 import json
+import math
 from pathlib import Path
 
 import networkx as nx
@@ -122,9 +123,17 @@ def main():
   most_central = sorted(main_centrality.keys(),
                         key = lambda id: main_centrality[id],
                         reverse = True)
+  focus = most_central[0]
+  focus_dists = nx.single_source_shortest_path_length(graph, focus)
+  max_log_c = math.log(max(main_centrality.values()))
+  min_log_c = math.log(min(main_centrality.values()))
+  # Normalize to a value between 0.0 (min_centrality) and 1.0 (max_centrality)
+  norm_centrality = {
+    node : (math.log(c) - min_log_c) / (max_log_c - min_log_c)
+    for node, c in main_centrality.items()}
   for i in list(range(10)) + list(range(len(most_central) - 5, len(most_central))):
     node = most_central[i]
-    utils.log(f" * Center {i:4}: {node:20}  ({main_centrality[node]:.3e})")
+    utils.log(f" * Center {i:4}: {node:40} / {focus_dists[node]:3d} / {norm_centrality[node]:.3f}")
 
   print()
   main = graph.subgraph(components[0])
@@ -153,9 +162,17 @@ def main():
   most_central = sorted(main_bi_centrality.keys(),
                         key = lambda id: main_bi_centrality[id],
                         reverse = True)
+  focus = most_central[0]
+  focus_dists = nx.single_source_shortest_path_length(graph, focus)
+  max_log_c = math.log(max(main_bi_centrality.values()))
+  min_log_c = math.log(min(main_bi_centrality.values()))
+  # Normalize to a value between 0.0 (min_centrality) and 1.0 (max_centrality)
+  norm_centrality = {
+    node : (math.log(c) - min_log_c) / (max_log_c - min_log_c)
+    for node, c in main_bi_centrality.items()}
   for i in list(range(10)) + list(range(len(most_central) - 5, len(most_central))):
     node = most_central[i]
-    utils.log(f" * Center {i:4}: {node:20}  ({main_bi_centrality[node]:.3e})")
+    utils.log(f" * Center {i:4}: {node:40} / {focus_dists[node]:3d} / {norm_centrality[node]:.3f}")
 
   print()
   main_bi = graph.subgraph(bicomps[0])
@@ -169,7 +186,9 @@ def main():
   cum_size = 0
   for circle_num, circle_size in enumerate(circle_sizes):
     cum_size += circle_size
-    utils.log(f" * Circle {circle_num:3d}: {circle_size:7_d} {cum_size:7_d} ({cum_size / len(main_bi.nodes):5.1%})")
+    most_central_ring = max(circles[circle_num],
+                            key = lambda id: main_bi_centrality[id])
+    utils.log(f" * Circle {circle_num:3d}: {circle_size:7_d} {cum_size:7_d} ({cum_size / len(main_bi.nodes):6.1%})    {most_central_ring} {norm_centrality[most_central_ring]:.3f}")
   utils.log("   - Furthest nodes:", " ".join(sorted(circles[-1])))
 
   santized_name = most_central[0].replace("/", "-")
