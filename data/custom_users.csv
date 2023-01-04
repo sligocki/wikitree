@@ -36,6 +36,19 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1	1
 20304037	Zupofska-1	20640019	20639996	Sarah	Jean	Zupofska	Treibergs	2	1
 20304064	Treibergs-3	20304018	20304037	Lija		Treibergs	Treibergs	2	1
+20304214	Treibergs-6	20304107	20304094	Valts		Treibergs	Treibergs	1	1
+20304219	Treibergs-7	20304107	20304094	Nora		Treibergs	Lund	2	1
+20304223	Treibergs-8	20304107	20304094	Andrejs		Treibergs	Treibergs	1	1
+20304286	Lund-1420	20304219	20304276	Erik		Lund	Lund	1	1
+20304298	Treibergs-9	20304214	33779758	Mara		Treibergs	Treibergs	2	1
+20304313	Treibergs-10	20304214	33779758	Raitis		Treibergs	Treibergs	1	1
+20640113	Zupofska-3	20640019	20639996	Paul		Zupofska	Zupofska	1	0
+20640121	Zupofska-4	20640019	20639996	David		Zupofska	Zupofska	1	0
+20640129	Zupofska-5	20640019	20639996	Joseph		Zupofska	Zupofska	1	0
+20640145	Zupofska-6	0	20639996	Diana		Zupofska	Zupofska	2	0
+20643060	Caputi-7	20643072	20643081	Rudolph	Caputi	1	0
+20704987	Bergeron-1696	0	0	Pauline		Bergeron	Zupofska	2	0
+20705025	Zupofska-16	20640113	20704987	Paul		Zupofska	Zupofska	1	0
 20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
 21107121	Grewatch-2	20190533	19452782	Janice		Grewatch	Kujawa	2	0
 22357831	Wood-29877	22365550	0	Barry		Wood	Wood	1	0
@@ -53,6 +66,8 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 30570372	Ligocki-153	19444694	30570389	Jonathan	Terry	Ligocki	Ligocki	1	1
 30570389	Pounds-429	0	0	Erica		Pounds	Pounds	2	1
 30570400	Mejia-620	0	30570389	Elijah	J.	Mejia	Mejia	1	1
+33779758	Zeidaks-1	0	0	Vija		Zeidaks	Treibergs	2	1
+34473926	Zupokfska-2	20640019	20643036	Joseph		Zupokfska	Zupokfska	1	0
 35307026	Winston-1769	35306515	35306910	Margaret	A.	Winston	Cole	2	0
 35307048	Winston-1770	35307010	35324848	Gary	Richard	Winston	Winston	1	0
 35307092	Winston-1771	35307010	35324848	Gail		Winston	Felice	2	0
@@ -62,4 +77,10 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 35324185	Wilson-96386	0	0	Randall		Wilson	Wilson	1	1
 35343715	Winston-1782	35307048	35307065	Jennifer		Winston	Winston	2	0
 35343721	Winston-1783	35307048	35307065	Grant		Winston	Winston	1	0
+35410381	Rae-2270	0	0	Donna	Rae	2	0
+37034799	Vieira-467	0	0	Michelle		Vieira	Zupofska	2	0
+37034813	Zupofska-17	20705025	37034799	Paul		Zupofska	Zupofska	1	0
+37034852	Zupofska-18	20640113	20704987	Holly		Zupofska	Zupofska	2	0
+37034856	Zupofska-19	20640113	20704987	Tammy		Zupofska	Zupofska	2	0
+37034866	Zupofska-20	20640113	20704987	Tina		Zupofska	Zupofska	2	0
 -1	Wilcox-x1	0	9114070	Megan		Wilcox	Hallberg	2	0
