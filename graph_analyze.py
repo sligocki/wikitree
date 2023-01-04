@@ -23,6 +23,17 @@ def degree_distribution(graph):
     degree_counts[degree] += 1
   return degree_counts
 
+def bipartite_degree_distribution(graph):
+  person_degree_counts = collections.Counter()
+  family_degree_counts = collections.Counter()
+  for node in graph.nodes():
+    degree = graph.degree[node]
+    if node.startswith("Union/"):
+      family_degree_counts[degree] += 1
+    else:
+      person_degree_counts[degree] += 1
+  return (person_degree_counts, family_degree_counts)
+
 def circle_size(graph, node, circle_num):
   prev_circle = set([node])
   visited = set([node])
@@ -156,6 +167,7 @@ def main():
                       help="Calculate Pearson Correlation Coefficient.")
   parser.add_argument("--components", action="store_true",
                       help="Find largest connected component.")
+  parser.add_argument("--bipartite", action="store_true")
   args = parser.parse_args()
 
   utils.log("Loading graph")
@@ -175,10 +187,25 @@ def main():
     utils.log(f"Largest component size = {max(len(c) for c in components):_}")
 
   utils.log("Loading degree distribution")
-  deg_distr = degree_distribution(graph)
-  print(deg_distr)
-  utils.log("Mean Degree", mean_distr(deg_distr))
-  utils.log("Second moment (degree)", moment_distr(deg_distr, 2))
+  if args.bipartite:
+    person_deg_distr, family_deg_distr = bipartite_degree_distribution(graph)
+
+    utils.log("Person Nodes:")
+    print(person_deg_distr)
+    utils.log(" * Mean Degree", mean_distr(person_deg_distr))
+    utils.log(" * Second moment (degree)", moment_distr(person_deg_distr, 2))
+
+    utils.log("Family Nodes:")
+    print(family_deg_distr)
+    utils.log(" * Mean Degree", mean_distr(family_deg_distr))
+    utils.log(" * Second moment (degree)", moment_distr(family_deg_distr, 2))
+    deg_distr = family_deg_distr
+
+  else:
+    deg_distr = degree_distribution(graph)
+    print(deg_distr)
+    utils.log("Mean Degree", mean_distr(deg_distr))
+    utils.log("Second moment (degree)", moment_distr(deg_distr, 2))
 
   for k in range(2, args.circle_sizes + 1):
     utils.log(f"Loading Circle-{k} size distributions")
