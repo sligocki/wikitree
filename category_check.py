@@ -81,7 +81,8 @@ def main():
     print("Inowrocław county, Poland (pop 70,000)")
     category_check(
       args.version, args,
-      category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship",
+      # TODO: There was recently a category change. Wait for things to settle a bit.
+      # category_name="Inowrocław_County,_Kuyavian-Pomeranian_Voivodeship",
       target_places=[
         # Inowrocław in various Polish and German spellings
         "Inowrocław", "Inowroclaw", "Inowrazlaw", "Hohensalza", "Jungleslau",

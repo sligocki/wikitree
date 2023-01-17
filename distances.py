@@ -18,7 +18,7 @@ def get_distances(db, start, ignore_people=frozenset(), dist_cutoff=None):
   max_dist = 0
   hist_dist = collections.defaultdict(int)
   for (person, dist) in bfs_tools.ConnectionBfs(db, start, ignore_people):
-    if max_dist and dist > dist_cutoff:
+    if dist_cutoff and dist > dist_cutoff:
       break
     dists[person] = dist
     hist_dist[dist] += 1
