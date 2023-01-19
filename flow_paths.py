@@ -13,50 +13,36 @@ will have a much smaller effect).
 
 import argparse
 import collections
-import sys
-import time
 
 from graphviz import Digraph
-import networkx as nx
 
+import bfs_tools
 import data_reader
+import utils
 
 
-def flow_paths(graph, start):
+def flow_paths(db, start):
   # Map from person -> shortest distance to start. Also used as a visited set
   # to determine if we have found this node yet.
-  dists = {start: 0}
+  dists = {}
   # Map from person -> list of neighbors who can be followed to attain a
   # shortest path to start. Note their could be several such shortest paths.
-  sources = {start: []}
-  # List of all connections in order of connectedness.
-  all_connections = []
+  sources = {}
+  # List of all people in order of connectedness.
+  all_people = []
 
-  print("Running BFS", time.process_time())
-  # Queue for BFS
-  queue = collections.deque()
-  queue.append(start)
-  while queue:
-    person = queue.popleft()
-    dist = dists[person]
-    cur_sources = sources[person]
-    for neigh in graph.neighbors(person):
-      if neigh not in dists:
-        # Found a shortest path.
-        dists[neigh] = dist + 1
-        sources[neigh] = [person]
-        queue.append(neigh)
-        all_connections.append(neigh)
-      elif dists[neigh] == dist + 1:
-        # Found another equally short path.
-        sources[neigh].append(person)
+  utils.log("Running BFS")
+  for node in bfs_tools.ConnectionBfs(db, start):
+    dists[node.person] = node.dist
+    sources[node.person] = node.prevs
+    all_people.append(node.person)
 
-  print("Calculating flow counts", time.process_time())
+  utils.log("Calculating flow counts")
   # Map from person -> set of all people who have a shortest path to start
   # which includes person. Note: there could be more than one shortest path,
   # person need only be one of them.
   on_path_to = collections.defaultdict(set)
-  for person in reversed(all_connections):
+  for person in reversed(all_people):
     # Every person is on a path to themselves :)
     on_path_to[person].add(person)
 
@@ -67,10 +53,10 @@ def flow_paths(graph, start):
 
   # Return mapping from people to fraction of people whom can be reached, via
   # a shortest path, through this person.
-  return {person: float(len(on_path_to[person])) / len(all_connections)
+  return {person: float(len(on_path_to[person])) / len(all_people)
           for person in sources}, sources, dists
 
-def create_dot(graph, start, flows, sources, cutoff, naming_func):
+def create_dot(db, start, flows, sources, cutoff, naming_func):
   """Create a graphviz DOT file with all people who have flow >= cutoff and all of their neighbors."""
   dot = Digraph(name=("results/Flows_%s_%.2f" % (naming_func(start), cutoff)))
 
@@ -88,7 +74,7 @@ def create_dot(graph, start, flows, sources, cutoff, naming_func):
     for source in sources[person]:
       dot.edge(str(person), str(source), label="%.2f" % flows[person])
 
-    for neigh in graph.neighbors(person):
+    for neigh in db.neighbors_of(person):
       if flows[neigh] >= cutoff:
         todo.append(neigh)
 
@@ -96,7 +82,7 @@ def create_dot(graph, start, flows, sources, cutoff, naming_func):
 
 def try_decode_wikitree_id(db, node):
   parts = []
-  for part in node.split("/"):
+  for part in str(node).split("/"):
     try:
       part = db.num2id(int(part))
     except:
@@ -106,46 +92,44 @@ def try_decode_wikitree_id(db, node):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("nodes", nargs="+")
-  parser.add_argument("--graph",
-                      default="data/version/default/connection_graph.main.adj.nx")
+  parser.add_argument("id_or_nums", nargs="+")
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
+  utils.log("Loading connections")
   db = data_reader.Database(args.version)
-  print("Loading graph", args.graph, time.process_time())
-  graph = nx.read_adjlist(args.graph)
+  db.load_connections()
 
-  for node in args.nodes:
+  for start in args.id_or_nums:
+    utils.log("Analyzing", start)
     # If a wikitree_id is passed in, translate it to a user_num.
     try:
-      node = str(db.id2num(node))
+      start = int(start)
     except:
-      pass
-    print("Analyzing", node, time.process_time())
-    flows, sources, dists = flow_paths(graph, node)
+      start = db.id2num(start)
+    flows, sources, dists = flow_paths(db, start)
 
-    print("Creating DOT", time.process_time())
-    create_dot(graph, node, flows, sources, cutoff=args.cutoff,
+    utils.log("Creating DOT")
+    create_dot(db, start, flows, sources, cutoff=args.cutoff,
                naming_func = lambda node: try_decode_wikitree_id(db, node))
 
-    print("Ordering people", time.process_time())
+    utils.log("Ordering people")
     # Order folks from most flow to least.
     ordered_people = reversed(sorted([(flows[person], person)
                                       for person in flows]))
 
-    print("Highest flow per distance", time.process_time())
+    utils.log("Highest flow per distance")
     max_dist = -1
     for frac, person in ordered_people:
       if dists[person] > max_dist:
-        print(node, dists[person], frac, try_decode_wikitree_id(db, person))
+        print(start, dists[person], frac, try_decode_wikitree_id(db, person))
         max_dist = dists[person]
         if max_dist >= 20:
           break
 
-  print("Done", time.process_time())
+  utils.log("Done")
 
 
 if __name__ == "__main__":

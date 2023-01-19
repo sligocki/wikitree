@@ -12,9 +12,9 @@ import data_reader
 
 
 def EnumConnections(bfs, targets):
-  for (person, dist) in bfs:
-    if person in targets:
-      yield (person, dist)
+  for node in bfs:
+    if node.person in targets:
+      yield node
 
 
 parser = argparse.ArgumentParser()
@@ -39,5 +39,5 @@ if args.relatives:
 else:
   bfs = bfs_tools.ConnectionBfs(db, start)
 
-for (person, dist) in itertools.islice(EnumConnections(bfs, targets), args.max_num):
-  print(dist, db.num2id(person), db.name_of(person))
+for node in itertools.islice(EnumConnections(bfs, targets), args.max_num):
+  print(node.dist, db.num2id(node.person), db.name_of(node.person))

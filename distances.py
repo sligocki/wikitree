@@ -17,13 +17,13 @@ def get_distances(db, start, ignore_people=frozenset(), dist_cutoff=None):
   total_dist = 0
   max_dist = 0
   hist_dist = collections.defaultdict(int)
-  for (person, dist) in bfs_tools.ConnectionBfs(db, start, ignore_people):
-    if dist_cutoff and dist > dist_cutoff:
+  for node in bfs_tools.ConnectionBfs(db, start, ignore_people):
+    if dist_cutoff and node.dist > dist_cutoff:
       break
-    dists[person] = dist
-    hist_dist[dist] += 1
-    max_dist = dist
-    total_dist += dist
+    dists[node.person] = node.dist
+    hist_dist[node.dist] += 1
+    max_dist = node.dist
+    total_dist += node.dist
   mean_dist = float(total_dist) / len(dists)
   hist_dist_list = [hist_dist[i] for i in range(max(hist_dist.keys()) + 1)]
   return dists, hist_dist_list, mean_dist, max_dist

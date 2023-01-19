@@ -6,21 +6,34 @@ import collections
 import data_reader
 
 
+class BfsNode:
+  def __init__(self, person, prevs, dist):
+    # Currently enumerated person.
+    self.person = person
+    # List of previous nodes we reached person from.
+    self.prevs = prevs
+    # Dist from start to person.
+    self.dist = dist
+
 def ConnectionBfs(db, start, ignore_people=frozenset()):
   todos = collections.deque()
-  dists = {}
-
   todos.append(start)
-  dists[start] = 0
-
+  nodes = {}
+  nodes[start] = BfsNode(start, [], 0)
   while todos:
     person = todos.popleft()
-    dist = dists[person]
-    yield (person, dist)
+    yield nodes[person]
+    dist = nodes[person].dist
     for neigh in db.neighbors_of(person):
-      if neigh not in ignore_people and neigh not in dists:
-        todos.append(neigh)
-        dists[neigh] = dist + 1
+      if neigh not in ignore_people:
+        if neigh in nodes:
+          if nodes[neigh].dist == dist + 1:
+            # If we have reached neigh equivalently from two
+            # different directions, save both.
+            nodes[neigh].prevs.append(person)
+        else:
+          todos.append(neigh)
+          nodes[neigh] = BfsNode(neigh, [person], dist + 1)
 
 
 def RelativeBfs(db, start):

@@ -26,10 +26,10 @@ db = data_reader.Database(args.version)
 
 focus_num = db.id2num(args.focus_id)
 circles = [[] for dist in range(args.num_circles + 1)]
-for person, dist in bfs_tools.ConnectionBfs(db, focus_num):
-  if dist > args.num_circles:
+for node in bfs_tools.ConnectionBfs(db, focus_num):
+  if node.dist > args.num_circles:
     break
-  circles[dist].append(person)
+  circles[node.dist].append(node.person)
 
 for dist in range(args.num_circles + 1):
   print("Circle", dist)
