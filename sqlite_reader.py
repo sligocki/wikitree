@@ -51,6 +51,11 @@ class Database(object):
     if date_str:
       return datetime.date.fromisoformat(date_str)
 
+  def registered_time_of(self, user_num):
+    datetime_str = self.get(user_num, "registered_time")
+    if datetime_str:
+      return datetime.datetime.fromisoformat(datetime_str)
+
   def touched_time_of(self, user_num):
     datetime_str = self.get(user_num, "touched_time")
     if datetime_str:

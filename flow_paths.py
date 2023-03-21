@@ -13,6 +13,7 @@ will have a much smaller effect).
 
 import argparse
 import collections
+import datetime
 
 from graphviz import Digraph
 
@@ -56,9 +57,9 @@ def flow_paths(db, start):
   return {person: float(len(on_path_to[person])) / len(all_people)
           for person in sources}, sources, dists
 
-def create_dot(db, start, flows, sources, cutoff, naming_func):
+def create_dot(db, start, flows, sources, name, cutoff, node_attr_func):
   """Create a graphviz DOT file with all people who have flow >= cutoff and all of their neighbors."""
-  dot = Digraph(name=("results/Flows_%s_%.2f" % (naming_func(start), cutoff)))
+  dot = Digraph(name=("results/Flows_%s_%.2f" % (name, cutoff)))
 
   todo = collections.deque()
   todo.append(start)
@@ -69,8 +70,8 @@ def create_dot(db, start, flows, sources, cutoff, naming_func):
       continue
     visited.add(person)
 
-    person_label = naming_func(person)
-    dot.node(str(person), label=person_label)
+    node_attrs = node_attr_func(person)
+    dot.node(str(person), **node_attrs)
     for source in sources[person]:
       dot.edge(str(person), str(source), label="%.2f" % flows[person])
 
@@ -95,6 +96,8 @@ def main():
   parser.add_argument("id_or_nums", nargs="+")
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
+  parser.add_argument("--highlight-after-num", type=int,
+                      help="Highlight profiles created after a specified profile number.")
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
@@ -111,9 +114,20 @@ def main():
       start = db.id2num(start)
     flows, sources, dists = flow_paths(db, start)
 
+    def node_attr_func(node):
+      ret = {"label": try_decode_wikitree_id(db, node)}
+      if args.highlight_after_num:
+        ret["style"] = "filled"
+        if node >= args.highlight_after_num:
+          ret["fillcolor"] = "lightgreen"
+        else:
+          ret["fillcolor"] = "lightgrey"
+      return ret
+
     utils.log("Creating DOT")
     create_dot(db, start, flows, sources, cutoff=args.cutoff,
-               naming_func = lambda node: try_decode_wikitree_id(db, node))
+               name=try_decode_wikitree_id(db, start),
+               node_attr_func=node_attr_func)
 
     utils.log("Ordering people")
     # Order folks from most flow to least.
