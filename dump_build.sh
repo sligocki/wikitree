@@ -25,7 +25,7 @@ time python3 csv_to_sqlite.py --version=${TIMESTAMP}
 time bash process_categories.sh ${TIMESTAMP}
 
 # 30m
-time python3 graph_make_person.py --version=${TIMESTAMP}
+# time python3 graph_make_person.py --version=${TIMESTAMP}
 # time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
 # time python3 graph_make_family.py --version=${TIMESTAMP}
 
@@ -42,10 +42,10 @@ time python3 graph_make_person.py --version=${TIMESTAMP}
 # 10m
 time python3 csv_to_partitions.py --version=${TIMESTAMP}
 
-echo
-echo "(3) Check categories"
-# 15m
-time python3 category_check.py --version=${TIMESTAMP} --open-links
+# echo
+# echo "(3) Check categories"
+# # 15m
+# time python3 category_check.py --version=${TIMESTAMP} --open-links
 
 echo
 echo "Done"

@@ -12,4 +12,6 @@ if $DOWNLOADED; then
   echo "Update default version"
   rm -f data/version/default
   ln -s $TIMESTAMP data/version/default
+
+  bash dump_cleanup.sh
 fi
