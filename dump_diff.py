@@ -14,18 +14,17 @@ import api_tools
 import pandas as pd
 
 
-WIKITREE_ID_COL = "WikiTree ID_DB"
 def load_all_profiles(version, debug_limit_read=None):
-  in_path = Path("data", "version", version, "dump_people_users.csv")
-  df = pd.read_csv(in_path, delimiter='\t', quoting=csv.QUOTE_NONE, usecols=[WIKITREE_ID_COL])
-  return set(df[WIKITREE_ID_COL])
+  in_path = Path("data", "version", version, "person.parquet")
+  df = pd.read_parquet(in_path, columns=["wikitree_id"])
+  return set(df.wikitree_id)
 
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("old_version")
   parser.add_argument("new_version")
-  parser.add_argument("--sample-api", type=int, default=100,
+  parser.add_argument("--sample-api", type=int,
                       help="Number of profiles to try looking up via API.")
   args = parser.parse_args()
 
@@ -41,7 +40,7 @@ def main():
   print(f" * {len(added_profiles)=:_}")
   print(f" * {len(deleted_profiles)=:_} (includes merges and moves)")
 
-  if args.sample_api > 0:
+  if args.sample_api:
     sample_deleted = random.sample(list(deleted_profiles), args.sample_api)
 
     # Keep counter so that we keep track if multiple profiles
