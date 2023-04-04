@@ -9,55 +9,65 @@ import pyarrow.parquet
 import utils
 
 
-def rename_wikitree_columns(table):
+WIKITREE_PERSON_COLUMNS_OLD2NEW = {
+  "User ID": "user_num",
+  "WikiTree ID": "wikitree_id_old",
+  "WikiTree ID_DB": "wikitree_id",
+  "Touched": "touched_time",
+  "Registration": "registered_time",
+  "Edit Count": "edit_count",
+
+  # Names
+  "Prefix": "name_prefix",
+  "First Name": "name_first_birth",
+  "Preferred Name": "name_first_preferred",
+  "Middle Name": "name_middle",
+  "Nicknames": "name_nicknames",
+  "Last Name at Birth": "name_last_birth",
+  "Last Name Current": "name_last_current",
+  "Last Name Other": "name_last_other",
+  "Suffix": "name_suffix",
+
+  "Gender": "gender_code",
+  "Birth Date": "birth_date",
+  "Death Date": "death_date",
+  "Birth Location": "birth_location",
+  "Death Location": "death_location",
+  "Father": "father_num",
+  "Mother": "mother_num",
+  "Photo": "image_profile",
+  "No Children": "no_more_children",
+  "No Siblings": "no_more_siblings",
+  "Page ID": "page_id",
+  "Manager": "manager_num",
+  "Has Children": "has_children",
+  "Is Living": "is_living",
+  "Privacy": "privacy_code",
+  "Background": "image_background",
+  "Thank Count": "thank_count",
+  "Is Locked": "is_locked",
+  "Is Guest": "is_guest",
+  "Connected": "is_connected",
+}
+
+WIKITREE_MARRIAGE_COLUMNS_OLD2NEW = {
+  "User ID1": "spouse1",
+  "UserID2": "spouse2",
+  "Marriage Location": "marriage_location",
+  "Marriage Date": "marriage_date",
+  "Marriage Date Status": "marriage_date_status",
+  "Marriage Location Status": "marriage_location_status",
+}
+
+
+def rename_columns(table, column_map):
   """Rename columns from the original CSV"""
-  name_map = {
-    "User ID": "user_num",
-    "WikiTree ID": "wikitree_id_old",
-    "WikiTree ID_DB": "wikitree_id",
-    "Touched": "touched_time",
-    "Registration": "registered_time",
-    "Edit Count": "edit_count",
+  missing_column_names = set(table.column_names) - column_map.keys()
+  assert set(table.column_names) == set(column_map.keys()), (
+    set(table.column_names) - set(column_map.keys()),
+    set(column_map.keys()) - set(table.column_names))
 
-    # Names
-    "Prefix": "name_prefix",
-    "First Name": "name_first_birth",
-    "Preferred Name": "name_first_preferred",
-    "Middle Name": "name_middle",
-    "Nicknames": "name_nicknames",
-    "Last Name at Birth": "name_last_birth",
-    "Last Name Current": "name_last_current",
-    "Last Name Other": "name_last_other",
-    "Suffix": "name_suffix",
-
-    "Gender": "gender_code",
-    "Birth Date": "birth_date",
-    "Death Date": "death_date",
-    "Birth Location": "birth_location",
-    "Death Location": "death_location",
-    "Father": "father_num",
-    "Mother": "mother_num",
-    "Photo": "image_profile",
-    "No Children": "no_more_children",
-    "No Siblings": "no_more_siblings",
-    "Page ID": "page_id",
-    "Manager": "manager_num",
-    "Has Children": "has_children",
-    "Is Living": "is_living",
-    "Privacy": "privacy_code",
-    "Background": "image_background",
-    "Thank Count": "thank_count",
-    "Is Locked": "is_locked",
-    "Is Guest": "is_guest",
-    "Connected": "is_connected",
-  }
-
-  missing_column_names = set(table.column_names) - name_map.keys()
-  assert set(table.column_names) == set(name_map.keys()), (
-    set(table.column_names) - set(name_map.keys()),
-    set(name_map.keys()) - set(table.column_names))
-
-  new_names = [name_map[old] for old in table.column_names]
+  new_names = [column_map[old] for old in table.column_names]
 
   return table.rename_columns(new_names)
 
@@ -88,7 +98,7 @@ def parse_wikitree_dates(table, cols):
 
 def load_person_csv(csv_path):
   utils.log(f"Loading {str(csv_path)}")
-  person_table = pa.csv.read_csv(csv_path,
+  table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
       delimiter="\t", quote_char=False),
     convert_options=pa.csv.ConvertOptions(
@@ -111,25 +121,51 @@ def load_person_csv(csv_path):
       # Nonstandard formats used in dump. Like 19991231235959
       timestamp_parsers=["%Y%m%d%H%M%S"],
     ))
-  utils.log(f"Loaded {person_table.num_rows:_} rows of people")
+  utils.log(f"Loaded {table.num_rows:_} rows of people")
 
-  person_table = rename_wikitree_columns(person_table)
-  person_table = parse_wikitree_dates(person_table, ["birth_date", "death_date"])
+  table = rename_columns(table, WIKITREE_PERSON_COLUMNS_OLD2NEW)
+  table = parse_wikitree_dates(table, ["birth_date", "death_date"])
   # TODO: Encode as categorical: Gender, Privacy?
-  utils.log(f"Cleaned {person_table.num_rows:_} rows of people")
+  utils.log(f"Cleaned {table.num_rows:_} rows of people")
 
-  return person_table
+  return table
+
+def load_marriages_csv(csv_path):
+  utils.log(f"Loading {str(csv_path)}")
+  table = pa.csv.read_csv(csv_path,
+    parse_options=pa.csv.ParseOptions(
+      delimiter="\t", quote_char=False),
+    convert_options=pa.csv.ConvertOptions(
+      column_types={
+        # Date fields. Load as strings and convert below.
+        "Marriage Date": pa.string(),
+      },
+      # Nonstandard formats used in dump. Like 19991231235959
+      timestamp_parsers=["%Y%m%d%H%M%S"],
+    ))
+  utils.log(f"Loaded {table.num_rows:_} rows of marriages")
+
+  table = rename_columns(table, WIKITREE_MARRIAGE_COLUMNS_OLD2NEW)
+  table = parse_wikitree_dates(table, ["marriage_date"])
+  utils.log(f"Cleaned {table.num_rows:_} rows of marriages")
+
+  return table
 
 def csv_to_parquet(args):
   data_dir = utils.data_version_dir(args.version)
 
+  # TODO: Support custom CSV (with missing columns)
+  # person_custom_table = load_person_csv(Path("data", "custom_users.csv"))
   person_table = load_person_csv(Path(data_dir, "dump_people_users.csv"))
-  # TODO: Also load custom users.
-  pa.parquet.write_table(person_table, Path(data_dir, "person.parquet"))
+  # person_table = pa.concat_tables([person_custom_table, person_table])
+  # TODO: Remove duplicate rows.
+  pa.parquet.write_table(person_table, Path(data_dir, "people.parquet"))
   utils.log(f"Wrote {person_table.num_rows:_} rows of people")
 
-  # TODO: Load marriages
-  # TODO: Compute children, siblings, co-parents.
+  marriages_table = load_marriages_csv(Path(data_dir, "dump_people_marriages.csv"))
+  # TODO: Custom marriages
+  pa.parquet.write_table(marriages_table, Path(data_dir, "marriages.parquet"))
+  utils.log(f"Wrote {marriages_table.num_rows:_} rows of marriages")
 
   utils.log("Done")
 
