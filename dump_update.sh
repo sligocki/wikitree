@@ -9,9 +9,11 @@ source dump_download.sh
 if $DOWNLOADED; then
   time bash dump_build.sh $TIMESTAMP
 
-  echo "Update default version"
+  echo
+  echo "Update default version to $TIMESTAMP"
   rm -f data/version/default
   ln -s $TIMESTAMP data/version/default
 
+  echo
   bash dump_cleanup.sh
 fi
