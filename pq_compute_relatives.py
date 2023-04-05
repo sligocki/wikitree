@@ -31,34 +31,37 @@ def find_common(old, relationship):
 
 def compute_relatives(data_dir):
   utils.log("Loading Marriages")
-  mar = pd.read_parquet(data_dir / "marriages.parquet")
-  mar1 = format_rels(mar, "spouse1", "spouse2", "spouse")
-  mar2 = format_rels(mar, "spouse2", "spouse1", "spouse")
-  utils.log(f"  Loaded {len(mar1)+len(mar2):_} spouse relationships")
+  mar_df = pd.read_parquet(data_dir / "marriages.parquet")
+  utils.log(f"  Loaded {len(mar_df):_} marriages")
+  mar1 = format_rels(mar_df, "spouse1", "spouse2", "spouse")
+  mar2 = format_rels(mar_df, "spouse2", "spouse1", "spouse")
+  utils.log(f"  Computed {len(mar1)+len(mar2):_} spouse relationships")
 
   utils.log("Loading Parents")
   ppl_df = pd.read_parquet(data_dir / "people.parquet",
-                           columns=["user_num", "mother_num", "father_num"])
+                           columns=["user_num", "mother_num", "father_num"],
+                           # Support NA parent_nums without coercing to DOUBLE.
+                           dtype_backend='numpy_nullable')
+  utils.log(f"  Loaded {len(ppl_df):_} people")
   parent = pd.concat([
     format_rels(ppl_df, "user_num", "mother_num", "parent"),
     format_rels(ppl_df, "user_num", "father_num", "parent"),
-    ], ignore_index=True).dropna()
-  utils.log(f"  Loaded {len(parent):_} parent relationships")
-  child = pd.concat([
-    format_rels(ppl_df, "mother_num", "user_num", "child"),
-    format_rels(ppl_df, "father_num", "user_num", "child"),
-    ], ignore_index=True).dropna()
-  utils.log(f"  Loaded {len(child):_} child relationships")
+    ], ignore_index=True)
+  # Drop parental relationship where parent is unknown.
+  parent = parent.dropna()
+  utils.log(f"  Computed {len(parent):_} parent relationships")
+  child = format_rels(parent, "relative_num", "user_num", "child")
+  utils.log(f"  Computed {len(child):_} child relationships")
 
   sibling = find_common(parent, "sibling")
-  utils.log(f"Loaded {len(sibling):_} sibling relationships")
+  utils.log(f"Computed {len(sibling):_} sibling relationships")
 
   coparent = find_common(child, "coparent")
-  utils.log(f"Loaded {len(coparent):_} coparent relationships")
+  utils.log(f"Computed {len(coparent):_} coparent relationships")
 
   df = pd.concat([mar1, mar2, parent, child, sibling, coparent], ignore_index=True)
-  df = df.dropna()
-  utils.log(f"Merged into {len(df):_} total relationships")
+  assert df.isna().sum().sum() == 0, df.isna().sum()
+  utils.log(f"Combined into {len(df):_} total relationships")
   df.to_parquet(data_dir / "relationships.parquet", index=False)
   utils.log(f"Wrote {len(df):_} rows")
 
