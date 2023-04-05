@@ -79,10 +79,10 @@ def rename_columns(table, column_map, assert_all_columns):
 
   return table.rename_columns(new_names)
 
-def parse_wikitree_dates(table, cols):
+def parse_wikitree_dates(table, column_names):
   """Parse WikiTree dates which may be of many formats"""
-  for col in cols:
-    array = table[col].combine_chunks()
+  for column_name in column_names:
+    array = table[column_name].combine_chunks()
     # Standardize unknown to start of month/year.
     array = pc.replace_substring_regex(
       array, r"^(....)$", r"\10101")
@@ -101,7 +101,7 @@ def parse_wikitree_dates(table, cols):
     array = array.cast(pa.date32())
     # Update column in table.
     table = table.set_column(
-      table.schema.get_field_index(col), col, array)
+      table.schema.get_field_index(column_name), column_name, array)
   return table
 
 def load_person_csv(csv_path, is_custom):
@@ -191,6 +191,7 @@ def csv_to_parquet(data_dir):
 
   person_table = pa.concat_tables([person_table, person_custom_table], promote=True)
   pq.write_table(person_table, Path(data_dir, "people.parquet"))
+
   utils.log(f"Wrote {person_table.num_rows:_} rows of people")
 
 

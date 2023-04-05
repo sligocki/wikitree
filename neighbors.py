@@ -9,7 +9,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("people", nargs="+")
 
 parser.add_argument("--version", help="Data version (defaults to most recent).")
-parser.add_argument("--load-db", action="store_true")
 args = parser.parse_args()
 
 db = data_reader.Database(args.version)

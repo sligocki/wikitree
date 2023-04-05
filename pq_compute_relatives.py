@@ -41,7 +41,7 @@ def compute_relatives(data_dir):
   ppl_df = pd.read_parquet(data_dir / "people.parquet",
                            columns=["user_num", "mother_num", "father_num"],
                            # Support NA parent_nums without coercing to DOUBLE.
-                           dtype_backend='numpy_nullable')
+                           dtype_backend="numpy_nullable")
   utils.log(f"  Loaded {len(ppl_df):_} people")
   parent = pd.concat([
     format_rels(ppl_df, "user_num", "mother_num", "parent"),

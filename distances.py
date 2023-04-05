@@ -11,7 +11,8 @@ import bfs_tools
 import data_reader
 import utils
 
-def get_distances(db, start, ignore_people=frozenset(), dist_cutoff=None):
+def get_distances(db, start, ignore_people=frozenset(),
+                  dist_cutoff=None, verbose=False):
   """Get distances to all other items in graph via breadth-first search."""
   dists = {}
   total_dist = 0
@@ -24,6 +25,8 @@ def get_distances(db, start, ignore_people=frozenset(), dist_cutoff=None):
     hist_dist[node.dist] += 1
     max_dist = node.dist
     total_dist += node.dist
+    if verbose and len(dists) % 1_000_000 == 0:
+      utils.log(f" ... {len(dists):_} nodes / Circle {node.dist}")
   mean_dist = float(total_dist) / len(dists)
   hist_dist_list = [hist_dist[i] for i in range(max(hist_dist.keys()) + 1)]
   return dists, hist_dist_list, mean_dist, max_dist
@@ -65,7 +68,7 @@ if __name__ == "__main__":
   for user_num in enum_user_nums(db, args):
     utils.log("Loading distances from", db.num2id(user_num))
     dists, hist_dist, mean_dist, max_dist = get_distances(
-      db, user_num, ignore_nums, dist_cutoff=args.max_distance)
+      db, user_num, ignore_nums, dist_cutoff=args.max_distance, verbose=True)
     utils.log(db.num2id(user_num), mean_dist, max_dist)
     circle_sizes[db.num2id(user_num)] = hist_dist
     utils.log(hist_dist)
