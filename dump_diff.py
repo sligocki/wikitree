@@ -15,7 +15,7 @@ import pandas as pd
 
 
 def load_all_profiles(version, debug_limit_read=None):
-  in_path = Path("data", "version", version, "person.parquet")
+  in_path = Path("data", "version", version, "people.parquet")
   df = pd.read_parquet(in_path, columns=["wikitree_id"])
   return set(df.wikitree_id)
 

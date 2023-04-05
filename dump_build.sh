@@ -18,11 +18,17 @@ for x in people_users people_marriages categories; do
 done
 
 echo
-echo "(2) Process new dump"
+echo "(2) Convert to parquet"
+# 2m
+time python3 csv_to_parquet.py --version=${TIMESTAMP}
+
+echo
+echo "(3) Compute relationships"
+# TODO: Compute relationships from parquet file.
+
+# TODO: Remove these once we give up on sqlite?
 # 30m
 time python3 csv_to_sqlite.py --version=${TIMESTAMP}
-# 1m
-time bash process_categories.sh ${TIMESTAMP}
 
 # 30m
 # time python3 graph_make_person.py --version=${TIMESTAMP}
@@ -38,14 +44,11 @@ time bash process_categories.sh ${TIMESTAMP}
 #                                     ${VERSION_DIR}/family.core.collapse.csv \
 #                                     ${VERSION_DIR}/family.dist_to_core.db
 
-# Load connected components of graph
-# 10m
-time python3 csv_to_partitions.py --version=${TIMESTAMP}
+# # Load connected components of graph
+# # 10m
+# time python3 csv_to_partitions.py --version=${TIMESTAMP}
 
-# echo
-# echo "(3) Check categories"
-# # 15m
-# time python3 category_check.py --version=${TIMESTAMP} --open-links
+echo "(4) TODO: Compute Stats?"
 
 echo
 echo "Done"

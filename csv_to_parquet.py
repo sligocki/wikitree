@@ -4,7 +4,7 @@ from pathlib import Path
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.csv
-import pyarrow.parquet
+import pyarrow.parquet as pq
 
 import utils
 
@@ -59,13 +59,20 @@ WIKITREE_MARRIAGE_COLUMNS_OLD2NEW = {
   "Marriage Location Status": "marriage_location_status",
 }
 
+WIKITREE_CATEGORIES_COLUMNS_OLD2NEW = {
+  "User ID": "user_num",
+  "Category": "category",
+}
 
-def rename_columns(table, column_map):
+
+def rename_columns(table, column_map, assert_all_columns):
   """Rename columns from the original CSV"""
-  missing_column_names = set(table.column_names) - column_map.keys()
-  assert set(table.column_names) == set(column_map.keys()), (
-    set(table.column_names) - set(column_map.keys()),
-    set(column_map.keys()) - set(table.column_names))
+
+  unspecified_column_names = set(table.column_names) - column_map.keys()
+  assert not unspecified_column_names, unspecified_column_names
+  if assert_all_columns:
+    missing_column_names = set(column_map.keys()) - set(table.column_names)
+    assert not missing_column_names, missing_column_names
 
   new_names = [column_map[old] for old in table.column_names]
 
@@ -96,7 +103,7 @@ def parse_wikitree_dates(table, cols):
       table.schema.get_field_index(col), col, array)
   return table
 
-def load_person_csv(csv_path):
+def load_person_csv(csv_path, is_custom):
   utils.log(f"Loading {str(csv_path)}")
   table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
@@ -121,16 +128,18 @@ def load_person_csv(csv_path):
       # Nonstandard formats used in dump. Like 19991231235959
       timestamp_parsers=["%Y%m%d%H%M%S"],
     ))
-  utils.log(f"Loaded {table.num_rows:_} rows of people")
+  utils.log(f"  Loaded {table.num_rows:_} rows of people")
 
-  table = rename_columns(table, WIKITREE_PERSON_COLUMNS_OLD2NEW)
-  table = parse_wikitree_dates(table, ["birth_date", "death_date"])
+  table = rename_columns(table, WIKITREE_PERSON_COLUMNS_OLD2NEW,
+                         assert_all_columns=(not is_custom))
+  if not is_custom:
+    table = parse_wikitree_dates(table, ["birth_date", "death_date"])
   # TODO: Encode as categorical: Gender, Privacy?
-  utils.log(f"Cleaned {table.num_rows:_} rows of people")
+  utils.log(f"  Cleaned {table.num_rows:_} rows of people")
 
   return table
 
-def load_marriages_csv(csv_path):
+def load_marriages_csv(csv_path, is_custom):
   utils.log(f"Loading {str(csv_path)}")
   table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
@@ -143,29 +152,52 @@ def load_marriages_csv(csv_path):
       # Nonstandard formats used in dump. Like 19991231235959
       timestamp_parsers=["%Y%m%d%H%M%S"],
     ))
-  utils.log(f"Loaded {table.num_rows:_} rows of marriages")
+  utils.log(f"  Loaded {table.num_rows:_} rows of marriages")
 
-  table = rename_columns(table, WIKITREE_MARRIAGE_COLUMNS_OLD2NEW)
-  table = parse_wikitree_dates(table, ["marriage_date"])
-  utils.log(f"Cleaned {table.num_rows:_} rows of marriages")
+  table = rename_columns(table, WIKITREE_MARRIAGE_COLUMNS_OLD2NEW,
+                         assert_all_columns=(not is_custom))
+  if "marriage_date" in table.column_names:
+    table = parse_wikitree_dates(table, ["marriage_date"])
+  utils.log(f"  Cleaned {table.num_rows:_} rows of marriages")
+
+  return table
+
+def load_categories_csv(csv_path):
+  utils.log(f"Loading {str(csv_path)}")
+  table = pa.csv.read_csv(csv_path,
+    parse_options=pa.csv.ParseOptions(
+      delimiter="\t", quote_char=False))
+  utils.log(f"  Loaded {table.num_rows:_} rows of categories")
+
+  table = rename_columns(table, WIKITREE_CATEGORIES_COLUMNS_OLD2NEW,
+                         assert_all_columns=True)
+  utils.log(f"  Cleaned {table.num_rows:_} rows of categories")
 
   return table
 
 def csv_to_parquet(args):
   data_dir = utils.data_version_dir(args.version)
 
-  # TODO: Support custom CSV (with missing columns)
-  # person_custom_table = load_person_csv(Path("data", "custom_users.csv"))
-  person_table = load_person_csv(Path(data_dir, "dump_people_users.csv"))
-  # person_table = pa.concat_tables([person_custom_table, person_table])
+  person_custom_table = load_person_csv(
+    Path("data", "custom_users.csv"), is_custom=True)
+  person_table = load_person_csv(
+    Path(data_dir, "dump_people_users.csv"), is_custom=False)
+  person_table = pa.concat_tables([person_table, person_custom_table], promote=True)
   # TODO: Remove duplicate rows.
-  pa.parquet.write_table(person_table, Path(data_dir, "people.parquet"))
+  pq.write_table(person_table, Path(data_dir, "people.parquet"))
   utils.log(f"Wrote {person_table.num_rows:_} rows of people")
 
-  marriages_table = load_marriages_csv(Path(data_dir, "dump_people_marriages.csv"))
-  # TODO: Custom marriages
-  pa.parquet.write_table(marriages_table, Path(data_dir, "marriages.parquet"))
+  marriage_custom_table = load_marriages_csv(
+    Path("data", "custom_marriages.csv"), is_custom=True)
+  marriages_table = load_marriages_csv(
+    Path(data_dir, "dump_people_marriages.csv"), is_custom=False)
+  marriages_table = pa.concat_tables([marriages_table, marriage_custom_table], promote=True)
+  pq.write_table(marriages_table, Path(data_dir, "marriages.parquet"))
   utils.log(f"Wrote {marriages_table.num_rows:_} rows of marriages")
+
+  categories_table = load_categories_csv(Path(data_dir, "dump_categories.csv"))
+  pq.write_table(categories_table, Path(data_dir, "categories.parquet"))
+  utils.log(f"Wrote {categories_table.num_rows:_} rows of categories")
 
   utils.log("Done")
 

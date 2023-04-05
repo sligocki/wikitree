@@ -46,7 +46,7 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 20640121	Zupofska-4	20640019	20639996	David		Zupofska	Zupofska	1	0
 20640129	Zupofska-5	20640019	20639996	Joseph		Zupofska	Zupofska	1	0
 20640145	Zupofska-6	0	20639996	Diana		Zupofska	Zupofska	2	0
-20643060	Caputi-7	20643072	20643081	Rudolph	Caputi	1	0
+20643060	Caputi-7	20643072	20643081	Rudolph		Caputi	Caputi	1	0
 20704987	Bergeron-1696	0	0	Pauline		Bergeron	Zupofska	2	0
 20705025	Zupofska-16	20640113	20704987	Paul		Zupofska	Zupofska	1	0
 20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
@@ -77,7 +77,7 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 35324185	Wilson-96386	0	0	Randall		Wilson	Wilson	1	1
 35343715	Winston-1782	35307048	35307065	Jennifer		Winston	Winston	2	0
 35343721	Winston-1783	35307048	35307065	Grant		Winston	Winston	1	0
-35410381	Rae-2270	0	0	Donna	Rae	2	0
+35410381	Rae-2270	0	0	Donna		Rae	Peterson	2	0
 37034799	Vieira-467	0	0	Michelle		Vieira	Zupofska	2	0
 37034813	Zupofska-17	20705025	37034799	Paul		Zupofska	Zupofska	1	0
 37034852	Zupofska-18	20640113	20704987	Holly		Zupofska	Zupofska	2	0

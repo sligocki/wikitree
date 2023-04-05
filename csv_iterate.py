@@ -119,7 +119,7 @@ class UserRow(Row):
     return ParseBool(self.lookup("No Children"))
 
   def registered_time(self):
-    return ParseTimestamp(self.lookup("Registered"))
+    return ParseTimestamp(self.lookup("Registration"))
 
   def touched_time(self):
     return ParseTimestamp(self.lookup("Touched"))

@@ -58,7 +58,7 @@ def name2users(node_name):
   else:
     # For person node, just return that person.
     names = [node_name]
-  
+
   return [db.get_person_num(id_or_num) for id_or_num in names]
 
 def get_locations(user_num):
@@ -93,7 +93,7 @@ def summarize_community(index):
   for node_index in subset:
     node_name = names_db.index2name(node_index)
     for user_num in name2users(node_name):
-      counts["category"].update(category_db.list_categories_for_preson(user_num))
+      counts["category"].update(category_db.list_categories_for_person(user_num))
       counts["location"].update(get_locations(user_num))
       counts["manager"][db.get(user_num, "manager_num")] += 1
       birth_date = db.birth_date_of(user_num)
@@ -112,7 +112,7 @@ def summarize_community(index):
     percentile = i / 4.0
     by_index = round(percentile * (len(birth_years) - 1))
     print(f" - {percentile:4.0%}-ile:  {birth_years[by_index]}")
-  
+
   utils.log("Central nodes:")
   subG = nk.graphtools.subgraphFromNodes(G, subset)
   if size <= 50_000:
@@ -132,7 +132,7 @@ def summarize_community(index):
     id_str = "/".join(db.num2id(user_num) for user_num in user_nums)
     dist_center = int(bfs.distance(node_index))
     print(f" - {1/score:6.2f}  {dist_center:3d}  {id_str}")
-  
+
 
 print()
 if args.community_index:
