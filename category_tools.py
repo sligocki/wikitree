@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import utils
-
 import pandas as pd
+
+import utils
 
 
 class CategoryDb:

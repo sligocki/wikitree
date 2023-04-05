@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.csv
@@ -109,6 +110,8 @@ def load_person_csv(csv_path, is_custom):
     parse_options=pa.csv.ParseOptions(
       delimiter="\t", quote_char=False),
     convert_options=pa.csv.ConvertOptions(
+      # Consider 0s to be NAs (used for many columns, especially parents).
+      null_values=["", "0"],
       column_types={
         # Booleans are stored as 0 or 1 in CSV, so must explicitly tell PyArrow to convert.
         "No Children": pa.bool_(),
@@ -175,17 +178,21 @@ def load_categories_csv(csv_path):
 
   return table
 
-def csv_to_parquet(args):
-  data_dir = utils.data_version_dir(args.version)
-
+def csv_to_parquet(data_dir):
   person_custom_table = load_person_csv(
     Path("data", "custom_users.csv"), is_custom=True)
   person_table = load_person_csv(
     Path(data_dir, "dump_people_users.csv"), is_custom=False)
+
+  custom_user_nums = person_custom_table.column("user_num").combine_chunks()
+  person_table = person_table.filter(
+    ~pc.field("user_num").isin(custom_user_nums))
+  utils.log(f"  Filtered out duplicates from custom: {person_table.num_rows:_} rows of people")
+
   person_table = pa.concat_tables([person_table, person_custom_table], promote=True)
-  # TODO: Remove duplicate rows.
   pq.write_table(person_table, Path(data_dir, "people.parquet"))
   utils.log(f"Wrote {person_table.num_rows:_} rows of people")
+
 
   marriage_custom_table = load_marriages_csv(
     Path("data", "custom_marriages.csv"), is_custom=True)
@@ -207,6 +214,8 @@ def main():
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
-  csv_to_parquet(args)
+  data_dir = utils.data_version_dir(args.version)
+  csv_to_parquet(data_dir)
 
-main()
+if __name__ == "__main__":
+  main()
