@@ -11,7 +11,7 @@ class CategoryDb:
     self.data = pd.read_parquet(self.filename)
 
   def list_categories_for_person(self, user_num):
-    return list(self.data.loc[self.data.user_num == user_num, "category"])
+    return frozenset(self.data.loc[self.data.user_num == user_num, "category"])
 
   def list_people_in_category(self, category_name):
-    return list(self.data.loc[self.data.category == category_name, "user_num"])
+    return frozenset(self.data.loc[self.data.category == category_name, "user_num"])
