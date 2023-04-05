@@ -12,6 +12,23 @@ def format_rels(df, column1, column2, relationship):
     "relationship": relationship,
   })
 
+def find_common(old, relationship):
+  """Return df of distinct user_nums who share the same relative_num.
+  Ex: siblings are people who share parents."""
+  utils.log(f"Computing {relationship}")
+  new = old.merge(old, on="relative_num")
+  new = pd.DataFrame({
+    "user_num": new.user_num_x,
+    "relative_num": new.user_num_y,
+    "relationship": relationship,
+  })
+  utils.log(f"  Merged to {len(new):_} {relationship} relationships")
+  new = new.loc[new.user_num != new.relative_num]
+  utils.log(f"  Removed self-relationships: {len(new):_} {relationship} relationships")
+  new = new.drop_duplicates()
+  utils.log(f"  Removed duplicates: {len(new):_} {relationship} relationships")
+  return new
+
 def compute_relatives(data_dir):
   utils.log("Loading Marriages")
   mar = pd.read_parquet(data_dir / "marriages.parquet")
@@ -20,19 +37,26 @@ def compute_relatives(data_dir):
   utils.log(f"  Loaded {len(mar1)+len(mar2):_} spouse relationships")
 
   utils.log("Loading Parents")
-  par = pd.read_parquet(data_dir / "people.parquet",
-                        columns=["user_num", "mother_num", "father_num"])
-  parent1 = format_rels(par, "user_num", "mother_num", "parent")
-  parent2 = format_rels(par, "user_num", "father_num", "parent")
-  utils.log(f"  Loaded {len(parent1)+len(parent2):_} parent relationships")
-  child1 = format_rels(par, "mother_num", "user_num", "child")
-  child2 = format_rels(par, "father_num", "user_num", "child")
-  utils.log(f"  Loaded {len(child1)+len(child2):_} child relationships")
+  ppl_df = pd.read_parquet(data_dir / "people.parquet",
+                           columns=["user_num", "mother_num", "father_num"])
+  parent = pd.concat([
+    format_rels(ppl_df, "user_num", "mother_num", "parent"),
+    format_rels(ppl_df, "user_num", "father_num", "parent"),
+    ], ignore_index=True).dropna()
+  utils.log(f"  Loaded {len(parent):_} parent relationships")
+  child = pd.concat([
+    format_rels(ppl_df, "mother_num", "user_num", "child"),
+    format_rels(ppl_df, "father_num", "user_num", "child"),
+    ], ignore_index=True).dropna()
+  utils.log(f"  Loaded {len(child):_} child relationships")
 
-  # TODO: Compute Spouse & Coparent relationships
+  sibling = find_common(parent, "sibling")
+  utils.log(f"Loaded {len(sibling):_} sibling relationships")
 
-  df = pd.concat([mar1, mar2, parent1, parent2, child1, child2],
-                 ignore_index=True)
+  coparent = find_common(child, "coparent")
+  utils.log(f"Loaded {len(coparent):_} coparent relationships")
+
+  df = pd.concat([mar1, mar2, parent, child, sibling, coparent], ignore_index=True)
   df = df.dropna()
   utils.log(f"Merged into {len(df):_} total relationships")
   df.to_parquet(data_dir / "relationships.parquet", index=False)
