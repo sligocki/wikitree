@@ -25,7 +25,7 @@ time python3 csv_to_parquet.py --version=${TIMESTAMP}
 echo
 echo "(3) Compute relationships"
 # 6m
-time python pq_compute_relatives.py --version=${TIMESTAMP}
+time python3 pq_compute_relatives.py --version=${TIMESTAMP}
 
 # TODO: Remove these once we give up on sqlite?
 # 30m

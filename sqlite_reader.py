@@ -16,6 +16,7 @@ class Database(object):
     self.cursor = self.conn.cursor()
 
   def get(self, user_num, attribute):
+    assert isinstance(user_num, int), repr(user_num)
     self.cursor.execute(f"SELECT {attribute} FROM people WHERE user_num=?", (user_num,))
     rows = self.cursor.fetchall()
     if rows:
