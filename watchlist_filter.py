@@ -1,4 +1,6 @@
 # Filter watchlist by various criteria to find profiles that might be worth removing.
+# Get JSON for wishlist at:
+#   https://apps.wikitree.com/apps/wikitree-api-examples/getWatchlist/javascript.html
 
 import argparse
 import json

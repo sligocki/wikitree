@@ -15,6 +15,9 @@ class BfsNode:
     # Dist from start to person.
     self.dist = dist
 
+  def __repr__(self):
+    return f"BfsNode({self.person}, {self.prevs}, {self.dist})"
+
 def ConnectionBfs(db, start, ignore_people=frozenset()):
   todos = collections.deque()
   todos.append(start)

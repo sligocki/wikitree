@@ -6,7 +6,7 @@ set -e
 
 echo Staring Cleanup
 # Save 4 most recent versions.
-for x in $(ls data/version/ | egrep '^20\d\d-\d\d-\d\d$' | sort | head --lines=-4); do
+for x in $(ls data/version/ | egrep '^20\d\d-\d\d-\d\d$' | sort | ghead --lines=-4); do
   echo Removing data/version/$x
   rm -rf data/version/$x
 done
