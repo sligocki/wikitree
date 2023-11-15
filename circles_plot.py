@@ -33,10 +33,12 @@ parser.add_argument("--log-y", action="store_true",
                     help="Plot with log-Y axis.")
 parser.add_argument("--rate", action="store_true",
                     help="Plot with Y axis as rate of change.")
-parser.add_argument("--relative", action="store_true",
+parser.add_argument("--relative-x", action="store_true",
                     help="Shift distances relative to median dist.")
-parser.add_argument("--absolute", action="store_true",
+parser.add_argument("--absolute-y", action="store_true",
                     help="Plot with absolute (not %%) circle sizes.")
+parser.add_argument("--cumulative", action="store_true",
+                    help="Plot cumulative circle sizes on Y axis.")
 parser.add_argument("--log-normal-regression", action="store_true",
                     help="Plot a log-normal distribution regression")
 
@@ -61,25 +63,29 @@ for filename in args.circles_json:
 
 fig, ax = plt.subplots()
 # Display parameters
-if args.relative:
+if args.relative_x:
   ax.set_xlabel("Relative Circle #")
 else:
   ax.set_xlabel("Circle #")
 
+if args.absolute_y:
+  y_type = "absolute"
+else:
+  y_type = "% of population"
+  ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+
 if args.rate:
   ax.set_ylabel("Circle Growth Rate")
-  # Restrict range so we can actually see the interesting parts
-  ax.set_ylim(0, 10)
-  ax.set_yticks(range(0, 11, 1))
-elif args.absolute:
-  ax.set_ylabel("Circle Size (absolute)")
+
+elif args.cumulative:
+  ax.set_ylabel(f"Cumulative Circle Size ({y_type})")
+
 else:
-  ax.set_ylabel("Circle Size (% of population)")
-  ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+  ax.set_ylabel(f"Circle Size ({y_type})")
 
 if args.log_y:
   ax.set_yscale("log")
-  if not args.absolute:
+  if not args.absolute_y:
     ax.set_ylim(0.000001, 1.0)
 
 ax.grid(True)
@@ -97,17 +103,25 @@ for wikitree_id in ids:
   total_sizes = sum(sizes)
   print(f"Total population size for {wikitree_id}: {total_sizes:_d}")
 
-  if args.absolute:
+  if args.absolute_y:
     ys = [y for y in sizes]
   else:
     # Normalize distribution
     ys = [y / total_sizes for y in sizes]
 
+  if args.cumulative:
+    cum_ys = []
+    subtotal = 0
+    for y in ys:
+      subtotal += y
+      cum_ys.append(subtotal)
+    ys = cum_ys
+
   mean_dist = sum(xs[i] * ys[i] for i in range(len(xs))) / sum(ys)
   print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
 
 
-  if args.relative:
+  if args.relative_x:
     median = median_index(sizes)
     xs = [n - median for n in xs]
 
