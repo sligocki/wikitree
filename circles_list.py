@@ -33,6 +33,6 @@ for node in bfs_tools.ConnectionBfs(db, focus_num):
 
 for dist in range(args.num_circles + 1):
   print("Circle", dist)
-  for i, id in enumerate(sorted([try_id(db, person_num)
-                                 for person_num in circles[dist]])):
-    print(" *", i, id)
+  for i, person_num in enumerate(sorted(circles[dist])):
+    done = db.connections_complete_of(person_num)
+    print(" *", i, done, try_id(db, person_num))

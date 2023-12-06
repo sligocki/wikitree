@@ -18,7 +18,8 @@ def csv_to_sqlite(args):
     father_num INT, mother_num INT,
     birth_date DATE, death_date DATE,
     birth_location STRING, death_location STRING,
-    gender_code INT, no_more_children BOOL,
+    gender_code INT,
+    no_more_children BOOL, no_more_siblings BOOL,
     registered_time TIMESTAMP, touched_time TIMESTAMP,
     edit_count INT, privacy_level INT,
     manager_num INT,
@@ -31,13 +32,14 @@ def csv_to_sqlite(args):
   utils.log("Loading people from CSV")
   for person in csv_iterate.iterate_users(version=args.version):
     try:
-      c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      c.execute("INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (person.user_num(), person.wikitree_id(),
                  person.birth_name(),
                  person.father_num(), person.mother_num(),
                  person.birth_date(), person.death_date(),
                  person.birth_location(), person.death_location(),
-                 person.gender_code(), person.no_more_children(),
+                 person.gender_code(),
+                 person.no_more_children(), person.no_more_siblings(), #person.no_more_spouses(),
                  person.registered_time(), person.touched_time(),
                  person.edit_count(), person.privacy_level(),
                  person.manager_num()))

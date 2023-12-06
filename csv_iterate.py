@@ -118,6 +118,13 @@ class UserRow(Row):
   def no_more_children(self):
     return ParseBool(self.lookup("No Children"))
 
+  def no_more_siblings(self):
+    return ParseBool(self.lookup("No Children"))
+
+  # TODO: Doesn't exist yet.
+  # def no_more_spouses(self):
+  #   return ParseBool(self.lookup("No Spouses"))
+
   def registered_time(self):
     return ParseTimestamp(self.lookup("Registration"))
 
