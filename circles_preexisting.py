@@ -7,10 +7,15 @@ user connected to the pre-existing tree.
 
 import argparse
 import collections
+import datetime
 
 import bfs_tools
 import data_reader
 
+
+# Don't consider a profile created before another if the difference is less than a day.
+# I did this with Luis Weinstein because I wasn't confident about the connection yet.
+IGNORE_DELTA = datetime.timedelta(days=1)
 
 def try_id(db, person_num) -> str:
   id = db.num2id(person_num)
@@ -28,7 +33,7 @@ def preexisted(db, node):
     prev_create_time = min(prev_create_times)
     node_create_time = db.registered_time_of(node.person)
     if (prev_create_time and node_create_time and
-        node_create_time < prev_create_time):
+        node_create_time < prev_create_time - IGNORE_DELTA):
       return True
   return False
 
