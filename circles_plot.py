@@ -109,6 +109,9 @@ for wikitree_id in ids:
     # Normalize distribution
     ys = [y / total_sizes for y in sizes]
 
+  mean_dist = sum(xs[i] * ys[i] for i in range(len(xs))) / sum(ys)
+  print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
+
   if args.cumulative:
     cum_ys = []
     subtotal = 0
@@ -116,9 +119,6 @@ for wikitree_id in ids:
       subtotal += y
       cum_ys.append(subtotal)
     ys = cum_ys
-
-  mean_dist = sum(xs[i] * ys[i] for i in range(len(xs))) / sum(ys)
-  print(f"Mean dist for {wikitree_id}: {mean_dist:.3f}")
 
 
   if args.relative_x:

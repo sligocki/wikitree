@@ -64,6 +64,6 @@ def main():
 
   focus_num = db.id2num(args.focus_id)
   for node in BfsPreexisted(db, focus_num):
-    print(f"{node.dist:3d}:    {db.name_of(node.person):30s} {try_id(db, node.person):10s}")
+    print(f"{node.dist:3d}:    {db.name_of(node.person):20s} {try_id(db, node.person):15s}  <--  {try_id(db, node.prevs[0]):15s}")
 
 main()
