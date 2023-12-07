@@ -146,8 +146,9 @@ class Database(object):
       yield (row["user_num"], row["relative_num"], row["relationship_type"])
 
   def connections_complete_of(self, user_num):
-    return (len(self.parents_of(user_num)) == 2 and
-            self.get(user_num, "no_more_children") and
-            self.get(user_num, "no_more_siblings"))
+    return bool(
+      len(self.parents_of(user_num)) == 2 and
+      self.get(user_num, "no_more_children") and
+      self.get(user_num, "no_more_siblings"))
     # Ignore Spouses for now since we don't have it in data dumps.
     #        self.get(user_num, "no_more_spouses"))
