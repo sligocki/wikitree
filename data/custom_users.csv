@@ -1,36 +1,18 @@
 User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	Last Name Current	Gender	No Children
-4552076	Barach-1	4581509	4581510	Gary		Barach	Barach	1	0
 4792350	Hallberg-54	4800064	4800075	Ronald		Hallberg	Hallberg	1	0
-5605158	Hallberg-69	4792350	7349069	Sara		Hallberg	Byers	2	0
 5605159	Hallberg-70	4792350	7349069	Ethan		Hallberg	Hallberg	1	0
-5605185	Hallberg-84	5605102	5605435	Judith	Ann	Hallberg	Hallberg	2	0
-5605186	Hallberg-85	5605102	5605435	Robert		Hallberg	Hallberg	1	0
 7349069	Curran-545	18805652	7349108	Rhoda		Curran	Hallberg	2	0
-7390700	Waterman-634	28164433	28164451	Kristi		Waterman	Waterman	2	0
-8231518	Kendall-1298	21032281	0	Dory		Kendall	Conger	2	0
 9114070	Ellinger-115	9114075	9114076	Marie		Ellinger	Wilcox	2	0
-9114075	Ellinger-116	0	0	Max	Miller	Ellinger	Ellinger	1	0
-9882178	Miller-26228	9882361	9882345	Laurie		Miller	Miller	1	0
 9882345	Harper-3888	9882425	9882445	Anon		Harper	Harper	2	0
 9882361	Miller-26229	22740256	22750536	Anon		Miller	Miller	1	0
-11309778	Adams-21565	11324786	11310184	Carolyn	L.	Adams	Adams	2	0
 11646578	Hurlbutt-55	11646570	11646571	Wayne	Johnson	Hurlbutt	Hurlbutt	1	0
-12233078	Johnson-43211	12233166	12233215	Charles		Johnson	Johnson	1	0
-12233085	Johnson-43218	12233166	12233215	Signe	Marie	Johnson	Barber	2	0
-12233086	Johnson-43219	12233166	12233215	Theodore		Johnson	Johnson	1	0
-12233181	Peterson-6038	12233195	12233045	Bertha		Peterson	Peterson	2	0
-13766190	Martschinske-1	13766842	13766862	Brian	S.	Martschinske	Martschinske	1	0
-15136252	Ligocki-5	16729460	0	Renee		Ligocki	Wilkey	2	0
 19440571	Ligocki-7	19441051	12233188	Shawn	Michael	Ligocki	Ligocki	1	1
 19441051	Ligocki-8	19441613	19441987	Terry	Jay	Ligocki	Ligocki	1	1
 19441987	Scherz-19	19442187	19442071	Naomi		Scherz	Ligocki	2	1
-19442144	Block-831	23723298	19442087	Diane		Block	Bartels	2	0
 19444694	Ligocki-10	19441051	12233188	Chris	Terry	Ligocki	Ligocki	1	1
 19445016	Peterson-9316	5605484	12233043	Michael		Peterson	Peterson	1	1
 19445030	Peterson-9317	5605484	12233043	Rocky		Peterson	Peterson	1	1
 19470719	Winston-1023	35307048	19980450	Kimberly	Justine	Winston	Ligocki	2	1
-19470776	Ligocki-16	19441613	20190252	Dean		Ligocki	Ligocki	1	1
-19799505	Wolters-385	0	0	Geraldine		Wolters	Gestaut	2	0
 19980450	Edgar-1938	24018761	19980477	Diann		Edgar	Wilson	2	1
 20303928	Treibergs-1	20304018	20304037	Kira	Aleksandra	Treibergs	Treibergs	2	1
 20304018	Treibergs-2	20304107	20304094	Juris	Egils	Treibergs	Treibergs	1	1
@@ -39,48 +21,15 @@ User ID	WikiTree ID_DB	Father	Mother	First Name	Middle Name	Last Name at Birth	L
 20304214	Treibergs-6	20304107	20304094	Valts		Treibergs	Treibergs	1	1
 20304219	Treibergs-7	20304107	20304094	Nora		Treibergs	Lund	2	1
 20304223	Treibergs-8	20304107	20304094	Andrejs		Treibergs	Treibergs	1	1
-20304286	Lund-1420	20304219	20304276	Erik		Lund	Lund	1	1
-20304298	Treibergs-9	20304214	33779758	Mara		Treibergs	Treibergs	2	1
-20304313	Treibergs-10	20304214	33779758	Raitis		Treibergs	Treibergs	1	1
 20640113	Zupofska-3	20640019	20639996	Paul		Zupofska	Zupofska	1	0
-20640121	Zupofska-4	20640019	20639996	David		Zupofska	Zupofska	1	0
-20640129	Zupofska-5	20640019	20639996	Joseph		Zupofska	Zupofska	1	0
-20640145	Zupofska-6	0	20639996	Diana		Zupofska	Zupofska	2	0
 20643060	Caputi-7	20643072	20643081	Rudolph		Caputi	Caputi	1	0
-20704987	Bergeron-1696	0	0	Pauline		Bergeron	Zupofska	2	0
 20705025	Zupofska-16	20640113	20704987	Paul		Zupofska	Zupofska	1	0
 20974226	Ligocki-68	19441613	20190252	Linda		Ligocki	Myers	2	0
-21107121	Grewatch-2	20190533	19452782	Janice		Grewatch	Kujawa	2	0
-22357831	Wood-29877	22365550	0	Barry		Wood	Wood	1	0
-24354180	Peterson-11772	19445030	0	Vanessa		Peterson	Peterson	2	1
-24356835	Ligocki-91	19807278	19807698	Sandra		Ligocki	Ligocki	2	0
-24356917	Ligocki-92	19807278	19807698	Tanya		Ligocki	Augustine	2	0
-24453993	Smith-195929	24454518	24454605	Shannon	L.	Smith	Miller	2	0
 24454605	Marsh-8353	20998740	24454659	Kay		Marsh	Marsh	2	0
-24601998	Peterson-11879	0	0	Rita	June	Peterson	Ligocki	2	0
-24741384	Bell-26529	24741352	24741336	Florence		Bell	Craven	2	0
-24741401	Craven-1910	24823519	24454659	Renee	Michelle	Craven	Deierling	2	0
 25194270	Gestaut-7	19453094	19799505	Raymond	Vincent	Gestaut	Gestaut	1	0
-26961805	Wisniewski-313	26961705	26961739	Paul	M.	Wisniewski	Wisniewski	1	0
-29900304	Kubisz-5	29900473	0	Krystyna		Kubisz	Bacaksizlar	2	0
-30570372	Ligocki-153	19444694	30570389	Jonathan	Terry	Ligocki	Ligocki	1	1
 30570389	Pounds-429	0	0	Erica		Pounds	Pounds	2	1
-30570400	Mejia-620	0	30570389	Elijah	J.	Mejia	Mejia	1	1
 33779758	Zeidaks-1	0	0	Vija		Zeidaks	Treibergs	2	1
-34473926	Zupokfska-2	20640019	20643036	Joseph		Zupokfska	Zupokfska	1	0
-35307026	Winston-1769	35306515	35306910	Margaret	A.	Winston	Cole	2	0
 35307048	Winston-1770	35307010	35324848	Gary	Richard	Winston	Winston	1	0
-35307092	Winston-1771	35307010	35324848	Gail		Winston	Felice	2	0
-35307099	Winston-1772	35307010	35324848	Barbara		Winston	Eckstein	2	0
-35307111	Winston-1773	35307010	35324848	Debra		Winston	Van Duyne	2	0
-35307065	Benedict-3777	0	0	Kay	Genevieve	Benedict	Winston	2	0
 35324185	Wilson-96386	0	0	Randall		Wilson	Wilson	1	1
-35343715	Winston-1782	35307048	35307065	Jennifer		Winston	Winston	2	0
-35343721	Winston-1783	35307048	35307065	Grant		Winston	Winston	1	0
 35410381	Rae-2270	0	0	Donna		Rae	Peterson	2	0
-37034799	Vieira-467	0	0	Michelle		Vieira	Zupofska	2	0
-37034813	Zupofska-17	20705025	37034799	Paul		Zupofska	Zupofska	1	0
-37034852	Zupofska-18	20640113	20704987	Holly		Zupofska	Zupofska	2	0
-37034856	Zupofska-19	20640113	20704987	Tammy		Zupofska	Zupofska	2	0
-37034866	Zupofska-20	20640113	20704987	Tina		Zupofska	Zupofska	2	0
 -1	Wilcox-x1	0	9114070	Megan		Wilcox	Hallberg	2	0
