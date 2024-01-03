@@ -79,33 +79,20 @@ for i, person in enumerate(db.enum_people()):
     utils.log(f" ... {i:_}  {len(node_ids):_}  {len(edge_ids):_}")
 utils.log(f"Loaded {len(node_ids):_} nodes / {len(edge_ids):_} edges")
 
-utils.log("Index nodes")
-ids = list(node_ids)
-id2index = {}
-for node_index, wikitree_id in enumerate(ids):
-  id2index[wikitree_id] = node_index
-
-
-graph = nk.Graph(len(ids))
-utils.log("Building graph")
-for (id1, id2) in edge_ids:
-  graph.addEdge(id2index[id1], id2index[id2])
-utils.log(f"Built graph with {graph.numberOfNodes():_} Nodes / {graph.numberOfEdges():_} Edges")
-
+graph = graph_tools.make_graph(node_ids, edge_ids)
+utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 
 utils.log("Saving full graph")
 data_dir = utils.data_version_dir(args.version)
-filename = Path(data_dir, "family.all.graph")
-graph_tools.write_graph_nk(graph, ids, filename)
+filename = Path(data_dir, "family.all.graph.adj.nx")
+graph_tools.write_graph(graph, filename)
 
 utils.log("Finding largest connected component")
-main_component = graph_tools.largest_component_nk(graph)
-print(f"Main component size: {main_component.numberOfNodes():,} Nodes / {main_component.numberOfEdges():,} Edges")
+main_component = graph_tools.largest_component(graph)
+print(f"Main component size: {len(main_component.nodes):_} Nodes / {len(main_component.edges):_} Edges")
 
 utils.log("Saving main component")
-filename = Path(data_dir, "family.main.graph")
-# Subset ids to those in main_component ... hopefully this order is correct/consistent ...
-component_ids = [ids[index] for index in main_component.iterNodes()]
-graph_tools.write_graph_nk(main_component, component_ids, filename)
+filename = Path(data_dir, "family.main.graph.adj.nx")
+graph_tools.write_graph(main_component, filename)
 
 utils.log("Finished")

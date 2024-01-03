@@ -35,33 +35,36 @@ def FindCentroid(graph, seed_nodes, num_overlap):
       except StopIteration:
         pass
 
-parser = argparse.ArgumentParser()
-parser.add_argument("graph")
-parser.add_argument("num_seed_nodes", type=int)
-parser.add_argument("num_overlap", type=int)
-parser.add_argument("--absolute", action="store_true")
-args = parser.parse_args()
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graph")
+  parser.add_argument("--absolute", action="store_true")
+  parser.add_argument("--num-seed-nodes", type=int, default=1001)
+  parser.add_argument("--num-overlap", type=int, default=10)
+  args = parser.parse_args()
 
-print("Loading graph", time.process_time())
-graph = nx.read_adjlist(args.graph)
-print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
+  print("Loading graph", time.process_time())
+  graph = nx.read_adjlist(args.graph)
+  print(f"Initial graph:  # Nodes: {len(graph.nodes):,}  # Edges: {len(graph.edges):,}", time.process_time())
 
-if args.absolute:
-  print("Finding absolute center", time.process_time())
-  foo = nx.closeness_centrality(graph)
-  center, max_closeness = max(foo.items(), key = lambda x: x[1])
-  print(f"Centrality\t{center}\t{max_closeness:.4f}\t{1./max_closeness:.2f}")
+  if args.absolute:
+    print("Finding absolute center", time.process_time())
+    foo = nx.closeness_centrality(graph)
+    center, max_closeness = max(foo.items(), key = lambda x: x[1])
+    print(f"Centrality\t{center}\t{max_closeness:.4f}\t{1./max_closeness:.2f}")
 
-else:
-  print(f"Estimating center based on {args.num_seed_nodes} points", time.process_time())
-  if args.num_seed_nodes == 0 or args.num_seed_nodes >= len(graph.nodes):
-    seed_nodes = list(graph.nodes)
   else:
-    # Pick N random nodes.
-    seed_nodes = random.sample(list(graph.nodes), args.num_seed_nodes)
+    print(f"Estimating center based on {args.num_seed_nodes} points", time.process_time())
+    if args.num_seed_nodes == 0 or args.num_seed_nodes >= len(graph.nodes):
+      seed_nodes = list(graph.nodes)
+    else:
+      # Pick N random nodes.
+      seed_nodes = random.sample(list(graph.nodes), args.num_seed_nodes)
 
-  for node in FindCentroid(graph, seed_nodes, args.num_overlap):
-    centrality = nx.closeness_centrality(graph, u=node)
-    print(f"Centrality  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
+    for node in FindCentroid(graph, seed_nodes, args.num_overlap):
+      centrality = nx.closeness_centrality(graph, u=node)
+      print(f"Centrality  {node:20} {centrality:7.4f} {1./centrality:=10.2f} {time.process_time():10.1f}")
 
-print("Done", time.process_time())
+  print("Done", time.process_time())
+
+main()

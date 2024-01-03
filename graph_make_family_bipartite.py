@@ -95,7 +95,6 @@ def main():
 
   db = data_reader.Database(args.version)
 
-
   utils.log("Building list of all nodes and edges")
   graph_info = BipartiteBuilder(db)
   for index, user_num in enumerate(db.enum_people()):
@@ -104,40 +103,24 @@ def main():
       utils.log(f" ... {len(graph_info.people_ids):_}  {len(graph_info.union_ids):_}")
   utils.log(f"Found {len(graph_info.people_ids):_} people nodes, {len(graph_info.union_ids):_} union nodes and {len(graph_info.edge_ids):_} edges.")
 
-  utils.log("Extracting id2index mapping")
-  ids = graph_info.compute_node_ids()
-  id2index = {}
-  for node_index, wikitree_id in enumerate(ids):
-    id2index[wikitree_id] = node_index
-
-
-  graph = nk.Graph(len(ids))
-  utils.log("Building graph")
-  for (id1, id2) in graph_info.edge_ids:
-    try:
-      graph.addEdge(id2index[id1], id2index[id2])
-    except KeyError:
-      print("Unexpected ID among:", id1, id2)
-      raise
-  utils.log(f"Built graph with {graph.numberOfNodes():_} Nodes / {graph.numberOfEdges():_} Edges")
-
+  graph = graph_tools.make_graph(graph_info.compute_node_ids(), graph_info.edge_ids)
+  utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 
   utils.log("Saving full graph")
   data_dir = utils.data_version_dir(args.version)
-  filename = Path(data_dir, "fam_bipartite.all.graph")
-  graph_tools.write_graph_nk(graph, ids, filename)
+  filename = Path(data_dir, "bipartite.all.graph.adj.nx")
+  graph_tools.write_graph(graph, filename)
 
   utils.log("Finding largest connected component")
-  main_component = graph_tools.largest_component_nk(graph)
-  print(f"Main component size: {main_component.numberOfNodes():,} Nodes / {main_component.numberOfEdges():,} Edges")
+  main_component = graph_tools.largest_component(graph)
+  print(f"Main component size: {len(main_component.nodes):_} Nodes / {len(main_component.edges):_} Edges")
 
   utils.log("Saving main component")
-  filename = Path(data_dir, "fam_bipartite.main.graph")
-  # Subset ids to those in main_component ... hopefully this order is correct/consistent ...
-  component_ids = [ids[index] for index in main_component.iterNodes()]
-  graph_tools.write_graph_nk(main_component, component_ids, filename)
+  filename = Path(data_dir, "bipartite.main.graph.adj.nx")
+  graph_tools.write_graph(main_component, filename)
 
   utils.log("Finished")
+
 
 if __name__ == "__main__":
   main()

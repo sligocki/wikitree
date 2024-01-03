@@ -63,7 +63,17 @@ for removed_node, core_nodes in node_to_core.items():
 del node_to_core
 utils.log(f"Enumerated {len(core_to_nodes):_} gateways")
 
+max_nodes = 0
+max_gateway = None
+for (gateway, nodes) in core_to_nodes.items():
+  if len(nodes) > max_nodes:
+    max_nodes = len(nodes)
+    max_gateway = gateway
+utils.log(f"Max nodes per gateway {max_nodes:_d} for gateway {max_gateway}")
+
 utils.log(f"Loading all node to gateway distances for {len(core_to_nodes):_} gateways")
+max_dist = 0
+max_dist_gateway = None
 for gateway, removed_nodes in core_to_nodes.items():
   # Subgraph of all removed_nodes and the gateway core node itself.
   subgraph = full_graph.subgraph(removed_nodes | gateway)
@@ -76,10 +86,14 @@ for gateway, removed_nodes in core_to_nodes.items():
         if node != core_node:
           # Record shortest distance between two adjacent core nodes.
           core_graph[core_node][node]["weight"] = dist
+          if dist > max_dist:
+            max_dist = dist
+            max_dist_gateway = gateway
       else:
         # node not in gateway
         db.add(node, core_node, dist)
 db.commit()
+utils.log(f"Max core edge distance {max_dist:_d} between nodes {max_dist_gateway}")
 
 utils.log("Saving graph with weights")
 nx.write_weighted_edgelist(core_graph, args.output_core_graph)

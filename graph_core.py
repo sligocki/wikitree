@@ -102,12 +102,27 @@ def ContractGraph(graph, rep_nodes):
   return len(to_delete) > 0
 
 def FindCore(graph):
-  # Iteratively contract the graph until we reach the core.
+  """Iteratively contract the graph until we reach the core."""
   # Map: core nodes -> nodes that collapse into this core node
   rep_nodes = {node: set([node]) for node in graph.nodes}
   while ContractGraph(graph, rep_nodes):
     pass
   return rep_nodes
+
+
+def RemoveRays(graph):
+  """Remove all rays from graph."""
+  points = set()
+  for node in graph.nodes:
+    if graph.degree[node] == 1:
+      points.add(node)
+
+  for node in points:
+    end, path = CollectRay(graph, node)
+    graph.remove_nodes_from(path)
+
+  return graph
+
 
 def degree_distr(graph, max_degree):
   degree_counts = [0] * (max_degree + 1)

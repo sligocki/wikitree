@@ -13,6 +13,7 @@ import matplotlib.ticker as mtick
 import networkx as nx
 import numpy
 
+import graph_tools
 import utils
 
 
@@ -56,13 +57,17 @@ def circle_distribution(graph, circle_num):
 
 
 def sample_distance_distribution(graph, num_samples):
+  attrs = {}
+  if graph_tools.is_weighted(graph):
+    attrs["weight"] = "weight"
+
   nodes = list(graph.nodes)
   dist_distr = collections.Counter()
   for _ in range(num_samples):
     node_a = random.choice(nodes)
     node_b = random.choice(nodes)
     try:
-      dist = nx.shortest_path_length(graph, node_a, node_b)
+      dist = nx.shortest_path_length(graph, node_a, node_b, **attrs)
       dist_distr[dist] += 1
     except nx.exception.NetworkXNoPath:
       # Ignore unconnected nodes.
@@ -171,13 +176,14 @@ def main():
   args = parser.parse_args()
 
   utils.log("Loading graph")
-  graph = nx.read_adjlist(args.graph)
+  graph = graph_tools.load_graph(args.graph)
 
   utils.log(f"# Nodes = {graph.number_of_nodes():_}")
   utils.log(f"# Edges = {graph.number_of_edges():_}")
 
   if args.draw_network:
-    nx.draw_spring(graph)
+    layout = nx.kamada_kawai_layout(graph)
+    nx.draw(graph, layout, with_labels = True)
     plt.show()
 
   if args.components:

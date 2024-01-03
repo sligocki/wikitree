@@ -64,7 +64,6 @@ def load_graph_nk(filename):
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
-# Deprecated: Switch to NetoworKit!
 def load_graph(filename):
   """Load a graph from various formats depending on the extensions."""
   filename = Path(filename)
@@ -110,7 +109,29 @@ def write_graph_nk(graph, names, filename):
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
-def LargestComponent(graph):
+def make_graph(nodes, edges):
+  graph = nx.Graph()
+  for node in nodes:
+    graph.add_node(node)
+  for (a, b) in edges:
+    graph.add_edge(a, b)
+  return graph
+
+def make_graph_nk(node_ids, edges):
+  id2index = {}
+  for node_index, wikitree_id in enumerate(node_ids):
+    id2index[wikitree_id] = node_index
+
+  graph = nk.Graph(len(node_ids))
+  for (id1, id2) in graph_info.edge_ids:
+    try:
+      graph.addEdge(id2index[id1], id2index[id2])
+    except KeyError:
+      print("Unexpected ID among:", id1, id2)
+      raise
+  return graph
+
+def largest_component(graph):
   max_size, main_component = max(
     ((len(comp), comp) for comp in nx.connected_components(graph)),
     key = lambda x: x[0])
@@ -120,3 +141,10 @@ def largest_component_nk(graph):
   assert isinstance(graph, nk.Graph), graph
   cc = nk.components.ConnectedComponents(graph)
   return cc.extractLargestConnectedComponent(graph)
+
+def is_weighted(graph):
+  """If any edge is weighted, the entire graph is considered weighted.
+  NOTE: This is different than nx.is_weighted() which requires all edges to be weighted ...
+  but for some reason none of my dist 1 edges end up weighted, sigh.
+  """
+  return any("weight" in data for u, v, data in graph.edges(data=True))

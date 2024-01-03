@@ -14,6 +14,7 @@ will have a much smaller effect).
 import argparse
 import collections
 import datetime
+import math
 
 from graphviz import Digraph
 
@@ -22,7 +23,7 @@ import data_reader
 import utils
 
 
-def flow_paths(db, start):
+def flow_paths(db, start, max_dist):
   # Map from person -> shortest distance to start. Also used as a visited set
   # to determine if we have found this node yet.
   dists = {}
@@ -34,6 +35,8 @@ def flow_paths(db, start):
 
   utils.log("Running BFS")
   for node in bfs_tools.ConnectionBfs(db, start):
+    if node.dist > max_dist:
+      break
     dists[node.person] = node.dist
     sources[node.person] = node.prevs
     all_people.append(node.person)
@@ -94,6 +97,7 @@ def try_decode_wikitree_id(db, node):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("id_or_nums", nargs="+")
+  parser.add_argument("--max-dist", type=int)
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
   parser.add_argument("--highlight-after-num", type=int,
@@ -103,7 +107,9 @@ def main():
 
   utils.log("Loading connections")
   db = data_reader.Database(args.version)
-  db.load_connections()
+  if not args.max_dist:
+    db.load_connections()
+    args.max_dist = math.inf
 
   for start in args.id_or_nums:
     utils.log("Analyzing", start)
@@ -112,7 +118,7 @@ def main():
       start = int(start)
     except:
       start = db.id2num(start)
-    flows, sources, dists = flow_paths(db, start)
+    flows, sources, dists = flow_paths(db, start, args.max_dist)
 
     def node_attr_func(node):
       ret = {"label": try_decode_wikitree_id(db, node)}
