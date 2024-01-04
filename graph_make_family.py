@@ -34,12 +34,6 @@ import utils
 def union_name(a : pd.Series, b : pd.Series) -> pd.Series:
   return "Union/" + a.astype(str) + "/" + b.astype(str)
 
-def union_single_name(a : pd.Series) -> pd.Series:
-  return "Union/" + a.astype(str)
-
-def virtual_parent_name(child : pd.Series) -> pd.Series:
-  return "Parents/" + child.astype(str)
-
 def node_ids(a : pd.Series, b : pd.Series) -> pd.Series:
   # Create new empty string column where ids will be added.
   ids = pd.Series(index=a.index, dtype=str)
@@ -48,28 +42,6 @@ def node_ids(a : pd.Series, b : pd.Series) -> pd.Series:
   sml = (a < b)
   ids[ sml] = union_name(a[ sml], b[ sml])
   ids[~sml] = union_name(b[~sml], a[~sml])
-
-  assert ids.notna().all(), ids
-  return ids
-
-
-def parent_node_ids(child : pd.Series, p1 : pd.Series, p2 : pd.Series) -> pd.Series:
-  # Create new empty string column where ids will be added.
-  ids = pd.Series(index=child.index, dtype=str)
-
-  # If both parents known:
-  couples = p1.notna() & p2.notna()
-  ids[couples] = node_ids(p1[couples], p2[couples])
-
-  # If no parents known:
-  orphans = p1.isna() & p2.isna()
-  ids[orphans] = virtual_parent_name(child[orphans])
-
-  # If only one parent is known:
-  only1 = p1.notna() & p2.isna()
-  ids[only1] = union_single_name(p1[only1])
-  only2 = p1.isna() & p2.notna()
-  ids[only2] = union_single_name(p2[only2])
 
   assert ids.notna().all(), ids
   return ids
@@ -105,11 +77,9 @@ def main():
 
   df = pd.DataFrame({
     "child_id": node_ids(df.user_num, df.relative_num),
-    "parent_id": parent_node_ids(df.user_num, df.father_num, df.mother_num),
+    "parent_id": node_ids(df.father_num, df.mother_num),
   })
   utils.log(f"Converted into {len(df):_} pairs of node ids")
-
-  # TODO: Also connect single-parents to their generic parent node!
 
   graph = nx.from_pandas_edgelist(df, "child_id", "parent_id")
   utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
