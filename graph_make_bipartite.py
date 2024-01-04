@@ -113,7 +113,7 @@ def main():
 
   utils.log("Finding largest connected component")
   main_component = graph_tools.largest_component(graph)
-  print(f"Main component size: {len(main_component.nodes):_} Nodes / {len(main_component.edges):_} Edges")
+  utils.log(f"Main component size: {len(main_component.nodes):_} Nodes / {len(main_component.edges):_} Edges")
 
   utils.log("Saving main component")
   filename = Path(data_dir, "bipartite.main.graph.adj.nx")
