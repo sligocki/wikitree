@@ -27,29 +27,20 @@ echo "(3) Compute relationships"
 # 6m
 time python3 pq_compute_relatives.py --version=${TIMESTAMP}
 
-# TODO: Remove these once we give up on sqlite?
+echo
+echo "(4) Building Graph"
+# 2m
+time python3 graph_make_family.py --version=${TIMESTAMP}
+# 8m
+time python3 graph_core.py ${VERSION_DIR}/graphs/family/main.adj.nx
+
+echo
+echo "(5) Convert to SQLite DB"
 # 30m
 time python3 csv_to_sqlite.py --version=${TIMESTAMP}
 
-# 30m
-# time python3 graph_make_person.py --version=${TIMESTAMP}
-# time python3 graph_make_family_bipartite.py --version=${TIMESTAMP}
-# time python3 graph_make_family.py --version=${TIMESTAMP}
-
-# time python3 graph_core.py ${VERSION_DIR}/family.main.adj.nx \
-#                            ${VERSION_DIR}/family.core.adj.nx \
-#                            ${VERSION_DIR}/family.core.collapse.csv
-# time python3 graph_core_annotate.py ${VERSION_DIR}/family.main.adj.nx \
-#                                     ${VERSION_DIR}/family.core.adj.nx \
-#                                     ${VERSION_DIR}/family.core.weighted.edgelist.nx.gz \
-#                                     ${VERSION_DIR}/family.core.collapse.csv \
-#                                     ${VERSION_DIR}/family.dist_to_core.db
-
-# # Load connected components of graph
-# # 10m
-# time python3 csv_to_partitions.py --version=${TIMESTAMP}
-
-echo "(4) TODO: Compute Stats?"
+echo
+echo "(6) TODO: Compute Stats?"
 
 echo
 echo "Done"

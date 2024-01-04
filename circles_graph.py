@@ -14,7 +14,7 @@ import utils
 
 
 def make_bipartite(db, people):
-  # Like graph_make_family_bipartite ... but only for a subset of people.
+  # Like graph_make_bipartite ... but only for a subset of people.
   people_nodes = frozenset(people)
   union_nodes = set()
   edges = set()

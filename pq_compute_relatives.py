@@ -62,8 +62,21 @@ def compute_relatives(data_dir):
   df = pd.concat([mar1, mar2, parent, child, sibling, coparent], ignore_index=True)
   assert df.isna().sum().sum() == 0, df.isna().sum()
   utils.log(f"Combined into {len(df):_} total relationships")
-  df.to_parquet(data_dir / "relationships.parquet", index=False)
-  utils.log(f"Wrote {len(df):_} rows")
+
+  df.to_parquet(data_dir / "rel_all.parquet")
+  utils.log(f"Wrote all {len(df):_} relationships")
+
+  parents = df.loc[df.relationship == "parent"]
+  parents.to_parquet(data_dir / "rel_parents.parquet")
+  utils.log(f"Wrote {len(parents):_} parent relationships")
+
+  # Write only "couples" (spouses or coparents) without duplication.
+  # rel_all will store two relationships for the same couple if they are
+  # both married and have children.
+  couples = df.loc[df.relationship.isin(["spouse", "coparent"])] \
+    .drop_duplicates(subset=["user_num", "relative_num"])
+  couples.to_parquet(data_dir / "rel_couples.parquet")
+  utils.log(f"Wrote {len(couples):_} couple relationships")
 
 
 def main():

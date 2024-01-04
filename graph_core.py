@@ -30,6 +30,7 @@ edge in the core graph.
 
 import argparse
 import csv
+from pathlib import Path
 import time
 
 import networkx as nx
@@ -131,44 +132,63 @@ def degree_distr(graph, max_degree):
     degree_counts[degree] += 1
   return degree_counts
 
-def degree_distr_str(graph, max_degree=6):
+def degree_distr_str(graph, max_degree=6) -> str:
   degree_counts = degree_distr(graph, max_degree)
-  message = [f"{degree}:{degree_counts[degree]:_}"
-             for degree in range(max_degree)]
-  utils.log("  Degree dist:", *message, f"{max_degree}+:{degree_counts[max_degree]:_}")
+  count_strs = [f"{degree}:{degree_counts[degree]:_}"
+                for degree in range(max_degree)]
+  count_str = " ".join(count_strs)
+  return f"  Degree dist: {count_str} {max_degree}+:{degree_counts[max_degree]:_}"
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("graph_in")
-  parser.add_argument("graph_out")
-  parser.add_argument("collapse_csv")
+  parser.add_argument("graph_in", type=Path)
   args = parser.parse_args()
+
+  graph_dir = args.graph_in.parent
 
   utils.log("Loading graph")
   graph = graph_tools.load_graph(args.graph_in)
   utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
   utils.log(degree_distr_str(graph))
 
-  utils.log("Contracting graph")
-  # Map: core nodes -> nodes that collapse into this core node
-  rep_nodes = FindCore(graph)
-  utils.log(f"Final graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  graph = graph_tools.largest_component(graph)
+  utils.log(f"Found main component: {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  utils.log("Saving graph core to disk")
-  nx.write_adjlist(graph, args.graph_out)
+  filename = Path(graph_dir, "main.graph.adj.nx")
+  graph_tools.write_graph(graph, filename)
+  utils.log(f"Saved main component to {str(filename)}")
 
-  utils.log("Save node collapse info")
-  with open(args.collapse_csv, "w") as f:
-    csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
-    csv_out.writeheader()
-    for core_node in rep_nodes:
-      for sub_node in rep_nodes[core_node]:
-        csv_out.writerow({
-          "core_node": core_node,
-          "sub_node": sub_node,
-        })
+  # Need to copy, because graph is frozen here (due to being a subgraph).
+  graph = RemoveRays(graph.copy())
+  # TODO: Print stats on num nodes slurped into each remaining node?
+  utils.log(f"Shaved to {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+  utils.log(degree_distr_str(graph))
+
+  filename = Path(graph_dir, "shaved.graph.adj.nx")
+  graph_tools.write_graph(graph, filename)
+  utils.log(f"Saved shaved main to {str(filename)}")
+
+  # Map: core nodes -> nodes that collapse into this core node
+  rep_nodes = FindCore(graph)
+  utils.log(f"Contracted graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  utils.log(degree_distr_str(graph))
+
+  filename = Path(graph_dir, "core.graph.adj.nx")
+  graph_tools.write_graph(graph, filename)
+  utils.log(f"Saved core to {str(filename)}")
+
+  # utils.log("Save node collapse info")
+  # with open(args.collapse_csv, "w") as f:
+  #   csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
+  #   csv_out.writeheader()
+  #   for core_node in rep_nodes:
+  #     for sub_node in rep_nodes[core_node]:
+  #       csv_out.writerow({
+  #         "core_node": core_node,
+  #         "sub_node": sub_node,
+  #       })
 
   utils.log("Done")
 

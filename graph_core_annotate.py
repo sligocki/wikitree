@@ -72,6 +72,8 @@ for (gateway, nodes) in core_to_nodes.items():
 utils.log(f"Max nodes per gateway {max_nodes:_d} for gateway {max_gateway}")
 
 utils.log(f"Loading all node to gateway distances for {len(core_to_nodes):_} gateways")
+# Default all edges to distance (weight) 1.
+nx.set_edge_attributes(core_graph, values = 1, name = 'weight')
 max_dist = 0
 max_dist_gateway = None
 for gateway, removed_nodes in core_to_nodes.items():

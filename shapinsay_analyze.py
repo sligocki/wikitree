@@ -12,7 +12,7 @@ import networkx as nx
 
 import category_tools
 import data_reader
-from graph_make_family_bipartite import BipartiteBuilder
+from graph_make_bipartite import BipartiteBuilder
 import graph_tools
 import utils
 

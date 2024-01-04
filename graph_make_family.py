@@ -4,95 +4,121 @@ Produces a graph where each node is a "nuclear family unit" (representing
 
 Each family is connected to the childhood family of each of the parents.
 
-Note: This is similar to the graph created by graph_make_family_bipartite.py,
-but without having person nodes. It is close, but not quite the same as the
-"bipartite graph projection" from the family_bipartite onto the family nodes.
-The difference there is that that projection includes edges between
-re-marriage families (two families sharing one parent in common) of the
-same person whereas this family graph does not include an edge between
-re-marriage families.
+Note: We only create family nodes if both parents are known. This means that
+this graph does not have the same connectivity as the person or bipartite
+graphs. Specifically, if a person married twice, but their parents are unknown,
+those families will be unconnected and if only one parent is known, there will
+be no connection from children to that one parent's family nodes.
 
-This graph will have drastically fewer cliques and running through
-graph_core.py will be much more effective.
+Note: This is similar to the graph created by graph_make_bipartite.py,
+but without having person nodes. It is close, but not quite the same as the
+"bipartite graph projection" from the bipartite onto the family nodes.
+In addition to the difference in connectivity listed above, there are also no
+edges directly between a persons multiple marriages (which there would be
+in the bipartite projection).
+
+This graph will have drastically fewer cliques than the person graph and
+running through graph_core.py will be much more effective.
 """
 
 import argparse
 from pathlib import Path
 
-import networkit as nk
+import networkx as nx
+import pandas as pd
 
-import data_reader
 import graph_tools
 import utils
 
 
-def try_num2id(db, num):
-  id = db.num2id(num)
-  if id:
-    return id
-  else:
-    # Fallback to num if we can't find ID (should be rare).
-    return str(num)
+def union_name(a : pd.Series, b : pd.Series) -> pd.Series:
+  return "Union/" + a.astype(str) + "/" + b.astype(str)
 
-def UnionNodeName(db, parent_nums):
-  """Name for node which represents the union (marriage or co-parentage)."""
-  parent_ids = [try_num2id(db, num) for num in parent_nums]
-  return "Union/" + "/".join(str(p) for p in sorted(parent_ids))
+def union_single_name(a : pd.Series) -> pd.Series:
+  return "Union/" + a.astype(str)
 
-def VirtualParentNodeName(person):
-  return f"Parents/{person}"
+def virtual_parent_name(child : pd.Series) -> pd.Series:
+  return "Parents/" + child.astype(str)
+
+def node_ids(a : pd.Series, b : pd.Series) -> pd.Series:
+  # Create new empty string column where ids will be added.
+  ids = pd.Series(index=a.index, dtype=str)
+
+  # Concatenate column values into string ids such that the smaller one is always first.
+  sml = (a < b)
+  ids[ sml] = union_name(a[ sml], b[ sml])
+  ids[~sml] = union_name(b[~sml], a[~sml])
+
+  assert ids.notna().all(), ids
+  return ids
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--version", help="Data version (defaults to most recent).")
-args = parser.parse_args()
+def parent_node_ids(child : pd.Series, p1 : pd.Series, p2 : pd.Series) -> pd.Series:
+  # Create new empty string column where ids will be added.
+  ids = pd.Series(index=child.index, dtype=str)
 
-db = data_reader.Database(args.version)
+  # If both parents known:
+  couples = p1.notna() & p2.notna()
+  ids[couples] = node_ids(p1[couples], p2[couples])
 
-utils.log("Building list of all nodes and edges")
-node_ids = set()
-edge_ids = []
-for i, person in enumerate(db.enum_people()):
-  parents = db.parents_of(person)
-  partners = db.partners_of(person)
+  # If no parents known:
+  orphans = p1.isna() & p2.isna()
+  ids[orphans] = virtual_parent_name(child[orphans])
 
-  if parents:
-    parent_node = UnionNodeName(db, parents)
-  elif len(partners) > 1:
-    # If no parents are listed, but this person has multiple unions, then we
-    # create a virtual node for this person's birth family. We do this so that
-    # the multiple unions of person will all be connected together.
-    parent_node = VirtualParentNodeName(try_num2id(db, person))
-  else:
-    parent_node = None
+  # If only one parent is known:
+  only1 = p1.notna() & p2.isna()
+  ids[only1] = union_single_name(p1[only1])
+  only2 = p1.isna() & p2.notna()
+  ids[only2] = union_single_name(p2[only2])
 
-  if parent_node:
-    for partner in partners:
-      partner_node = UnionNodeName(db, [person, partner])
-      if partner_node != parent_node:
-        node_ids.update([partner_node, parent_node])
-        # Avoid self-loops ... this shouldn't happen in reality because a
-        # couple cannot be their own parent ... but mistakes happen in WikiTree ...
-        edge_ids.append((partner_node, parent_node))
+  assert ids.notna().all(), ids
+  return ids
 
-  if i % 1_000_000 == 0:
-    utils.log(f" ... {i:_}  {len(node_ids):_}  {len(edge_ids):_}")
-utils.log(f"Loaded {len(node_ids):_} nodes / {len(edge_ids):_} edges")
 
-graph = graph_tools.make_graph(node_ids, edge_ids)
-utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
+  args = parser.parse_args()
 
-utils.log("Saving full graph")
-data_dir = utils.data_version_dir(args.version)
-filename = Path(data_dir, "family.all.graph.adj.nx")
-graph_tools.write_graph(graph, filename)
+  utils.log("Starting")
 
-utils.log("Finding largest connected component")
-main_component = graph_tools.largest_component(graph)
-print(f"Main component size: {len(main_component.nodes):_} Nodes / {len(main_component.edges):_} Edges")
+  data_dir = utils.data_version_dir(args.version)
+  graph_dir = data_dir / "graphs" / "family"
+  graph_dir.mkdir(parents=True, exist_ok=True)
 
-utils.log("Saving main component")
-filename = Path(data_dir, "family.main.graph.adj.nx")
-graph_tools.write_graph(main_component, filename)
+  couples = pd.read_parquet(data_dir / "rel_couples.parquet")
+  utils.log(f"Loaded {len(couples):_} couple relationships")
 
-utils.log("Finished")
+  people = pd.read_parquet(data_dir / "people.parquet",
+                           columns=["user_num", "mother_num", "father_num"],
+                           # Support NA parent_nums without coercing to DOUBLE.
+                           dtype_backend="numpy_nullable")
+  utils.log(f"Loaded {len(people):_} people")
+
+  people = people[people.mother_num.notna() & people.father_num.notna()]
+  utils.log(f"Filtered to {len(people):_} people with both parents known")
+
+  # Inner join: Only consider partners where both parents are known.
+  df = couples.merge(people, how="inner", on="user_num")
+  del couples, people
+  utils.log(f"Merged to {len(df):_} rows")
+
+  df = pd.DataFrame({
+    "child_id": node_ids(df.user_num, df.relative_num),
+    "parent_id": parent_node_ids(df.user_num, df.father_num, df.mother_num),
+  })
+  utils.log(f"Converted into {len(df):_} pairs of node ids")
+
+  # TODO: Also connect single-parents to their generic parent node!
+
+  graph = nx.from_pandas_edgelist(df, "child_id", "parent_id")
+  utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+
+  filename = Path(graph_dir, "all.graph.adj.nx")
+  graph_tools.write_graph(graph, filename)
+  utils.log(f"Saved graph to {str(filename)}")
+
+  utils.log("Finished")
+
+if __name__ == "__main__":
+  main()
