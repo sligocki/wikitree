@@ -40,13 +40,13 @@ import utils
 
 
 def CollectRay(graph, node, previous=None):
-  path = set()
+  path = []
   # Follow path until we reach a fork (or dead end or loop).
   while not previous or graph.degree[node] == 2:
     if node in path:
       # We found a loop!
       return None, path
-    path.add(node)
+    path.append(node)
     (neighbor,) = set(graph.adj[node].keys()) - set([previous])
     previous = node
     node = neighbor
@@ -59,7 +59,7 @@ def CollectPath(graph, node):
   neigh_a, neigh_b = graph.adj[node].keys()
   end_a, path_a = CollectRay(graph, neigh_a, previous=node)
   end_b, path_b = CollectRay(graph, neigh_b, previous=node)
-  return (end_a, end_b), (path_a | path_b | set([node]))
+  return (end_a, end_b), (list(reversed(path_a)) + [node] + path_b)
 
 def ContractGraph(graph, rep_nodes):
   # Note: We may delete more nodes than to_delete.
@@ -86,15 +86,14 @@ def ContractGraph(graph, rep_nodes):
         # Note: path may not be a subset of to_delete since the degrees of
         # some nodes may have changed since we collected to_delete.
         (end_a, end_b), path = CollectPath(graph, node)
+        dist = nx.path_weight(graph, [end_a] + path + [end_b], "weight")
         for n in path:
           for end in (end_a, end_b):
             if end is not None:
               rep_nodes[end].update(rep_nodes[n])
           del rep_nodes[n]
-        # Directly connect the two ends together (unless that would be a
-        # self-edge or multi-edge, in which case we omit it.)
-        if end_a != end_b and not graph.has_edge(end_a, end_b):
-          graph.add_edge(end_a, end_b)
+        # Directly connect the two ends together
+        graph.add_edge(end_a, end_b, weight=dist)
         # Strip all degree 2 nodes in path.
         graph.remove_nodes_from(path)
 
@@ -104,11 +103,14 @@ def ContractGraph(graph, rep_nodes):
 
 def FindCore(graph):
   """Iteratively contract the graph until we reach the core."""
+  # Convert to weighted multigraph.
+  graph = nx.MultiGraph(graph)
+  nx.set_edge_attributes(graph, values = 1, name = 'weight')
   # Map: core nodes -> nodes that collapse into this core node
   rep_nodes = {node: set([node]) for node in graph.nodes}
   while ContractGraph(graph, rep_nodes):
     pass
-  return rep_nodes
+  return graph, rep_nodes
 
 
 def RemoveRays(graph):
@@ -140,6 +142,16 @@ def degree_distr_str(graph, max_degree=6) -> str:
   return f"  Degree dist: {count_str} {max_degree}+:{degree_counts[max_degree]:_}"
 
 
+def num_dup_edges(graph : nx.MultiGraph) -> int:
+  """Count number of duplicate edges (edges beyond the first between any given
+  pair of nodes.)"""
+  # Count total number of non-duplicate edges (i.e. unique pairs of nodes
+  # connected by at least one edge).
+  num_unique_edges = len(frozenset(
+    frozenset((u, v)) for (u, v, id) in graph.edges))
+  return len(graph.edges) - num_unique_edges
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("graph_in", type=Path)
@@ -149,48 +161,49 @@ def main():
 
   utils.log("Loading graph")
   graph = graph_tools.load_graph(args.graph_in)
-  utils.log(f"Initial graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  utils.log(f"Loaded graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
   graph = graph_tools.largest_component(graph)
-  utils.log(f"Found main component: {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+  utils.log(f"Found main component:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  filename = Path(graph_dir, "main.graph.adj.nx")
+  filename = graph_dir / "main.graph.adj.nx"
   graph_tools.write_graph(graph, filename)
   utils.log(f"Saved main component to {str(filename)}")
 
   # Need to copy, because graph is frozen here (due to being a subgraph).
   graph = RemoveRays(graph.copy())
   # TODO: Print stats on num nodes slurped into each remaining node?
-  utils.log(f"Shaved to {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+  utils.log(f"Shaved graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  filename = Path(graph_dir, "shaved.graph.adj.nx")
+  filename = graph_dir / "shaved.graph.adj.nx"
   graph_tools.write_graph(graph, filename)
   utils.log(f"Saved shaved main to {str(filename)}")
 
   # Map: core nodes -> nodes that collapse into this core node
-  rep_nodes = FindCore(graph)
-  utils.log(f"Contracted graph:  # Nodes: {len(graph.nodes):_}  # Edges: {len(graph.edges):_}")
+  graph, rep_nodes = FindCore(graph)
+  utils.log(f"Contracted graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges / {num_dup_edges(graph):_} Duplicate edges / {nx.number_of_selfloops(graph):_} Selfloops")
   utils.log(degree_distr_str(graph))
 
-  filename = Path(graph_dir, "core.graph.adj.nx")
+  # Save as "Edgelist" to support edge weights.
+  filename = graph_dir / "core.graph.edgelist.nx"
   graph_tools.write_graph(graph, filename)
   utils.log(f"Saved core to {str(filename)}")
 
-  # utils.log("Save node collapse info")
-  # with open(args.collapse_csv, "w") as f:
-  #   csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
-  #   csv_out.writeheader()
-  #   for core_node in rep_nodes:
-  #     for sub_node in rep_nodes[core_node]:
-  #       csv_out.writerow({
-  #         "core_node": core_node,
-  #         "sub_node": sub_node,
-  #       })
+  filename = graph_dir / "core.collapse.csv"
+  with open(filename, "w") as f:
+    csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
+    csv_out.writeheader()
+    for core_node in rep_nodes:
+      for sub_node in rep_nodes[core_node]:
+        csv_out.writerow({
+          "core_node": core_node,
+          "sub_node": sub_node,
+        })
+  utils.log(f"Saved node collapse info to {str(filename)}")
 
-  utils.log("Done")
 
 if __name__ == "__main__":
   main()

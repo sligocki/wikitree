@@ -12,10 +12,64 @@ import networkx as nx
 
 import category_tools
 import data_reader
-from graph_make_bipartite import BipartiteBuilder
 import graph_tools
 import utils
 
+
+def id_or_num(db, num):
+  id = db.num2id(num)
+  if id:
+    return id
+  else:
+    # Fallback to num if we can't find ID (should be rare).
+    return str(num)
+
+def UnionNodeName(db, parent_nums):
+  """Name for node which represents the union (marriage or co-parentage)."""
+  parent_ids = []
+  for num in parent_nums:
+    parent_ids.append(id_or_num(db, num))
+
+  return "Union/" + "/".join(str(p) for p in sorted(parent_ids))
+
+class BipartiteBuilder:
+  def __init__(self, db):
+    self.db = db
+    self.people_ids = set()
+    self.union_ids = set()
+    self.edge_ids = set()
+
+  def compute_union_ids(self):
+    return list(self.people_ids) + list(self.union_ids)
+
+  def add_person(self, self_num):
+    # Add person node for self.
+    self_id = id_or_num(self.db, self_num)
+    self.people_ids.add(self_id)
+
+    # Add union node for parents and connect to it.
+    parent_nums = self.db.parents_of(self_num)
+    if parent_nums:
+      union_id = UnionNodeName(self.db, parent_nums)
+      self.union_ids.add(union_id)
+      self.edge_ids.add((self_id, union_id))
+      # Make sure parents are connected ... this will generally happen
+      # automatically below with the partners iteration (unless one parent is unknown).
+      for parent_num in parent_nums:
+        parent_id = id_or_num(self.db, parent_num)
+        self.people_ids.add(parent_id)
+        self.edge_ids.add((parent_id, union_id))
+
+    # Add partner node for each partner and connect to it.
+    for partner_num in self.db.partners_of(self_num):
+      union_id = UnionNodeName(self.db, [self_num, partner_num])
+      self.union_ids.add(union_id)
+      self.edge_ids.add((self_id, union_id))
+      # Explicitly add partner as well ... this shouldn't be necessary, but
+      # some private partners may not be in the DB.
+      partner_id = id_or_num(self.db, partner_num)
+      self.people_ids.add(partner_id)
+      self.edge_ids.add((partner_id, union_id))
 
 def log_incompleteness_stats(db, cat_nums):
   num_born = 0

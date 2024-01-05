@@ -83,6 +83,7 @@ def write_graph(graph, filename):
   """Write a graph into various formats depending on the extension."""
   filename = Path(filename)
   if ".adj" in filename.suffixes:
+    assert not is_weighted(graph), "Writing adjlist drops weights!"
     nx.write_adjlist(graph, filename)
 
   elif ".edgelist" in filename.suffixes:
@@ -131,20 +132,24 @@ def make_graph_nk(node_ids, edges):
       raise
   return graph
 
-def largest_component(graph):
-  max_size, main_component = max(
-    ((len(comp), comp) for comp in nx.connected_components(graph)),
-    key = lambda x: x[0])
-  return graph.subgraph(main_component)
-
-def largest_component_nk(graph):
-  assert isinstance(graph, nk.Graph), graph
-  cc = nk.components.ConnectedComponents(graph)
-  return cc.extractLargestConnectedComponent(graph)
-
 def is_weighted(graph):
   """If any edge is weighted, the entire graph is considered weighted.
   NOTE: This is different than nx.is_weighted() which requires all edges to be weighted ...
   but for some reason none of my dist 1 edges end up weighted, sigh.
   """
   return any("weight" in data for u, v, data in graph.edges(data=True))
+
+
+def largest_component(graph):
+  main_comp = max(nx.connected_components(graph), key = len)
+  return graph.subgraph(main_comp)
+
+def largest_bicomponent(graph):
+  main_comp = max(nx.biconnected_components(graph), key = len)
+  return graph.subgraph(main_comp)
+
+
+def largest_component_nk(graph):
+  assert isinstance(graph, nk.Graph), graph
+  cc = nk.components.ConnectedComponents(graph)
+  return cc.extractLargestConnectedComponent(graph)

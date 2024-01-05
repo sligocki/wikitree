@@ -34,7 +34,7 @@ import utils
 def union_name(a : pd.Series, b : pd.Series) -> pd.Series:
   return "Union/" + a.astype(str) + "/" + b.astype(str)
 
-def node_ids(a : pd.Series, b : pd.Series) -> pd.Series:
+def union_ids(a : pd.Series, b : pd.Series) -> pd.Series:
   # Create new empty string column where ids will be added.
   ids = pd.Series(index=a.index, dtype=str)
 
@@ -65,7 +65,7 @@ def main():
                            columns=["user_num", "mother_num", "father_num"],
                            # Support NA parent_nums without coercing to DOUBLE.
                            dtype_backend="numpy_nullable")
-  utils.log(f"Loaded {len(people):_} people")
+  utils.log(f"Loaded {len(people):_} people w/ parent info")
 
   people = people[people.mother_num.notna() & people.father_num.notna()]
   utils.log(f"Filtered to {len(people):_} people with both parents known")
@@ -75,9 +75,11 @@ def main():
   del couples, people
   utils.log(f"Merged to {len(df):_} rows")
 
+  # TODO: Convert from num to ids?
+
   df = pd.DataFrame({
-    "child_id": node_ids(df.user_num, df.relative_num),
-    "parent_id": node_ids(df.father_num, df.mother_num),
+    "child_id": union_ids(df.user_num, df.relative_num),
+    "parent_id": union_ids(df.mother_num, df.father_num),
   })
   utils.log(f"Converted into {len(df):_} pairs of node ids")
 
