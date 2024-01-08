@@ -32,7 +32,7 @@ echo "(4) Building Graph"
 # 2m
 time python3 graph_make_family.py --version=${TIMESTAMP}
 # 10m
-time python3 graph_core.py ${VERSION_DIR}/graphs/family/main.adj.nx
+time python3 graph_core.py ${VERSION_DIR}/graphs/family/all.graph.adj.nx
 
 echo
 echo "(5) Convert to SQLite DB"
