@@ -113,7 +113,7 @@ def build_bipartite_graph(user_nums, db):
     graph_info.add_person(user_num)
 
   graph = nx.Graph()
-  for id in graph_info.compute_node_ids():
+  for id in graph_info.compute_union_ids():
     graph.add_node(id)
   for (id1, id2) in graph_info.edge_ids:
     graph.add_edge(id1, id2)
@@ -152,8 +152,8 @@ def main():
   utils.log(f"Computed graph with {len(graph.nodes):_} nodes and "
             f"{len(graph.edges):_} edges")
 
-  graph_tools.write_graph(graph, "results/shapinsay/full.graph.adj.nx")
-  utils.log("Wrote graph to results/shapinsay/full.graph.adj.nx")
+  filename = graph_tools.write_graph(graph, "results/shapinsay/full")
+  utils.log(f"Wrote graph to {str(filename)}")
 
   components = sorted(nx.connected_components(graph), key = len, reverse=True)
 
@@ -191,8 +191,8 @@ def main():
 
   print()
   main = graph.subgraph(components[0])
-  graph_tools.write_graph(main, "results/shapinsay/main.graph.adj.nx")
-  utils.log("Wrote main component to results/shapinsay/main.graph.adj.nx")
+  filename = graph_tools.write_graph(main, "results/shapinsay/main")
+  utils.log(f"Wrote main component to {str(filename)}")
 
   bicomps = sorted(nx.biconnected_components(main), key = len, reverse=True)
 
@@ -230,8 +230,8 @@ def main():
 
   print()
   main_bi = graph.subgraph(bicomps[0])
-  graph_tools.write_graph(main_bi, "results/shapinsay/main_bi.graph.adj.nx")
-  utils.log("Wrote main bi-component to results/shapinsay/main_bi.graph.adj.nx")
+  filename = graph_tools.write_graph(main_bi, "results/shapinsay/main_bi")
+  utils.log(f"Wrote main bi-component to {str(filename)}")
 
   print()
   utils.log(f"Circle sizes around {most_central[0]}:")

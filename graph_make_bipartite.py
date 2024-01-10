@@ -109,8 +109,8 @@ def main():
   del df, child_edges, parent_edges
   utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 
-  filename = Path(graph_dir, "all.graph.adj.nx")
-  graph_tools.write_graph(graph, filename)
+  basename = Path(graph_dir, "all")
+  filename = graph_tools.write_graph(graph, basename)
   utils.log(f"Saved graph to {str(filename)}")
 
   utils.log("Finished")

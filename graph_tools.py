@@ -64,36 +64,49 @@ def load_graph_nk(filename):
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
-def load_graph(filename):
+def load_graph(filename : Path) -> nx.Graph:
   """Load a graph from various formats depending on the extensions."""
   filename = Path(filename)
+
+  if ".multi" in filename.suffixes:
+    if ".di" in filename.suffixes:
+      g_type = nx.MultiDiGraph
+    else:
+      g_type = nx.MultiGraph
+  else:
+    if ".di" in filename.suffixes:
+      g_type = nx.DiGraph
+    else:
+      g_type = nx.Graph
+
   if ".adj" in filename.suffixes:
-    return nx.read_adjlist(filename)
+    return nx.read_adjlist(filename, create_using=g_type)
 
-  elif ".edgelist" in filename.suffixes:
-    return nx.read_weighted_edgelist(filename)
-
-  elif ".gml" in filename.suffixes:
-    return nx.read_gml(filename)
+  elif ".edges" in filename.suffixes:
+    return nx.read_weighted_edgelist(filename, create_using=g_type)
 
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
-def write_graph(graph, filename):
-  """Write a graph into various formats depending on the extension."""
-  filename = Path(filename)
-  if ".adj" in filename.suffixes:
-    assert not is_weighted(graph), "Writing adjlist drops weights!"
-    nx.write_adjlist(graph, filename)
+def write_graph(graph : nx.Graph, basename : Path) -> Path:
+  """Write a graph into various formats depending on Type."""
+  basename = str(basename)
 
-  elif ".edgelist" in filename.suffixes:
+  if graph.is_directed():
+    basename += ".di"
+
+  if graph.is_multigraph():
+    basename += ".multi"
+
+  if is_weighted(graph):
+    filename = Path(basename + ".weight.edges.nx")
     nx.write_weighted_edgelist(graph, filename)
 
-  elif ".gml" in filename.suffixes:
-    nx.write_gml(graph, filename)
+  else:  # Non-weighted
+    filename = Path(basename + ".adj.nx")
+    nx.write_adjlist(graph, filename)
 
-  else:
-    raise Exception(f"Invalid graph filename: {filename}")
+  return filename
 
 def write_graph_nk(graph, names, filename):
   filename = Path(filename)

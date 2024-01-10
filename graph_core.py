@@ -168,8 +168,8 @@ def main():
   utils.log(f"Found main component:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  filename = graph_dir / "main.graph.adj.nx"
-  graph_tools.write_graph(graph, filename)
+  basename = graph_dir / "main"
+  filename = graph_tools.write_graph(graph, basename)
   utils.log(f"Saved main component to {str(filename)}")
 
   # Need to copy, because graph is frozen here (due to being a subgraph).
@@ -178,8 +178,8 @@ def main():
   utils.log(f"Shaved graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  filename = graph_dir / "shaved.graph.adj.nx"
-  graph_tools.write_graph(graph, filename)
+  basename = graph_dir / "shaved"
+  filename = graph_tools.write_graph(graph, basename)
   utils.log(f"Saved shaved main to {str(filename)}")
 
   # Map: core nodes -> nodes that collapse into this core node
@@ -187,12 +187,11 @@ def main():
   utils.log(f"Contracted graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges / {num_dup_edges(graph):_} Duplicate edges / {nx.number_of_selfloops(graph):_} Selfloops")
   utils.log(degree_distr_str(graph))
 
-  # Save as "Edgelist" to support edge weights.
-  filename = graph_dir / "core.graph.edgelist.nx"
-  graph_tools.write_graph(graph, filename)
-  utils.log(f"Saved core to {str(filename)}")
+  basename = graph_dir / "topo"
+  filename = graph_tools.write_graph(graph, basename)
+  utils.log(f"Saved topo to {str(filename)}")
 
-  filename = graph_dir / "core.collapse.csv"
+  filename = graph_dir / "topo.collapse.csv"
   with open(filename, "w") as f:
     csv_out = csv.DictWriter(f, ["core_node", "sub_node"])
     csv_out.writeheader()
