@@ -168,6 +168,8 @@ def main():
   parser.add_argument("--num-distance-samples", type=int, default=10_000)
   parser.add_argument("--circle-sizes", type=int, default=1,
                       help="Calculate circle size distribution up to this distance.")
+  parser.add_argument("--distances", action="store_true",
+                      help="Calculate Distance distribution.")
   parser.add_argument("--correlation", action="store_true",
                       help="Calculate Pearson Correlation Coefficient.")
   parser.add_argument("--components", action="store_true",
@@ -223,10 +225,11 @@ def main():
     utils.log("Pearson Correlation Coefficient",
               nx.degree_pearson_correlation_coefficient(graph))
 
-  utils.log(f"Estimating distance distribution with {args.num_distance_samples:_} samples")
-  dist_distr = sample_distance_distribution(graph, args.num_distance_samples)
-  utils.log("Mean Distance", mean_distr(dist_distr))
-  utils.log("Second moment (distance)", moment_distr(dist_distr, 2))
+  if args.distances:
+    utils.log(f"Estimating distance distribution with {args.num_distance_samples:_} samples")
+    dist_distr = sample_distance_distribution(graph, args.num_distance_samples)
+    utils.log("Mean Distance", mean_distr(dist_distr))
+    utils.log("Second moment (distance)", moment_distr(dist_distr, 2))
 
   if args.draw_plots:
     utils.log("Drawing plots")
