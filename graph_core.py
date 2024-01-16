@@ -165,31 +165,29 @@ def main():
   utils.log(degree_distr_str(graph))
 
   graph = graph_tools.largest_component(graph)
-  utils.log(f"Found main component:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+  utils.log(f"Main component:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  basename = graph_dir / "main"
+  basename = graph_dir / "connect"
   filename = graph_tools.write_graph(graph, basename)
-  utils.log(f"Saved main component to {str(filename)}")
+  utils.log(f"  Saved main component to {str(filename)}")
 
-  # Need to copy, because graph is frozen here (due to being a subgraph).
-  graph = RemoveRays(graph.copy())
-  # TODO: Print stats on num nodes slurped into each remaining node?
-  utils.log(f"Shaved graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
+  graph = graph_tools.largest_bicomponent(graph)
+  utils.log(f"Main bicomponent:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
   utils.log(degree_distr_str(graph))
 
-  basename = graph_dir / "shaved"
+  basename = graph_dir / "biconnect"
   filename = graph_tools.write_graph(graph, basename)
-  utils.log(f"Saved shaved main to {str(filename)}")
+  utils.log(f"  Saved main bicomponent to {str(filename)}")
 
   # Map: core nodes -> nodes that collapse into this core node
   graph, rep_nodes = FindCore(graph)
-  utils.log(f"Contracted graph:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges / {num_dup_edges(graph):_} Duplicate edges / {nx.number_of_selfloops(graph):_} Selfloops")
+  utils.log(f"Topological Core:  {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges / {num_dup_edges(graph):_} Duplicate edges / {nx.number_of_selfloops(graph):_} Selfloops")
   utils.log(degree_distr_str(graph))
 
   basename = graph_dir / "topo"
   filename = graph_tools.write_graph(graph, basename)
-  utils.log(f"Saved topo to {str(filename)}")
+  utils.log(f"  Saved topo to {str(filename)}")
 
   filename = graph_dir / "topo.collapse.csv"
   with open(filename, "w") as f:
@@ -201,7 +199,7 @@ def main():
           "core_node": core_node,
           "sub_node": sub_node,
         })
-  utils.log(f"Saved node collapse info to {str(filename)}")
+  utils.log(f"  Saved node collapse info to {str(filename)}")
 
 
 if __name__ == "__main__":
