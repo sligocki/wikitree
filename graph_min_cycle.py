@@ -5,10 +5,10 @@ Find minimal cycles through a given node or edge in graph.
 import argparse
 import collections
 import random
+import sys
 
 import networkx as nx
 
-import graph_core
 import graph_tools
 import utils
 
@@ -56,7 +56,7 @@ def min_cycle_edge(graph, e):
   """Find smallest cycle in `graph` containing edge `e`."""
   u, v = e
   colors = {u: u, v: v}
-  return min_path(graph, colors, ignore_edges = {e})
+  return min_path(graph, colors, ignore_edges = {edge(u, v)})
 
 def min_cycle_node(graph, start_node):
   """Find smallest cycle in `graph` containing node `start_node`."""
@@ -91,14 +91,15 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("graph")
   parser.add_argument("nodes", nargs="*")
+  parser.add_argument("--interactive", "-i", action="store_true",
+                      help="Read nodes from stdin")
+  parser.add_argument("--all", action="store_true",
+                      help="Search for min cycles through all edges")
   args = parser.parse_args()
 
   utils.log("Loading graph")
   graph = graph_tools.load_graph(args.graph)
-  utils.log(f"Initial graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
-
-  graph = graph_core.RemoveRays(graph)
-  utils.log(f"Shrunken graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
+  utils.log(f"Loaded graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
 
   if args.nodes:
     for node in args.nodes:
@@ -109,7 +110,17 @@ def main():
       else:
         utils.log("No cylces through", node)
 
-  else:
+  if args.interactive:
+    for line in sys.stdin:
+      node = line.strip()
+      utils.log("Searching for cycle through", node)
+      cycle = min_cycle_node(graph, node)
+      if cycle:
+        utils.log("Min cycle", node, len(cycle), cycle)
+      else:
+        utils.log("No cylces through", node)
+
+  if args.all:
     # If no nodes are specified, look for all min cycles.
     # We search over all edges for a more complete view.
     # We can safely ignore edges with both nodes degree 2 because those are
@@ -121,7 +132,7 @@ def main():
     max_min_cycle = -1
     cycle_lengths = collections.Counter()
     for i, e in enumerate(edges):
-      if i % 1_000 == 0:
+      if i % 10_000 == 0:
         utils.log(f"Checkpoint: {i:_}",
                   " ".join(f"{n}:{cycle_lengths[n]:_}"
                            for n in sorted(cycle_lengths.keys())))
@@ -135,7 +146,7 @@ def main():
         if len(cycle) > max_min_cycle:
           utils.log("Cycle", i, e, len(cycle), cycle[:6])
           max_min_cycle = len(cycle)
-        elif len(cycle) >= 100:
+        elif len(cycle) >= 100 or len(cycle) <= 2:
           utils.log("Cycle", i, e, len(cycle), cycle[:6])
 
     utils.log("Final:", i, " ".join(f"{n}:{cycle_lengths[n]:_}"
