@@ -90,9 +90,8 @@ def check_geodesic(graph, cycle):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("graph")
-  parser.add_argument("nodes", nargs="*")
-  parser.add_argument("--interactive", "-i", action="store_true",
-                      help="Read nodes from stdin")
+  parser.add_argument("nodes", nargs="*",
+                      help="If empty, read nodes from stdin (one per line).")
   parser.add_argument("--all", action="store_true",
                       help="Search for min cycles through all edges")
   args = parser.parse_args()
@@ -100,25 +99,6 @@ def main():
   utils.log("Loading graph")
   graph = graph_tools.load_graph(args.graph)
   utils.log(f"Loaded graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
-
-  if args.nodes:
-    for node in args.nodes:
-      utils.log("Searching for cycle through", node)
-      cycle = min_cycle_node(graph, node)
-      if cycle:
-        utils.log("Min cycle", node, len(cycle), cycle)
-      else:
-        utils.log("No cylces through", node)
-
-  if args.interactive:
-    for line in sys.stdin:
-      node = line.strip()
-      utils.log("Searching for cycle through", node)
-      cycle = min_cycle_node(graph, node)
-      if cycle:
-        utils.log("Min cycle", node, len(cycle), cycle)
-      else:
-        utils.log("No cylces through", node)
 
   if args.all:
     # If no nodes are specified, look for all min cycles.
@@ -151,6 +131,28 @@ def main():
 
     utils.log("Final:", i, " ".join(f"{n}:{cycle_lengths[n]:_}"
                                     for n in sorted(cycle_lengths.keys())))
+
+  else:
+    if args.nodes:
+      for node in args.nodes:
+        utils.log("Searching for cycle through", node)
+        cycle = min_cycle_node(graph, node)
+        if cycle:
+          utils.log("Min cycle", node, len(cycle), cycle)
+        else:
+          utils.log("No cylces through", node)
+
+    else:
+      for line in sys.stdin:
+        node = line.strip()
+        utils.log("Searching for cycle through", node)
+        cycle = min_cycle_node(graph, node)
+        if cycle:
+          utils.log("Min cycle", node, len(cycle), cycle)
+        else:
+          utils.log("No cylces through", node)
+
+
   utils.log("Done")
 
 if __name__ == "__main__":
