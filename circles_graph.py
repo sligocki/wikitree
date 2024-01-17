@@ -65,8 +65,8 @@ def main():
 
   graph_file = Path("results", "circles", "graph", f"{args.focus_id}.{args.num_circles}")
   graph_file.parent.mkdir(parents=True, exist_ok=True)
-  graph_tools.write_graph(graph, graph_file)
-  utils.log(f"Wrote: {str(graph_file)}")
+  filename = graph_tools.write_graph(graph, graph_file)
+  utils.log(f"Wrote: {str(filename)}")
 
   # print("Cycles:")
   # for i, cycle in enumerate(nx.simple_cycles(graph)):
