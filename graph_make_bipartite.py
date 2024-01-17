@@ -91,7 +91,7 @@ def main():
     pd.DataFrame({
       "person_id": mother_only.mother_num,
       "family_id": union_single_name(mother_only.mother_num),
-    }])
+    })])
   father_only = people[people.mother_num.isna() & people.father_num.notna()]
   father_only = pd.concat([
     # Child to family node
@@ -103,7 +103,7 @@ def main():
     pd.DataFrame({
       "person_id": father_only.father_num,
       "family_id": union_single_name(father_only.father_num),
-    }])
+    })])
 
   child_edges = pd.concat([complete, mother_only, father_only])
   del people, complete, mother_only, father_only
