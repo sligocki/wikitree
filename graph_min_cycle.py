@@ -9,6 +9,7 @@ import sys
 
 import networkx as nx
 
+import data_reader
 import graph_tools
 import utils
 
@@ -87,6 +88,14 @@ def check_geodesic(graph, cycle):
       return cycle[a], cycle[b], dist
 
 
+def print_cycle(db, i, e, cycle):
+  profiles = []
+  for node in cycle[-3:] + cycle[:3]:
+    if not node.startswith("Union"):
+      profiles.append(db.num2id(int(node)))
+  utils.log("Cycle", i, e, len(cycle), min(cycle), ": ...", *profiles, "...")
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("graph")
@@ -94,6 +103,7 @@ def main():
                       help="If empty, read nodes from stdin (one per line).")
   parser.add_argument("--all", action="store_true",
                       help="Search for min cycles through all edges")
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
   utils.log("Loading graph")
@@ -101,6 +111,8 @@ def main():
   utils.log(f"Loaded graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
 
   if args.all:
+    db = data_reader.Database(args.version)
+
     # If no nodes are specified, look for all min cycles.
     # We search over all edges for a more complete view.
     # We can safely ignore edges with both nodes degree 2 because those are
@@ -124,12 +136,12 @@ def main():
       else:
         cycle_lengths[len(cycle)] += 1
         if len(cycle) > max_min_cycle:
-          utils.log("Cycle", i, e, len(cycle), cycle[:6])
+          print_cycle(db, i, e, cycle)
           max_min_cycle = len(cycle)
         elif len(cycle) >= 100 or len(cycle) <= 2:
-          utils.log("Cycle", i, e, len(cycle), cycle[:6])
+          print_cycle(db, i, e, cycle)
 
-    utils.log("Final:", i, " ".join(f"{n}:{cycle_lengths[n]:_}"
+    utils.log("Total:", i, " ".join(f"{n}:{cycle_lengths[n]:_}"
                                     for n in sorted(cycle_lengths.keys())))
 
   else:
