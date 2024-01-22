@@ -4,7 +4,9 @@ import argparse
 import itertools
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 
 import graph_tools
 import utils
@@ -51,6 +53,7 @@ def simple_cut(graph, cycle, path):
   end = i
   cut = path[start : end + 1]
   assert cut[0] in cycle_nodes and cut[-1] in cycle_nodes, (cycle, path, cut)
+  assert all(n not in cycle_nodes for n in cut[1:-1]), (cycle, cut)
   return cut
 
 def is_cycle(graph, cycle):
@@ -80,6 +83,7 @@ def geodesic_decompose(graph, cycle):
   """Decompose cycle into geodesic cycles (which "add" up to the original cycle)."""
   todo = [cycle]
   done = []
+  cuts = []
   while todo:
     new_todo = []
     for cycle in todo:
@@ -88,9 +92,11 @@ def geodesic_decompose(graph, cycle):
         # This cycle is already geodesic.
         done.append(cycle)
       else:
-        new_todo += split(graph, cycle, simple_cut(graph, cycle, shortcut))
+        cut = simple_cut(graph, cycle, shortcut)
+        new_todo += split(graph, cycle, cut)
+        cuts.append(cut)
     todo = new_todo
-  return done
+  return done, cuts
 
 def cycle_from_nodes(graph, nodes):
   cycle = []
@@ -104,6 +110,20 @@ def cycle_from_nodes(graph, nodes):
   assert len(cycle) == len(set(cycle)), cycle
   return cycle
 
+def edge(e):
+  return tuple(sorted(e))
+
+def cycle_to_edges(graph, cycle):
+  edges = []
+  for a, b in zip(cycle, cycle[1:] + [cycle[0]]):
+    edges.append(edge((a, b)))
+  return edges
+
+def draw(graph, pos, filename):
+  fig, ax = plt.subplots()
+  nx.draw(graph.subgraph(pos.keys()), pos, ax=ax, node_size=10)
+  fig.set_size_inches(4, 4)
+  fig.savefig(filename)
 
 def main():
   parser = argparse.ArgumentParser()
@@ -120,7 +140,7 @@ def main():
   start_cycle = cycle_from_nodes(graph, args.nodes)
   utils.log(f"Loaded cycle of length {len(start_cycle):_}")
 
-  subcycles = geodesic_decompose(graph, start_cycle)
+  subcycles, cuts = geodesic_decompose(graph, start_cycle)
   utils.log(f"Decomposed cycle into {len(subcycles):_} geodesic subcycles")
 
   # Find all edges in all subcycles.
@@ -128,13 +148,37 @@ def main():
   # include incidental edges between nodes that were not part of the subcycles.
   sub_edges = set()
   for cycle in subcycles:
-    for a, b in zip(cycle, cycle[1:] + [cycle[0]]):
-      sub_edges.add(tuple(sorted((a, b))))
+    sub_edges.update(cycle_to_edges(graph, cycle))
   lace = graph.edge_subgraph(sub_edges)
   utils.log(f"Subset to Lace:  # Nodes: {lace.number_of_nodes():_}  # Edges: {lace.number_of_edges():_}")
 
   filename = graph_tools.write_graph(lace, args.graph_out)
   utils.log(f"Wrote Lace to {filename}")
+
+  # Layout and draw network in a custom way:
+  #   1) Layout original cycle as a circle.
+  theta = np.linspace(0, 1, len(start_cycle) + 1)[:-1] * 2 * np.pi
+  theta = theta.astype(np.float32)
+  locs = np.column_stack([np.cos(theta), np.sin(theta)])
+  pos = dict(zip(start_cycle, locs))
+  draw(lace, pos, "steps/base.png")
+
+  #   2) For each cut, draw it linearly between existing nodes.
+  for i, cut in enumerate(cuts):
+    # Existing locations of endpoints of cut.
+    a, b = pos[cut[0]], pos[cut[-1]]
+    locs = np.linspace(a, b, len(cut))
+    pos.update(dict(zip(cut, locs)))
+    draw(lace, pos, f"steps/cut_{i}.png")
+
+  # node_colors = ["red" if n in args.nodes else "#1f78b4"
+  #                for n in lace.nodes]
+  # nx.draw_networkx_nodes(lace, pos, node_size=100, node_color=node_colors)
+  # # nx.draw_networkx_labels(lace, pos)
+  # edge_colors = ["red" if edge(e) in frozenset(cycle_to_edges(graph, start_cycle)) else "black"
+  #                for e in lace.edges]
+  # nx.draw_networkx_edges(lace, pos, edge_color=edge_colors)
+  # plt.show()
 
 if __name__ == "__main__":
   main()
