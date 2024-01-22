@@ -185,7 +185,7 @@ def main():
 
   if args.draw_network:
     layout = nx.kamada_kawai_layout(graph)
-    nx.draw(graph, layout, with_labels = True)
+    nx.draw(graph, layout, node_size=100)#, with_labels=True)
     plt.show()
 
   if args.components:

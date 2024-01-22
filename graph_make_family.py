@@ -83,6 +83,8 @@ def main():
   })
   utils.log(f"Converted into {len(df):_} pairs of node ids")
 
+  df.to_parquet(graph_dir / "all.edges.parquet")
+
   graph = nx.from_pandas_edgelist(df, "child_id", "parent_id")
   utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 

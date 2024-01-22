@@ -119,12 +119,13 @@ def main():
   utils.log(f"Computed {len(parent_edges):_} edges to partner families")
 
   df = pd.concat([child_edges, parent_edges], ignore_index=True)
+  df.to_parquet(graph_dir / "all.edges.parquet")
+
   graph = nx.from_pandas_edgelist(df, "person_id", "family_id")
   del df, child_edges, parent_edges
   utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 
-  basename = Path(graph_dir, "all")
-  filename = graph_tools.write_graph(graph, basename)
+  filename = graph_tools.write_graph(graph, graph_dir / "all")
   utils.log(f"Saved graph to {str(filename)}")
 
   utils.log("Finished")
