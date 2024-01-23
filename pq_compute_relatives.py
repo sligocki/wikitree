@@ -31,7 +31,8 @@ def find_common(old, relationship):
 
 def compute_relatives(data_dir):
   utils.log("Loading Marriages")
-  mar_df = pd.read_parquet(data_dir / "marriages.parquet")
+  mar_df = pd.read_parquet(data_dir / "marriages.parquet",
+                           columns = ["spouse1", "spouse2"])
   utils.log(f"  Loaded {len(mar_df):_} marriages")
   mar1 = format_rels(mar_df, "spouse1", "spouse2", "spouse")
   mar2 = format_rels(mar_df, "spouse2", "spouse1", "spouse")
