@@ -73,7 +73,9 @@ def main():
   bi_person_dd, bi_family_dd = graph_analyze.bipartite_degree_distribution(
     graph_tools.load_graph("d/graphs/bipartite/all.adj.nx"))
   plot_deg_dist_multi(bi_person_dd, *axes[2])
-  del bi_family_dd[1]  # Family nodes with degree 1 are not consistently made.
+  # Family nodes with degree 1 are all mistakes. They can only happen if a
+  # person is listed as their own parent or married to themselves.
+  del bi_family_dd[1]
   plot_deg_dist_multi(bi_family_dd, *axes[3])
 
   utils.log("Done")
