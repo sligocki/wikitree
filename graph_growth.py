@@ -1,5 +1,6 @@
 """
-Describe how the graph grew from an old version to a new one.
+Describe the growth of a network over time.
+Ex: Examine correllation between a nodes degree and it's chance of gaining an edge.
 """
 
 import argparse
@@ -13,22 +14,9 @@ import graph_tools
 import utils
 
 
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument("old_graph", type=Path)
-  parser.add_argument("new_graph", type=Path)
-  parser.add_argument("--rate-only", action="store_true")
-  args = parser.parse_args()
-
-  utils.log("Starting")
-
-  old_graph = graph_tools.load_graph(args.old_graph)
-  utils.log(f"Loaded old_graph:  # Nodes: {old_graph.number_of_nodes():_}  # Edges: {old_graph.number_of_edges():_}")
-  new_graph = graph_tools.load_graph(args.new_graph)
-  utils.log(f"Loaded new_graph:  # Nodes: {new_graph.number_of_nodes():_}  # Edges: {new_graph.number_of_edges():_}")
-
+def count_degree_changes(old_graph, new_graph):
   nodes_common = set(old_graph.nodes) & set(new_graph.nodes)
-  utils.log(f"Nodes in common: {len(nodes_common):_}")
+  utils.log(f"  Nodes in common: {len(nodes_common):_}")
 
   # Degree distribution over all `nodes_common`.
   degrees_all = collections.Counter()
@@ -50,24 +38,52 @@ def main():
         # what's really happening, we just don't have that fine-grain resolution
         # to know which order they happened in.
         degrees_attached[deg] += 1
+  return degrees_all, degrees_attached
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graphs", type=Path, nargs="+")
+  args = parser.parse_args()
+
+  utils.log(f"Running comparison over {len(args.graphs)} timesteps")
+
+  old_graph = graph_tools.load_graph(args.graphs[0])
+  utils.log(f"Loaded {args.graphs[0]}:  # Nodes: {old_graph.number_of_nodes():_}  # Edges: {old_graph.number_of_edges():_}")
+
+  # Degree distribution over all `nodes_common`.
+  degrees_all = collections.Counter()
+  # Degree distribution of nodes that were attached to (edges added, i.e. degree increased).
+  degrees_attached = collections.Counter()
+  for new in args.graphs[1:]:
+    new_graph = graph_tools.load_graph(new)
+    utils.log(f"Loaded {new}:  # Nodes: {new_graph.number_of_nodes():_}  # Edges: {new_graph.number_of_edges():_}")
+
+    this_degrees_all, this_degrees_attached = count_degree_changes(old_graph, new_graph)
+    utils.log(f"  Degree added: {this_degrees_attached.total():_}")
+    degrees_all.update(this_degrees_all)
+    degrees_attached.update(this_degrees_attached)
+
+    old_graph = new_graph
+
   total_deg_all = degrees_all.total()
+  total_deg_all_weighted = sum(deg * cnt for deg, cnt in degrees_all.items())
   total_deg_attached = degrees_attached.total()
-  utils.log(f"Edges added: {total_deg_attached:_}")
+  utils.log(f"Total Degree added: {total_deg_attached:_}")
 
   print()
-  if not args.rate_only:
-    print("Degree", "Attached %", "Total %", "Attached Rate", sep="\t")
+  print("Degree", "Total %", "Attached %", "vs Uniform Model", "vs Preferential Model", sep="\t")
   for n in range(1, 16):
-    attached_ratio = degrees_attached[n] / total_deg_attached
-    all_ratio = degrees_all[n] / total_deg_all
-    if all_ratio > 0.0:
-      attached_rate = attached_ratio / all_ratio
+    attached_frac = degrees_attached[n] / total_deg_attached
+    all_frac = degrees_all[n] / total_deg_all
+    all_weighted_frac = n * degrees_all[n] / total_deg_all_weighted
+    if degrees_all[n] > 0.0:
+      vs_uniform = attached_frac / all_frac
+      vs_preferential = attached_frac / all_weighted_frac
     else:
-      attached_rate = 0.0
-    if args.rate_only:
-      print(attached_rate)
-    else:
-      print(f"{n:6_d}\t{attached_ratio:10.3%}\t{all_ratio:7.3%}\t{attached_rate:13.5f}")
+      vs_uniform = 0.0
+      vs_preferential = 0.0
+    print(f"{n:6_d}\t{all_frac:7.3%}\t{attached_frac:10.3%}\t{vs_uniform:16.5f}\t{vs_preferential:21.5f}")
   print()
   utils.log("Done")
 
