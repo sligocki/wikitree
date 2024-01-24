@@ -31,6 +31,9 @@ echo
 echo "(4) Building Graph"
 # 2m
 time python3 graph_make_family.py --version=${TIMESTAMP}
+mkdir -p "results/graphs/family/${TIMESTAMP}"
+# Save copy of network in a more persistent place
+cp "${VERSION_DIR}/all."* "results/graphs/family/${TIMESTAMP}/"
 # 10m
 time python3 graph_core.py ${VERSION_DIR}/graphs/family/all.adj.nx
 
