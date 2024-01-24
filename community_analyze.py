@@ -12,45 +12,6 @@ import graph_tools
 import utils
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("graph")
-parser.add_argument("communities")
-parser.add_argument("community_index", nargs="*", type=int)
-parser.add_argument("--version", help="Data version (defaults to most recent).")
-args = parser.parse_args()
-
-db = data_reader.Database(args.version)
-category_db = category_tools.CategoryDb(args.version)
-
-utils.log("Reading graph")
-G, names_db = graph_tools.load_graph_nk(args.graph)
-utils.log(f"Loaded graph with {G.numberOfNodes():_} nodes / {G.numberOfEdges():_} edges")
-
-utils.log("Reading communities")
-communities = nk.community.readCommunities(args.communities)
-
-print()
-utils.log("Community info")
-community_size_index = [(size, index)
-                        for (index, size) in enumerate(communities.subsetSizes())]
-community_size_index.sort(reverse=True)
-large_sizes = [size for (size, _) in community_size_index[:20]]
-print("Largest Community sizes:", large_sizes)
-total_nodes = G.numberOfNodes()
-percent_sizes = [size / total_nodes for size in large_sizes]
-print("Largest Community sizes (percent of network):", percent_sizes)
-
-print("Count of communities by magnitude:")
-com_size_hist_mag = collections.Counter()
-com_size_mag_cum = collections.defaultdict(int)
-for (size, _) in community_size_index:
-  magnitude = math.floor(math.log10(size))
-  com_size_hist_mag[magnitude] += 1
-  com_size_mag_cum[magnitude] += size
-for k in range(max(com_size_hist_mag.keys()) + 1):
-  print(f" - {10**k:9_d} - {10**(k+1) - 1:9_d} : {com_size_hist_mag[k]:7_d} {com_size_mag_cum[k]:11_d}")
-
-
 def name2users(node_name):
   if node_name.startswith("Union/"):
     # For Union, return all parents.
@@ -70,7 +31,7 @@ def get_locations(user_num):
     if loc and isinstance(loc, str):
       # Break loc up into sections so that we can count country, state, county, etc.
       # , is most common separtor, but I've see () and [] as well
-      # (for Mexico sepcifically).
+      # (for Mexico specifically).
       for section in re.split(r"[,()\[\]]", loc):
         # Replace all accented chars with ASCII to standardize
         # Otherwise we end up with Mexico and México as sep locs.
@@ -134,30 +95,72 @@ def summarize_community(index):
     print(f" - {1/score:6.2f}  {dist_center:3d}  {id_str}")
 
 
-print()
-if args.community_index:
-  for community_index in args.community_index:
-    summarize_community(community_index)
-    print()
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graph")
+  parser.add_argument("communities")
+  parser.add_argument("community_index", nargs="*", type=int)
+  parser.add_argument("--version", help="Data version (defaults to most recent).")
+  args = parser.parse_args()
 
-else:
-  utils.log("Examine Large Communities")
-  for order, (size, index) in enumerate(community_size_index[:20]):
-    summarize_community(index)
-    print()
+  db = data_reader.Database(args.version)
+  category_db = category_tools.CategoryDb(args.version)
 
-  utils.log("Examine Particular Communities")
-  for node_name in [
-      "Ligocki-7",
-      "Gardahaut-1",
-      "Vatant-5",
-      "Andersson-5056",
-      "Mars-121",
-      "Lothrop-29",
-    ]:
-    node_index = names_db.name2index(node_name)
-    community_index = communities[node_index]
-    summarize_community(community_index)
-    print()
+  utils.log("Reading graph")
+  G, names_db = graph_tools.load_graph_nk(args.graph)
+  utils.log(f"Loaded graph with {G.numberOfNodes():_} nodes / {G.numberOfEdges():_} edges")
 
-utils.log("Finished")
+  utils.log("Reading communities")
+  communities = nk.community.readCommunities(args.communities)
+
+  print()
+  utils.log("Community info")
+  community_size_index = [(size, index)
+                          for (index, size) in enumerate(communities.subsetSizes())]
+  community_size_index.sort(reverse=True)
+  large_sizes = [size for (size, _) in community_size_index[:20]]
+  print("Largest Community sizes:", large_sizes)
+  total_nodes = G.numberOfNodes()
+  percent_sizes = [size / total_nodes for size in large_sizes]
+  print("Largest Community sizes (percent of network):", percent_sizes)
+
+  print("Count of communities by magnitude:")
+  com_size_hist_mag = collections.Counter()
+  com_size_mag_cum = collections.defaultdict(int)
+  for (size, _) in community_size_index:
+    magnitude = math.floor(math.log10(size))
+    com_size_hist_mag[magnitude] += 1
+    com_size_mag_cum[magnitude] += size
+  for k in range(max(com_size_hist_mag.keys()) + 1):
+    print(f" - {10**k:9_d} - {10**(k+1) - 1:9_d} : {com_size_hist_mag[k]:7_d} {com_size_mag_cum[k]:11_d}")
+
+  print()
+  if args.community_index:
+    for community_index in args.community_index:
+      summarize_community(community_index)
+      print()
+
+  else:
+    utils.log("Examine Large Communities")
+    for order, (size, index) in enumerate(community_size_index[:20]):
+      summarize_community(index)
+      print()
+
+    utils.log("Examine Particular Communities")
+    for node_name in [
+        "Ligocki-7",
+        "Gardahaut-1",
+        "Vatant-5",
+        "Andersson-5056",
+        "Mars-121",
+        "Lothrop-29",
+      ]:
+      node_index = names_db.name2index(node_name)
+      community_index = communities[node_index]
+      summarize_community(community_index)
+      print()
+
+  utils.log("Finished")
+
+if __name__ == "__main__":
+  main()
