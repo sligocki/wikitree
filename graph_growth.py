@@ -6,7 +6,9 @@ Ex: Examine correllation between a nodes degree and it's chance of gaining an ed
 import argparse
 import collections
 from pathlib import Path
+import pickle
 
+import matplotlib.pyplot as plt
 import networkx as nx
 
 import graph_analyze
@@ -40,52 +42,74 @@ def count_degree_changes(old_graph, new_graph):
         degrees_attached[deg] += 1
   return degrees_all, degrees_attached
 
+def load_degrees(graphs):
+  utils.log(f"Running comparison over {len(graphs)} timesteps")
 
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument("graphs", type=Path, nargs="+")
-  args = parser.parse_args()
+  old_id = graphs[0].parent.name
+  old_graph = graph_tools.load_graph(graphs[0])
+  utils.log(f"Loaded {graphs[0]}:  # Nodes: {old_graph.number_of_nodes():_}  # Edges: {old_graph.number_of_edges():_}")
 
-  utils.log(f"Running comparison over {len(args.graphs)} timesteps")
-
-  old_graph = graph_tools.load_graph(args.graphs[0])
-  utils.log(f"Loaded {args.graphs[0]}:  # Nodes: {old_graph.number_of_nodes():_}  # Edges: {old_graph.number_of_edges():_}")
-
-  # Degree distribution over all `nodes_common`.
-  degrees_all = collections.Counter()
-  # Degree distribution of nodes that were attached to (edges added, i.e. degree increased).
-  degrees_attached = collections.Counter()
-  for new in args.graphs[1:]:
+  degrees = {}
+  attachments = {}
+  for new in graphs[1:]:
+    new_id = new.parent.name
     new_graph = graph_tools.load_graph(new)
     utils.log(f"Loaded {new}:  # Nodes: {new_graph.number_of_nodes():_}  # Edges: {new_graph.number_of_edges():_}")
 
-    this_degrees_all, this_degrees_attached = count_degree_changes(old_graph, new_graph)
-    utils.log(f"  Degree added: {this_degrees_attached.total():_}")
-    degrees_all.update(this_degrees_all)
-    degrees_attached.update(this_degrees_attached)
+    degrees[old_id], attachments[old_id] = count_degree_changes(old_graph, new_graph)
+    utils.log(f"  Degree added: {attachments[old_id].total():_}")
 
+    old_id = new_id
     old_graph = new_graph
 
-  total_deg_all = degrees_all.total()
-  total_deg_all_weighted = sum(deg * cnt for deg, cnt in degrees_all.items())
-  total_deg_attached = degrees_attached.total()
-  utils.log(f"Total Degree added: {total_deg_attached:_}")
+  return degrees, attachments
 
-  print()
-  print("Degree", "Total %", "Attached %", "vs Uniform Model", "vs Preferential Model", sep="\t")
+def degree_bias(degree_dist, attach_degrees):
+  total_deg = sum(degree_dist.values())
+  total_attach = sum(attach_degrees.values())
+  bias = {}
   for n in range(1, 16):
-    attached_frac = degrees_attached[n] / total_deg_attached
-    all_frac = degrees_all[n] / total_deg_all
-    all_weighted_frac = n * degrees_all[n] / total_deg_all_weighted
-    if degrees_all[n] > 0.0:
-      vs_uniform = attached_frac / all_frac
-      vs_preferential = attached_frac / all_weighted_frac
-    else:
-      vs_uniform = 0.0
-      vs_preferential = 0.0
-    print(f"{n:6_d}\t{all_frac:7.3%}\t{attached_frac:10.3%}\t{vs_uniform:16.5f}\t{vs_preferential:21.5f}")
-  print()
-  utils.log("Done")
+    # Fraction of nodes with this degree
+    deg_frac = degree_dist[n] / total_deg
+    # Fraction of attachments to nodes with this degree
+    attach_frac = attach_degrees[n] / total_attach
+    if deg_frac > 0.0:
+      # Bias in attaching to nodes of this degree vs. uniform random attachment
+      bias[n] = attach_frac / deg_frac
+  return bias
+
+def plot(ax, data):
+  xs = data.keys()
+  ys = [data[x] for x in xs]
+  ax.plot(xs, ys)
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("graphs", type=Path, nargs="*")
+  parser.add_argument("--data", type=Path, default="growth_degrees.pickle")
+  args = parser.parse_args()
+
+  if args.graphs:
+    degrees, attachments = load_degrees(args.graphs)
+    with open(args.data, "wb") as f:
+      pickle.dump((degrees, attachments), f)
+  else:
+    with open(args.data, "rb") as f:
+      degrees, attachments = pickle.load(f)
+
+  fig, (ax1, ax2) = plt.subplots(2)
+  for ax in (ax1, ax2):
+    ax.set_xlim(0, 15)
+    ax.set_ylim(0.0, 4.0)
+    ax.grid(True)
+  biases = []
+  for version in attachments:
+    bias = degree_bias(degrees[version], attachments[version])
+    plot(ax1, bias)
+    biases.append(bias)
+  mean_bias = {n: sum(bias[n] for bias in biases) / len(biases) for n in range(1, 16)}
+  plot(ax2, mean_bias)
+  plt.show()
 
 
 if __name__ == "__main__":
