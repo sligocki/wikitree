@@ -8,6 +8,7 @@ import collections
 from pathlib import Path
 import pickle
 
+import pandas as pd
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -64,24 +65,49 @@ def load_degrees(graphs):
 
   return degrees, attachments
 
-def degree_bias(degree_dist, attach_degrees):
+def degree_biases(degree_dist, attach_degrees):
+  """Return biases vs uniform or preferential attachment."""
   total_deg = sum(degree_dist.values())
+  total_deg_pref = sum(d * count for (d, count) in degree_dist.items())
   total_attach = sum(attach_degrees.values())
-  bias = {}
+  bias_unif = {}
+  bias_pref = {}
   for n in range(1, 16):
     # Fraction of nodes with this degree
     deg_frac = degree_dist[n] / total_deg
+    # Probability of picking a node of this degree using Preferential attachment.
+    deg_pref = (n * degree_dist[n]) / total_deg_pref
     # Fraction of attachments to nodes with this degree
     attach_frac = attach_degrees[n] / total_attach
     if deg_frac > 0.0:
       # Bias in attaching to nodes of this degree vs. uniform random attachment
-      bias[n] = attach_frac / deg_frac
-  return bias
+      bias_unif[n] = attach_frac / deg_frac
+      # Bias vs. preferential attachment (proportional to degree)
+      bias_pref[n] = attach_frac / deg_pref
+  return bias_unif, bias_pref
 
-def plot(ax, data):
-  xs = data.keys()
-  ys = [data[x] for x in xs]
-  ax.plot(xs, ys)
+
+def plot(df, ax, ylabel, ymax):
+  params = {
+    "xlabel": "Degree",
+    "xlim": (0, 15),
+    "xticks": range(16),
+    "ylabel": ylabel,
+    "ylim": (0.0, ymax),
+    "grid": True,
+    "legend": False,
+  }
+
+  # Plot all biases
+  df.transpose().plot(ax=ax[0], **params)
+
+  # Plot mean/stddev
+  mean = df.mean()
+  stddev = df.std()
+  mean.plot(ax=ax[1], **params)
+  ax[1].fill_between(mean.index, mean + stddev, mean - stddev,
+                     color="b", alpha=0.1)
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -97,18 +123,19 @@ def main():
     with open(args.data, "rb") as f:
       degrees, attachments = pickle.load(f)
 
-  fig, (ax1, ax2) = plt.subplots(2)
-  for ax in (ax1, ax2):
-    ax.set_xlim(0, 15)
-    ax.set_ylim(0.0, 4.0)
-    ax.grid(True)
-  biases = []
+  # Compute biases
+  biases_unif = []
+  biases_pref = []
   for version in attachments:
-    bias = degree_bias(degrees[version], attachments[version])
-    plot(ax1, bias)
-    biases.append(bias)
-  mean_bias = {n: sum(bias[n] for bias in biases) / len(biases) for n in range(1, 16)}
-  plot(ax2, mean_bias)
+    bias_unif, bias_pref = degree_biases(degrees[version], attachments[version])
+    biases_unif.append(bias_unif)
+    biases_pref.append(bias_pref)
+  bias_unif = pd.DataFrame(biases_unif)
+  bias_pref = pd.DataFrame(biases_pref)
+
+  fig, axes = plt.subplots(2, 2)
+  plot(bias_unif, axes[0], "Bias vs. Uniform", 4.0)
+  plot(bias_pref, axes[1], "Bias vs. Preferential", 1.4)
   plt.show()
 
 
