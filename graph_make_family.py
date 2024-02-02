@@ -22,7 +22,6 @@ running through graph_core.py will be much more effective.
 """
 
 import argparse
-from pathlib import Path
 
 import networkx as nx
 import pandas as pd
@@ -88,7 +87,7 @@ def main():
   graph = nx.from_pandas_edgelist(df, "child_id", "parent_id")
   utils.log(f"Built graph with {len(graph.nodes):_} Nodes / {len(graph.edges):_} Edges")
 
-  basename = Path(graph_dir, "all")
+  basename = graph_dir / "all"
   filename = graph_tools.write_graph(graph, basename)
   utils.log(f"Saved graph to {str(filename)}")
 

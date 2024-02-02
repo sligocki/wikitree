@@ -22,8 +22,6 @@ graph_core.py will be much more effective.
 """
 
 import argparse
-import collections
-from pathlib import Path
 
 import networkx as nx
 import pandas as pd
