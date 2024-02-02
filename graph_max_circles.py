@@ -27,7 +27,7 @@ class LayerTracker:
     if layer > 1:
       return self.layer_sizes[layer][node]
     elif layer == 1:
-      return self.graph.degree(node)
+      return self.graph.degree[node]
     elif layer == 0:
       return 1
 
@@ -40,7 +40,7 @@ def calc_circle_cum(graph, node, circle_num):
   for _ in range(circle_num):
     next_circle = set()
     for node in prev_circle:
-      next_circle |= set(graph.iterNeighbors(node))
+      next_circle |= set(graph.adj[node])
     prev_circle = next_circle - visited
     visited |= prev_circle
   return len(visited)
@@ -56,17 +56,17 @@ def main():
 
 
   utils.log("Loading graph")
-  graph, names_db = graph_tools.load_graph_nk(args.graph)
-  utils.log(f"Loaded graph:  # Nodes: {graph.numberOfNodes():_}  # Edges: {graph.numberOfEdges():_}")
+  graph = graph_tools.load_graph(args.graph)
+  utils.log(f"Loaded graph:  # Nodes: {graph.number_of_nodes():_}  # Edges: {graph.number_of_edges():_}")
 
   lt = LayerTracker(graph)
   for layer in range(2, args.max_layers + 1):
     utils.log("Estimating layer", layer)
-    for node in graph.iterNodes():
+    for node in graph:
       est_size = sum(lt.get_layer_size(neigh, layer - 1)
-                     for neigh in graph.iterNeighbors(node))
+                     for neigh in graph.adj[node])
       # Remove the obvious overcounts of node->neigh->node.
-      est_size -= lt.get_layer_size(node, layer - 2) * (graph.degree(node) - 1)
+      est_size -= lt.get_layer_size(node, layer - 2) * (graph.degree[node] - 1)
       lt.set_layer_size(node, layer, est_size)
 
     utils.log("Calc Exact sizes for top")
@@ -83,10 +83,7 @@ def main():
     utils.log("Num calc exact:", num_exact)
 
     utils.log(f"Best nodes layer {layer}:")
-    for size, node_index in top_n.items:
-      id = names_db.index2name(node_index)
-      if not id:
-        id = f"unnamed_{node_index}"
-      print(f" * {id:40s} : {size:7_d}")
+    for size, node in top_n.items:
+      print(f" * {node:40s} : {size:7_d}")
 
 main()
