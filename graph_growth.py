@@ -138,6 +138,5 @@ def main():
   plot(bias_pref, axes[1], "Bias vs. Preferential", 1.4)
   plt.show()
 
-
 if __name__ == "__main__":
   main()

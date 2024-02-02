@@ -86,4 +86,5 @@ def main():
     for size, node in top_n.items:
       print(f" * {node:40s} : {size:7_d}")
 
-main()
+if __name__ == "__main__":
+  main()
