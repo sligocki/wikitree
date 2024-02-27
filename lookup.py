@@ -16,7 +16,8 @@ def main():
   for id_or_num in args.people:
     user_num = db.get_person_num(id_or_num)
     print(db.num2id(user_num), user_num, db.name_of(user_num),
-          db.birth_date_of(user_num), db.get(user_num, "birth_location"), sep="\t")
+          db.birth_date_of(user_num), db.get(user_num, "birth_location"),
+          db.death_date_of(user_num), db.get(user_num, "death_location"), sep="\t")
 
 if __name__ == "__main__":
   main()
