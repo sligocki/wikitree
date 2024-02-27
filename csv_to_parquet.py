@@ -66,7 +66,8 @@ WIKITREE_CATEGORIES_COLUMNS_OLD2NEW = {
 }
 
 
-def rename_columns(table, column_map, assert_all_columns):
+def rename_columns(table : pa.Table, column_map : dict[str, str],
+                   assert_all_columns : bool) -> pa.Table:
   """Rename columns from the original CSV"""
 
   unspecified_column_names = set(table.column_names) - column_map.keys()
@@ -79,7 +80,7 @@ def rename_columns(table, column_map, assert_all_columns):
 
   return table.rename_columns(new_names)
 
-def parse_wikitree_dates(table, column_names):
+def parse_wikitree_dates(table : pa.Table, column_names : list[str]) -> pa.Table:
   """Parse WikiTree dates which may be of many formats"""
   for column_name in column_names:
     array = table[column_name].combine_chunks()
@@ -104,7 +105,7 @@ def parse_wikitree_dates(table, column_names):
       table.schema.get_field_index(column_name), column_name, array)
   return table
 
-def load_person_csv(csv_path, is_custom):
+def load_person_csv(csv_path : Path, is_custom : bool) -> pa.Table:
   utils.log(f"Loading {str(csv_path)}")
   table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
@@ -142,7 +143,7 @@ def load_person_csv(csv_path, is_custom):
 
   return table
 
-def load_marriages_csv(csv_path, is_custom):
+def load_marriages_csv(csv_path : Path, is_custom : bool) -> pa.Table:
   utils.log(f"Loading {str(csv_path)}")
   table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
@@ -165,7 +166,7 @@ def load_marriages_csv(csv_path, is_custom):
 
   return table
 
-def load_categories_csv(csv_path):
+def load_categories_csv(csv_path : Path) -> pa.Table:
   utils.log(f"Loading {str(csv_path)}")
   table = pa.csv.read_csv(csv_path,
     parse_options=pa.csv.ParseOptions(
@@ -178,7 +179,7 @@ def load_categories_csv(csv_path):
 
   return table
 
-def csv_to_parquet(data_dir):
+def csv_to_parquet(data_dir : Path) -> None:
   person_custom_table = load_person_csv(
     Path("data", "custom_users.csv"), is_custom=True)
   person_table = load_person_csv(
@@ -190,7 +191,7 @@ def csv_to_parquet(data_dir):
   utils.log(f"  Filtered out duplicates from custom: {person_table.num_rows:_} rows of people")
 
   person_table = pa.concat_tables([person_table, person_custom_table], promote=True)
-  pq.write_table(person_table, Path(data_dir, "people.parquet"))
+  pq.write_table(person_table, Path(data_dir, "people.parquet"))  # type: ignore[arg-type]
 
   utils.log(f"Wrote {person_table.num_rows:_} rows of people")
 
@@ -200,11 +201,11 @@ def csv_to_parquet(data_dir):
   marriages_table = load_marriages_csv(
     Path(data_dir, "dump_people_marriages.csv"), is_custom=False)
   marriages_table = pa.concat_tables([marriages_table, marriage_custom_table], promote=True)
-  pq.write_table(marriages_table, Path(data_dir, "marriages.parquet"))
+  pq.write_table(marriages_table, Path(data_dir, "marriages.parquet"))  # type: ignore[arg-type]
   utils.log(f"Wrote {marriages_table.num_rows:_} rows of marriages")
 
   categories_table = load_categories_csv(Path(data_dir, "dump_categories.csv"))
-  pq.write_table(categories_table, Path(data_dir, "categories.parquet"))
+  pq.write_table(categories_table, Path(data_dir, "categories.parquet"))  # type: ignore[arg-type]
   utils.log(f"Wrote {categories_table.num_rows:_} rows of categories")
 
   utils.log("Done")

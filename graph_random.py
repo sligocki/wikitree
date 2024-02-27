@@ -16,7 +16,7 @@ import networkx as nx
 import utils
 
 
-def build_exponential(num_nodes, edges_per_node):
+def build_exponential(num_nodes : int, edges_per_node : int) -> nx.Graph:
   # We always add one edge to each added node. Then we can add some extras anywhere.
   extra_edges_per_node = edges_per_node - 1
   assert extra_edges_per_node >= 0
