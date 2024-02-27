@@ -3,19 +3,20 @@ Single interface for accessing data via either SQLite or CSV into memory.
 """
 
 import collections
+from collections.abc import Mapping, Set
 import time
 
 import csv_iterate
 import sqlite_reader
 
 
-def load_connections(version,
-                     include_parents,
-                     include_children,
-                     include_siblings,
-                     include_spouses):
+def load_connections(version : str,
+                     include_parents : bool,
+                     include_children : bool,
+                     include_siblings : bool,
+                     include_spouses : bool) -> Mapping[int, Set[int]]:
   connections = collections.defaultdict(set)
-  children_of = collections.defaultdict(set)
+  children_of : Mapping[int, set[int]] = collections.defaultdict(set)
 
   print("Loading people", time.process_time())
   num_conns = 0
@@ -49,10 +50,10 @@ def load_connections(version,
   return connections
 
 class Database(sqlite_reader.Database):
-  def __init__(self, version):
+  def __init__(self, version : str) -> None:
     super(Database, self).__init__(version)
     self.version = version
-    self.connections = None
+    self.connections : Mapping[int, Set[int]] = {}
 
   def neighbors_of(self, person):
     if self.connections:

@@ -103,7 +103,7 @@ def load_tsv(filename):
   return graph
 
 
-if __name__ == "__main__":
+def main():
   import pprint
   import sys
 
@@ -140,3 +140,6 @@ if __name__ == "__main__":
     print("Community", comm_to_name[comm])
     for node in nodes:
       print("", db.num2id(node), db.name_of(node))
+
+if __name__ == "__main__":
+  main()

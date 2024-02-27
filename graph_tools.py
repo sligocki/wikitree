@@ -68,6 +68,7 @@ def load_graph(filename : Path) -> nx.Graph:
   """Load a graph from various formats depending on the extensions."""
   filename = Path(filename)
 
+  g_type : type
   if ".multi" in filename.suffixes:
     if ".di" in filename.suffixes:
       g_type = nx.MultiDiGraph
@@ -88,9 +89,9 @@ def load_graph(filename : Path) -> nx.Graph:
   else:
     raise Exception(f"Invalid graph filename: {filename}")
 
-def write_graph(graph : nx.Graph, basename : Path) -> Path:
+def write_graph(graph : nx.Graph, basename_path : Path) -> Path:
   """Write a graph into various formats depending on Type."""
-  basename = str(basename)
+  basename = str(basename_path)
 
   if graph.is_directed():
     basename += ".di"

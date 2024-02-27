@@ -30,7 +30,7 @@ def load_descendants(db, person_num):
   return descendants
 
 
-if __name__ == "__main__":
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("wikitree_id")
   parser.add_argument("--version", help="Data version (defaults to most recent).")
@@ -55,3 +55,6 @@ if __name__ == "__main__":
   for birth_century in sorted(descendants_born_in_centuries.keys()):
     print(f" * {birth_century:6d} {descendants_born_in_centuries[birth_century]:10_d}")
   print(f"Total # descendants: {len(descendants):_}")
+
+if __name__ == "__main__":
+  main()

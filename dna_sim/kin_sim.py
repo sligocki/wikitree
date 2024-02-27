@@ -13,7 +13,7 @@ import dna_sim
 
 
 class Person:
-  people = []
+  people : list[Person] = []
   def __init__(self, id, gen_dist, gen_delta, *parents):
     assert len(parents) in (0, 2), (id, parents)
     self.id = id
@@ -151,7 +151,7 @@ def bin_search_index(xs, val):
   return low
 
 
-if __name__ == "__main__":
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--max-gen-dist", type=int)
   args = parser.parse_args()
@@ -183,3 +183,6 @@ if __name__ == "__main__":
   # for total_cm, max_cm, person in shared_amount:
   #   if person.gen_dist != None:
   #     print("%3d   %-10s %10.2f %10.2f" % (person.gen_dist, person.id, total_cm, max_cm))
+
+if __name__ == "__main__":
+  main()
