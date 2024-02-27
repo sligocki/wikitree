@@ -132,19 +132,19 @@ def make_graph(nodes, edges):
     graph.add_edge(a, b)
   return graph
 
-def make_graph_nk(node_ids, edges):
-  id2index = {}
-  for node_index, wikitree_id in enumerate(node_ids):
-    id2index[wikitree_id] = node_index
-
-  graph = nk.Graph(len(node_ids))
-  for (id1, id2) in graph_info.edge_ids:
-    try:
-      graph.addEdge(id2index[id1], id2index[id2])
-    except KeyError:
-      print("Unexpected ID among:", id1, id2)
-      raise
-  return graph
+# def make_graph_nk(node_ids, edges):
+#   id2index = {}
+#   for node_index, wikitree_id in enumerate(node_ids):
+#     id2index[wikitree_id] = node_index
+#
+#   graph = nk.Graph(len(node_ids))
+#   for (id1, id2) in graph_info.edge_ids:
+#     try:
+#       graph.addEdge(id2index[id1], id2index[id2])
+#     except KeyError:
+#       print("Unexpected ID among:", id1, id2)
+#       raise
+#   return graph
 
 def is_weighted(graph):
   """If any edge is weighted, the entire graph is considered weighted.

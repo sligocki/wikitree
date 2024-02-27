@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from collection.abc import Collection
 import json
 import math
 from pathlib import Path
@@ -11,16 +12,17 @@ import matplotlib.ticker as mtick
 import utils
 
 
-def mean(xs):
+def mean(xs : Collection[int | float]) -> float:
   return sum(xs) / len(xs)
 
-def median_index(circle_sizes):
+def median_index(circle_sizes : list[int]) -> int:
   total_count = sum(circle_sizes)
   remaining = total_count // 2
   for dist, circle_size in enumerate(circle_sizes):
     remaining -= circle_size
     if remaining < 0:
       return dist
+  raise ValueError
 
 
 def main():

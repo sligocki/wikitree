@@ -8,23 +8,25 @@ user connected to the pre-existing tree.
 import argparse
 import collections
 import datetime
+from typing import Iterator
 
 import bfs_tools
 import data_reader
+from data_reader import UserNum
 
 
 # Don't consider a profile created before another if the difference is less than a day.
 # I did this with Luis Weinstein because I wasn't confident about the connection yet.
 IGNORE_DELTA = datetime.timedelta(days=1)
 
-def try_id(db, person_num) -> str:
+def try_id(db, person_num : UserNum) -> str:
   id = db.num2id(person_num)
   if id:
     return id
   else:
     return str(person_num)
 
-def preexisted(db, node):
+def preexisted(db : data_reader.Database, node : bfs_tools.BfsNode) -> bool:
   prev_create_times = []
   for p in node.prevs:
     if ct := db.registered_time_of(p):
@@ -37,11 +39,11 @@ def preexisted(db, node):
       return True
   return False
 
-def BfsPreexisted(db, start):
-  todos = collections.deque()
+def BfsPreexisted(db : data_reader.Database, start : UserNum
+                  ) -> Iterator[bfs_tools.BfsNode]:
+  todos : collections.deque[UserNum] = collections.deque()
   todos.append(start)
-  nodes = {}
-  nodes[start] = bfs_tools.BfsNode(start, [], 0)
+  nodes = {start: bfs_tools.BfsNode(start, [], 0)}
   while todos:
     person = todos.popleft()
     if preexisted(db, nodes[person]):

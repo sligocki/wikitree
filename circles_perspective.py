@@ -38,7 +38,7 @@ def main():
   bfs.run()
 
   utils.log("Collecting distances to identified circle")
-  dists = collections.Counter()
+  dists : collections.Counter[int] = collections.Counter()
   for node in circle:
     dists[int(bfs.distance(node))] += 1
   print("Distances: ", [dists[i] for i in range(max(dists.keys()) + 1)])

@@ -3,21 +3,27 @@ Produce graph for circles around a focus person.
 """
 
 import argparse
+from collections.abc import Collection
 from pathlib import Path
 
 import networkx as nx
 
 import circles_tools
 import data_reader
+from data_reader import UserNum
 import graph_tools
 import utils
 
 
-def make_bipartite(db, people):
+NodeType = str
+EdgeType = tuple[NodeType, NodeType]
+
+def make_bipartite(db : data_reader.Database, people : Collection[UserNum]
+                   ) -> tuple[list[NodeType], list[EdgeType]]:
   # Like graph_make_bipartite ... but only for a subset of people.
-  people_nodes = frozenset(people)
-  union_nodes = set()
-  edges = set()
+  people_nodes : frozenset[NodeType] = frozenset(str(p) for p in people)
+  union_nodes : set[NodeType] = set()
+  edges : set[EdgeType] = set()
 
   for person in people:
     # Add union node for parents if they are known.
@@ -25,19 +31,19 @@ def make_bipartite(db, people):
     if parents:
       union = "Union/" + "/".join(str(p) for p in sorted(parents))
       union_nodes.add(union)
-      edges.add((person, union))
+      edges.add((str(person), union))
       # Make sure parents are also connected to the union.
       for parent in parents:
         if parent in people_nodes:
-          edges.add((parent, union))
+          edges.add((str(parent), union))
 
     # Add union node for all "partners" (spouses / coparents).
     for partner in db.partners_of(person):
       if partner in people_nodes:
         union = "Union/" + "/".join(str(p) for p in sorted([person, partner]))
         union_nodes.add(union)
-        edges.add((person, union))
-        edges.add((partner, union))
+        edges.add((str(person), union))
+        edges.add((str(partner), union))
         # Note: We don't explicitly connect all children here.
         # If they are in `people`, they will be connected above.
 

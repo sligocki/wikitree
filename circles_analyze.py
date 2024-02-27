@@ -4,8 +4,11 @@ Describe details about the profiles near a focus profile.
 
 import argparse
 import collections
+from collections.abc import Collection, Set
 import itertools
+from pathlib import Path
 import re
+from typing import Iterator
 
 from unidecode import unidecode
 
@@ -13,10 +16,11 @@ import bfs_tools
 import category_tools
 import circles_tools
 import data_reader
+from data_reader import UserNum
 import utils
 
 
-def try_id(db, person_num) -> str:
+def try_id(db, person_num : UserNum) -> str:
   id = db.num2id(person_num)
   if id:
     return id
@@ -24,7 +28,7 @@ def try_id(db, person_num) -> str:
     return str(person_num)
 
 
-def get_locations(db, user_num):
+def get_locations(db, user_num : UserNum) -> set[str]:
   """Return set of locations referenced by user's birth and death fields."""
   locs = set()
   for attribute in ["birth_location", "death_location"]:
@@ -43,10 +47,11 @@ def get_locations(db, user_num):
   return locs
 
 
-def summarize_group(db, category_db, people):
+def summarize_group(db : data_reader.Database, category_db : category_tools.CategoryDb,
+                    people : Collection[UserNum]) -> None:
   num_people = len(people)
   print(f"Summarizing over {num_people} people")
-  counts = {
+  counts : dict[str, collections.Counter[str]] = {
     "location": collections.Counter(),
     "category": collections.Counter(),
     "manager": collections.Counter(),
@@ -76,12 +81,14 @@ def summarize_group(db, category_db, people):
     by_index = round(percentile * (len(birth_years) - 1))
     print(f" - {percentile:4.0%}-ile:  {birth_years[by_index]}")
 
-def load_locs(filename):
+def load_locs(filename : Path) -> list[str]:
   with open(filename, "r") as f:
     return list(line.strip() for line in f)
 
-def iter_closest_each_loc(db, focus, locs):
-  focus_num = db.get_person_num(focus)
+def iter_closest_each_loc(db : data_reader.Database, focus_id : str,
+                          locs : Collection[str]
+                          ) -> Iterator[tuple[str, int, UserNum]]:
+  focus_num = db.get_person_num(focus_id)
   remaining_locs = set(locs)
   for node in bfs_tools.ConnectionBfs(db, focus_num):
     hits = get_locations(db, node.person) & remaining_locs
@@ -109,7 +116,7 @@ def main():
 
   if args.state:
     print("Finding closest person from every US State:")
-    states = load_locs("data/us_states.txt")
+    states = load_locs(Path("data/us_states.txt"))
     n = 1
     for loc, dist, id in iter_closest_each_loc(db, args.focus_id, states):
       print(f"  {n:3d} {dist:3d} {loc:20s} {id:20}")

@@ -31,8 +31,9 @@ def main():
                  if size >= args.min_community_size]
 
   utils.log("Find distances to all nodes from focus")
-  comm_circles = {index: collections.Counter()
-                  for index in sorted_comms}
+  comm_circles : dict[int | str, collections.Counter[int]] = {
+    index: collections.Counter()
+    for index in sorted_comms}
   comm_circles["all"] = collections.Counter()
 
   focus_index = names_db.name2index(args.focus)

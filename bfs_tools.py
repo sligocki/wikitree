@@ -2,12 +2,16 @@
 Breadth-first search tools for enumerating connections or relatives of a person.
 """
 import collections
+from collections.abc import Set
+from typing import Iterator
 
 import data_reader
+from data_reader import UserNum
 
 
 class BfsNode:
-  def __init__(self, person, prevs, dist):
+  def __init__(self, person : UserNum, prevs : list[UserNum],
+               dist : int) -> None:
     # Currently enumerated person.
     self.person = person
     # List of previous nodes we reached person from.
@@ -15,14 +19,16 @@ class BfsNode:
     # Dist from start to person.
     self.dist = dist
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"BfsNode({self.person}, {self.prevs}, {self.dist})"
 
-def ConnectionBfs(db, start, ignore_people=frozenset()):
-  todos = collections.deque()
+def ConnectionBfs(db : data_reader.Database,
+                  start : UserNum,
+                  ignore_people : Set[UserNum] = frozenset()
+                  ) -> Iterator[BfsNode]:
+  todos : collections.deque[UserNum] = collections.deque()
   todos.append(start)
-  nodes = {}
-  nodes[start] = BfsNode(start, [], 0)
+  nodes = {start: BfsNode(start, [], 0)}
   while todos:
     person = todos.popleft()
     yield nodes[person]
@@ -39,12 +45,11 @@ def ConnectionBfs(db, start, ignore_people=frozenset()):
           nodes[neigh] = BfsNode(neigh, [person], dist + 1)
 
 
-def RelativeBfs(db, start):
-  todos = collections.deque()
-  dists = {}
-
+def RelativeBfs(db : data_reader.Database, start : UserNum
+                ) -> Iterator[tuple[UserNum, tuple[int, int]]]:
+  todos : collections.deque[UserNum] = collections.deque()
   todos.append(start)
-  dists[start] = (0, 0)
+  dists = {start: (0, 0)}
 
   while todos:
     person = todos.popleft()

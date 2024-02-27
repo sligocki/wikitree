@@ -8,13 +8,14 @@ import time
 
 import csv_iterate
 import sqlite_reader
+from sqlite_reader import UserNum
 
 
 def load_connections(version : str,
                      include_parents : bool,
                      include_children : bool,
                      include_siblings : bool,
-                     include_spouses : bool) -> Mapping[int, Set[int]]:
+                     include_spouses : bool) -> Mapping[UserNum, Set[UserNum]]:
   connections = collections.defaultdict(set)
   children_of : Mapping[int, set[int]] = collections.defaultdict(set)
 
@@ -53,9 +54,9 @@ class Database(sqlite_reader.Database):
   def __init__(self, version : str) -> None:
     super(Database, self).__init__(version)
     self.version = version
-    self.connections : Mapping[int, Set[int]] = {}
+    self.connections : Mapping[UserNum, Set[UserNum]] = {}
 
-  def neighbors_of(self, person):
+  def neighbors_of(self, person : UserNum):
     if self.connections:
       return self.connections[person]
     else:
