@@ -12,7 +12,10 @@ import graph_tools
 import utils
 
 
-def load_node_edge_sets(filename):
+Node = str
+
+def load_node_edge_sets(filename : Path
+                        ) -> tuple[set[Node], set[frozenset[Node]]]:
   graph, names_db = graph_tools.load_graph_nk(filename)
   names = names_db.all_index2names()
 
@@ -21,7 +24,7 @@ def load_node_edge_sets(filename):
                  for (u, v) in graph.iterEdges())
   return node_set, edge_set
 
-def main():
+def main() -> None:
   parser = argparse.ArgumentParser()
   parser.add_argument("graph_before", type=Path)
   parser.add_argument("graph_after", type=Path)
@@ -64,7 +67,7 @@ def main():
   print(f"# Edges Added (New Nodes) = {len(edges_added_new_nodes):_}")
   print(f"# Edges Removed (Old Nodes) = {len(edges_removed_old_nodes):_}")
 
-  degree_nodes_added : collections.Counter[int] = collections.Counter()
+  degree_nodes_added : collections.Counter[Node] = collections.Counter()
   for edge in edges_added_new_nodes:
     for node in edge:
       if node in nodes_added:

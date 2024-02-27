@@ -7,7 +7,7 @@ import graph_tools
 import utils
 
 
-def main():
+def main() -> None:
   parser = argparse.ArgumentParser()
   parser.add_argument("focus_a")
   parser.add_argument("circle_num", type=int)

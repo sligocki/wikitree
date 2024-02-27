@@ -102,7 +102,7 @@ def print_cycle(db : data_reader.Database, i, e, cycle : list[Node]) -> None:
   utils.log("Cycle", i, e, len(cycle), min(cycle), ": ...", *profiles, "...")
 
 
-def main():
+def main() -> None:
   parser = argparse.ArgumentParser()
   parser.add_argument("graph")
   parser.add_argument("nodes", nargs="*",

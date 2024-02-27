@@ -1,3 +1,5 @@
+# type: ignore
+
 import argparse
 from pathlib import Path
 
