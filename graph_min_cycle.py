@@ -4,8 +4,10 @@ Find minimal cycles through a given node or edge in graph.
 
 import argparse
 import collections
+from collections.abc import Set
 import random
 import sys
+from typing import Any
 
 import networkx as nx
 
@@ -14,20 +16,24 @@ import graph_tools
 import utils
 
 
-def edge(u, v):
-  return tuple(sorted((u, v)))
+Node = str
+Edge = tuple[Node, Node]
 
-def path_from_parents(parents, node):
+def edge(u : Node, v : Node) -> Edge:
+  return tuple(sorted((u, v)))  # type: ignore[return-value]
+
+def path_from_parents(parents, node : Node) -> list[Node]:
   path = []
   while node:
     path.append(node)
     node = parents[node]
   return path
 
-def min_path(graph, colors, ignore_edges):
+def min_path(graph : nx.Graph, colors : dict[Node, Any], ignore_edges : Set[Edge]
+             ) -> list[Node] | None:
   """Find smallest path in `graph` which connects two nodes of different color.
   Colors are spread via adjacency (ignoring nodes already in `colors`)."""
-  parents = {n: None for n in colors}
+  parents : dict[Node, Any] = {n: None for n in colors}
   todos = list(colors.keys())
   colors_seen = set(colors.values())
   while todos and len(colors_seen) > 1:
@@ -53,13 +59,13 @@ def min_path(graph, colors, ignore_edges):
   # No cycle
   return None
 
-def min_cycle_edge(graph, e):
+def min_cycle_edge(graph : nx.Graph, e : Edge) -> list[Node] | None:
   """Find smallest cycle in `graph` containing edge `e`."""
   u, v = e
   colors = {u: u, v: v}
   return min_path(graph, colors, ignore_edges = {edge(u, v)})
 
-def min_cycle_node(graph, start_node):
+def min_cycle_node(graph : nx.Graph, start_node : Node) -> list[Node] | None:
   """Find smallest cycle in `graph` containing node `start_node`."""
   colors = {}
   ignore_edges = set()
@@ -74,7 +80,7 @@ def min_cycle_node(graph, start_node):
     return None
 
 
-def check_geodesic(graph, cycle):
+def check_geodesic(graph : nx.Graph, cycle : list[Node]) -> tuple[Node, Node, int] | None:
   """Is this a geodesic cycle? Meaning, is this a cycle where, for any two nodes on the cycle, the shortest path remains on the cycle."""
   n = len(cycle)
   d, r = divmod(n, 2)
@@ -88,7 +94,7 @@ def check_geodesic(graph, cycle):
       return cycle[a], cycle[b], dist
 
 
-def print_cycle(db, i, e, cycle):
+def print_cycle(db : data_reader.Database, i, e, cycle : list[Node]) -> None:
   profiles = []
   for node in cycle[-3:] + cycle[:3]:
     if not node.startswith("Union"):
@@ -122,7 +128,7 @@ def main():
     random.shuffle(edges)
     utils.log(f"Searching through {len(edges):_} edges")
     max_min_cycle = -1
-    cycle_lengths = collections.Counter()
+    cycle_lengths : collections.Counter[int] = collections.Counter()
     for i, e in enumerate(edges):
       if i % 10_000 == 0:
         utils.log(f"Checkpoint: {i:_}",

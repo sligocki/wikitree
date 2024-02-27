@@ -1,6 +1,7 @@
 # Decompose a non-geodesic cycle into geodesic cycles.
 
 import argparse
+from collection.abc import Sequence
 import itertools
 from pathlib import Path
 
@@ -12,7 +13,9 @@ import graph_tools
 import utils
 
 
-def min_shortcut(graph, cycle):
+Node = str
+
+def min_shortcut(graph : nx.Graph, cycle : Sequence[Node]) -> Sequence[Node] | None:
   """Find the shortest shortcut path between antipodes of the cycle.
   If cycle is geodesic (all antipodes are distance n//2) then returns None."""
   # Check antipodal distances
@@ -34,7 +37,8 @@ def min_shortcut(graph, cycle):
       shortcut = path
   return shortcut
 
-def simple_cut(graph, cycle, path):
+def simple_cut(graph : nx.Graph, cycle : Sequence[Node], path : Sequence[Node]
+               ) -> Sequence[Node] | None:
   """Return a subpath of path such that only the first and last node are on
   cycle. We call this a cut of the cycle. If length one it is a chord."""
   cycle_nodes = frozenset(cycle)
@@ -56,10 +60,11 @@ def simple_cut(graph, cycle, path):
   assert all(n not in cycle_nodes for n in cut[1:-1]), (cycle, cut)
   return cut
 
-def is_cycle(graph, cycle):
+def is_cycle(graph : nx.Graph, cycle : Sequence[Node]) -> bool:
   return nx.is_path(graph, cycle + [cycle[0]])
 
-def split(graph, cycle, cut):
+def split(graph : nx.Graph, cycle : Sequence[Node], cut : Sequence[Node]
+          ) -> tuple[Sequence[Node], Sequence[Node]]:
   """Split a cycle into two using a cut path."""
   # Nodes on cycle where the cut branches off.
   a, b = cycle.index(cut[0]), cycle.index(cut[-1])
@@ -79,13 +84,14 @@ def split(graph, cycle, cut):
   assert is_cycle(graph, inside), (cycle, cut, inside)
   return outside, inside
 
-def geodesic_decompose(graph, cycle):
+def geodesic_decompose(graph : nx.Graph, cycle : Sequence[Node]
+                       ) -> tuple[Sequence[Sequence[Node]], Sequence[Sequence[Node]]]:
   """Decompose cycle into geodesic cycles (which "add" up to the original cycle)."""
   todo = [cycle]
   done = []
   cuts = []
   while todo:
-    new_todo = []
+    new_todo : list[Sequence[Node]] = []
     for cycle in todo:
       shortcut = min_shortcut(graph, cycle)
       if not shortcut:
@@ -98,7 +104,7 @@ def geodesic_decompose(graph, cycle):
     todo = new_todo
   return done, cuts
 
-def cycle_from_nodes(graph, nodes):
+def cycle_from_nodes(graph : nx.Graph, nodes : Sequence[Node]) -> Sequence[Node]:
   cycle = []
   for i, a in enumerate(nodes):
     b = nodes[(i+1) % len(nodes)]
@@ -110,16 +116,17 @@ def cycle_from_nodes(graph, nodes):
   assert len(cycle) == len(set(cycle)), cycle
   return cycle
 
-def edge(e):
-  return tuple(sorted(e))
+Edge = tuple[Node, Node]
+def edge(e : Edge) -> Edge:
+  return tuple(sorted(e))  # type: ignore[return-value]
 
-def cycle_to_edges(graph, cycle):
+def cycle_to_edges(graph : nx.Graph, cycle : Sequence[Node]) -> Sequence[Edge]:
   edges = []
   for a, b in zip(cycle, cycle[1:] + [cycle[0]]):
     edges.append(edge((a, b)))
   return edges
 
-def draw(graph, pos, filename):
+def draw(graph : nx.Graph, pos, filename : Path) -> None:
   fig, ax = plt.subplots()
   nx.draw(graph.subgraph(pos.keys()), pos, ax=ax, node_size=10)
   fig.set_size_inches(4, 4)
@@ -161,7 +168,7 @@ def main():
   theta = theta.astype(np.float32)
   locs = np.column_stack([np.cos(theta), np.sin(theta)])
   pos = dict(zip(start_cycle, locs))
-  draw(lace, pos, "steps/base.png")
+  draw(lace, pos, Path("steps/base.png"))
 
   #   2) For each cut, draw it linearly between existing nodes.
   for i, cut in enumerate(cuts):
@@ -169,7 +176,7 @@ def main():
     a, b = pos[cut[0]], pos[cut[-1]]
     locs = np.linspace(a, b, len(cut))
     pos.update(dict(zip(cut, locs)))
-    draw(lace, pos, f"steps/cut_{i}.png")
+    draw(lace, pos, Path(f"steps/cut_{i}.png"))
 
   # node_colors = ["red" if n in args.nodes else "#1f78b4"
   #                for n in lace.nodes]

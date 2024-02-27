@@ -39,8 +39,11 @@ import graph_tools
 import utils
 
 
-def CollectRay(graph, node, previous=None):
-  path = []
+Node = str
+
+def CollectRay(graph : nx.Graph, node : Node, previous : Node | None = None
+               ) -> tuple[Node | None, list[Node]]:
+  path : list[Node] = []
   # Follow path until we reach a fork (or dead end or loop).
   while not previous or graph.degree[node] == 2:
     if node in path:
@@ -52,7 +55,8 @@ def CollectRay(graph, node, previous=None):
     node = neighbor
   return node, path
 
-def CollectPath(graph, node):
+def CollectPath(graph : nx.Graph, node : Node
+                ) -> tuple[tuple[Node | None, Node | None], list[Node]]:
   """Follow a path from node to both ends. Return the pair of ends and
   list of nodes in the path."""
   assert graph.degree[node] == 2
@@ -61,7 +65,7 @@ def CollectPath(graph, node):
   end_b, path_b = CollectRay(graph, neigh_b, previous=node)
   return (end_a, end_b), (list(reversed(path_a)) + [node] + path_b)
 
-def ContractGraph(graph, rep_nodes):
+def ContractGraph(graph : nx.Graph, rep_nodes : dict[Node, set[Node]]) -> bool:
   # Note: We may delete more nodes than to_delete.
   to_delete = set()
   for node in graph.nodes:
@@ -77,7 +81,8 @@ def ContractGraph(graph, rep_nodes):
       elif graph.degree[node] == 1:
         end, path = CollectRay(graph, node)
         for n in path:
-          rep_nodes[end].update(rep_nodes[n])
+          if end:
+            rep_nodes[end].update(rep_nodes[n])
           del rep_nodes[n]
         graph.remove_nodes_from(path)
       else:
@@ -101,7 +106,7 @@ def ContractGraph(graph, rep_nodes):
   # Note: # nodes deleted is >= len(to_delete)
   return len(to_delete) > 0
 
-def FindCore(graph):
+def FindCore(graph : nx.Graph) -> tuple[nx.MultiGraph, dict[Node, set[Node]]]:
   """Iteratively contract the graph until we reach the core."""
   # Convert to weighted multigraph.
   graph = nx.MultiGraph(graph)
@@ -113,7 +118,7 @@ def FindCore(graph):
   return graph, rep_nodes
 
 
-def RemoveRays(graph):
+def RemoveRays(graph : nx.Graph) -> nx.Graph:
   """Remove all rays from graph."""
   points = set()
   for node in graph.nodes:
@@ -127,14 +132,14 @@ def RemoveRays(graph):
   return graph
 
 
-def degree_distr(graph, max_degree):
+def degree_distr(graph : nx.Graph, max_degree : int) -> list[int]:
   degree_counts = [0] * (max_degree + 1)
   for node in graph.nodes:
     degree = min(graph.degree[node], max_degree)
     degree_counts[degree] += 1
   return degree_counts
 
-def degree_distr_str(graph, max_degree=6) -> str:
+def degree_distr_str(graph : nx.Graph, max_degree : int = 6) -> str:
   degree_counts = degree_distr(graph, max_degree)
   count_strs = [f"{degree}:{degree_counts[degree]:_}"
                 for degree in range(max_degree)]

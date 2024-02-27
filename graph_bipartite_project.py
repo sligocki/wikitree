@@ -10,24 +10,27 @@ from networkx.algorithms import bipartite
 import utils
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("bipartite")
-parser.add_argument("projected_graph")
-args = parser.parse_args()
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("bipartite")
+  parser.add_argument("projected_graph")
+  args = parser.parse_args()
 
-utils.log("Loading graph")
-bp = nx.read_adjlist(args.bipartite)
-utils.log(f"Loaded graph:  # Nodes: {len(bp.nodes):_}  # Edges: {len(bp.edges):_}")
+  utils.log("Loading graph")
+  bp = nx.read_adjlist(args.bipartite)
+  utils.log(f"Loaded graph:  # Nodes: {len(bp.nodes):_}  # Edges: {len(bp.edges):_}")
 
-utils.log("Finding family nodes")
-family_nodes = [node for node in bp.nodes
-                if node.startswith("Union/")]
-utils.log("Found", len(family_nodes), "family nodes")
+  utils.log("Finding family nodes")
+  family_nodes = [node for node in bp.nodes
+                  if node.startswith("Union/")]
+  utils.log("Found", len(family_nodes), "family nodes")
 
-utils.log("Projecting graph")
-projected = bipartite.projected_graph(bp, family_nodes)
+  utils.log("Projecting graph")
+  projected = bipartite.projected_graph(bp, family_nodes)
 
-utils.log(f"Writing graph:  # Nodes: {len(projected.nodes):_}  # Edges: {len(projected.edges):_}")
-nx.write_adjlist(projected, args.projected_graph)
+  utils.log(f"Writing graph:  # Nodes: {len(projected.nodes):_}  # Edges: {len(projected.edges):_}")
+  nx.write_adjlist(projected, args.projected_graph)
 
-utils.log("Finished")
+  utils.log("Finished")
+
+main()

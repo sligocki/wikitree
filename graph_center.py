@@ -4,14 +4,19 @@ Attempt to find center of graph and estimate related metrics.
 
 import argparse
 import collections
+from collections.abc import Collection
 import itertools
 import random
 import time
+from typing import Iterator
 
 import networkx as nx
 
 
-def FindCentroid(graph, seed_nodes, num_overlap):
+Node = str
+
+def FindCentroid(graph : nx.Graph, seed_nodes : Collection[Node], num_overlap : int
+                 ) -> Iterator[Node]:
   # BFS from all of them until we find a node which is within the BFS
   # neighborhood of a majority of the points. This is our estimated center.
   # map: node -> which seed node BFSes have visited it.

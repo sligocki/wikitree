@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from collection.abc import Mapping
 import json
 import math
 from pathlib import Path
@@ -13,9 +14,9 @@ import graph_tools
 import utils
 
 
-def plot_deg_dist_single(deg_dist, ax, type,
-                         label = "Degree Distribution",
-                         add_legend = True):
+def plot_deg_dist_single(deg_dist : Mapping[int, int], ax, type : str,
+                         label : str = "Degree Distribution",
+                         add_legend : bool = True):
   # Set up plot
   ax.set_title(f"{type} Plot")
   ax.set_xlabel("Degree")
@@ -29,7 +30,7 @@ def plot_deg_dist_single(deg_dist, ax, type,
   # Plot data
   # Ignore outlier degress with only 1-2 nodes representing them.
   xs = [deg for deg in sorted(deg_dist.keys()) if deg_dist[deg] > 2]
-  ys = [deg_dist[deg] for deg in xs]
+  ys : list[float] = [deg_dist[deg] for deg in xs]
   total_ys = sum(ys)
   ys = [y / total_ys for y in ys]
   ax.plot(xs, ys, ".-", label = label)
@@ -48,7 +49,7 @@ def plot_deg_dist_single(deg_dist, ax, type,
   if add_legend:
     ax.legend(loc = "upper right")
 
-def plot_deg_dist_multi(deg_dist, ax_norm, ax_log, ax_loglog):
+def plot_deg_dist_multi(deg_dist : Mapping[int, int], ax_norm, ax_log, ax_loglog):
   """Plot 3 views of the same degree distribution:
   Linear-Linear, Log-Linear and Log-Log."""
   plot_deg_dist_single(deg_dist, ax_norm, "Linear-Linear")
@@ -66,12 +67,12 @@ def main():
 
   utils.log("Producing Family Plot")
   family_dd = graph_analyze.degree_distribution(
-    graph_tools.load_graph("d/graphs/family/all.adj.nx"))
+    graph_tools.load_graph(Path("d/graphs/family/all.adj.nx")))
   plot_deg_dist_multi(family_dd, *axes[1])
 
   utils.log("Producing Family Bipartite Plot")
   bi_person_dd, bi_family_dd = graph_analyze.bipartite_degree_distribution(
-    graph_tools.load_graph("d/graphs/bipartite/all.adj.nx"))
+    graph_tools.load_graph(Path("d/graphs/bipartite/all.adj.nx")))
   plot_deg_dist_multi(bi_person_dd, *axes[2])
   # Family nodes with degree 1 are all mistakes. They can only happen if a
   # person is listed as their own parent or married to themselves.

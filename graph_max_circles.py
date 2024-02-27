@@ -14,27 +14,32 @@ It does especially bad with endogamy (Ex: Acadia).
 import argparse
 import collections
 
+import networkx as nx
+
 import graph_tools
 import utils
 
 
-class LayerTracker:
-  def __init__(self, graph):
-    self.graph = graph
-    self.layer_sizes = collections.defaultdict(dict)
+Node = str
 
-  def get_layer_size(self, node, layer):
+class LayerTracker:
+  def __init__(self, graph : nx.Graph) -> None:
+    self.graph = graph
+    self.layer_sizes : collections.defaultdict[int, dict[Node, int]] = collections.defaultdict(dict)
+
+  def get_layer_size(self, node : Node, layer : int) -> int:
     if layer > 1:
       return self.layer_sizes[layer][node]
     elif layer == 1:
       return self.graph.degree[node]
     elif layer == 0:
       return 1
+    raise ValueError
 
-  def set_layer_size(self, node, layer, size):
+  def set_layer_size(self, node : Node, layer : int, size : int) -> None:
     self.layer_sizes[layer][node] = size
 
-def calc_circle_cum(graph, node, circle_num):
+def calc_circle_cum(graph : nx.Graph, node : Node, circle_num : int) -> int:
   prev_circle = set([node])
   visited = set([node])
   for _ in range(circle_num):

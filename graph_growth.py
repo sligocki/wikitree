@@ -5,6 +5,7 @@ Ex: Examine correllation between a nodes degree and it's chance of gaining an ed
 
 import argparse
 import collections
+from collections.abc import Mapping
 from pathlib import Path
 import pickle
 
@@ -17,14 +18,17 @@ import graph_tools
 import utils
 
 
-def count_degree_changes(old_graph, new_graph):
+Node = str
+
+def count_degree_changes(old_graph : nx.Graph, new_graph : nx.Graph
+                         ) -> tuple[collections.Counter[int], collections.Counter[int]]:
   nodes_common = set(old_graph.nodes) & set(new_graph.nodes)
   utils.log(f"  Nodes in common: {len(nodes_common):_}")
 
   # Degree distribution over all `nodes_common`.
-  degrees_all = collections.Counter()
+  degrees_all : collections.Counter[int] = collections.Counter()
   # Degree distribution of nodes that were attached to (edges added, i.e. degree increased).
-  degrees_attached = collections.Counter()
+  degrees_attached : collections.Counter[int] = collections.Counter()
   for node in nodes_common:
     # We would like to iterate over all added edges, but since nodes can be
     # "renamed", new edges might not all really be new. So instead we iterate
@@ -43,7 +47,7 @@ def count_degree_changes(old_graph, new_graph):
         degrees_attached[deg] += 1
   return degrees_all, degrees_attached
 
-def load_degrees(graphs):
+def load_degrees(graphs : nx.Graph):
   utils.log(f"Running comparison over {len(graphs)} timesteps")
 
   old_id = graphs[0].parent.name
@@ -65,7 +69,7 @@ def load_degrees(graphs):
 
   return degrees, attachments
 
-def degree_biases(degree_dist, attach_degrees):
+def degree_biases(degree_dist : Mapping[int, int], attach_degrees : Mapping[int, int]):
   """Return biases vs uniform or preferential attachment."""
   total_deg = sum(degree_dist.values())
   total_deg_pref = sum(d * count for (d, count) in degree_dist.items())

@@ -64,7 +64,7 @@ def main():
   print(f"# Edges Added (New Nodes) = {len(edges_added_new_nodes):_}")
   print(f"# Edges Removed (Old Nodes) = {len(edges_removed_old_nodes):_}")
 
-  degree_nodes_added = collections.Counter()
+  degree_nodes_added : collections.Counter[int] = collections.Counter()
   for edge in edges_added_new_nodes:
     for node in edge:
       if node in nodes_added:

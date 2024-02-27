@@ -4,6 +4,7 @@ Analyze statistics of a graph.
 
 import argparse
 import collections
+from collections.abc import Collection, Mapping, MutableMapping
 import math
 from pathlib import Path
 import random
@@ -17,16 +18,17 @@ import graph_tools
 import utils
 
 
-def degree_distribution(graph):
-  degree_counts = collections.Counter()
+def degree_distribution(graph : nx.Graph) -> MutableMapping[int, int]:
+  degree_counts : collections.Counter[int] = collections.Counter()
   for node in graph.nodes():
     degree = graph.degree[node]
     degree_counts[degree] += 1
   return degree_counts
 
-def bipartite_degree_distribution(graph):
-  person_degree_counts = collections.Counter()
-  family_degree_counts = collections.Counter()
+def bipartite_degree_distribution(graph : nx.Graph
+    ) -> tuple[MutableMapping[int, int], MutableMapping[int, int]]:
+  person_degree_counts : collections.Counter[int] = collections.Counter()
+  family_degree_counts : collections.Counter[int] = collections.Counter()
   for node in graph.nodes():
     degree = graph.degree[node]
     if node.startswith("Union/"):
@@ -35,7 +37,7 @@ def bipartite_degree_distribution(graph):
       person_degree_counts[degree] += 1
   return (person_degree_counts, family_degree_counts)
 
-def circle_size(graph, node, circle_num):
+def circle_size(graph : nx.Graph, node, circle_num : int) -> int:
   prev_circle = set([node])
   visited = set([node])
   for _ in range(circle_num):
@@ -46,23 +48,23 @@ def circle_size(graph, node, circle_num):
     visited |= prev_circle
   return len(prev_circle)
 
-def circle_distribution(graph, circle_num):
+def circle_distribution(graph : nx.Graph, circle_num : int) -> Mapping[int, int]:
   """Distribution of circle sizes. Circle 1 = # neighbors (degree);
   Circle 2 = # nodes dist 2 away; etc."""
-  counts = collections.Counter()
+  counts : collections.Counter[int] = collections.Counter()
   for node in graph.nodes():
     size = circle_size(graph, node, circle_num)
     counts[size] += 1
   return counts
 
 
-def sample_distance_distribution(graph, num_samples):
+def sample_distance_distribution(graph : nx.Graph, num_samples : int) -> Mapping[int, int]:
   attrs = {}
   if graph_tools.is_weighted(graph):
     attrs["weight"] = "weight"
 
   nodes = list(graph.nodes)
-  dist_distr = collections.Counter()
+  dist_distr : collections.Counter[int] = collections.Counter()
   for _ in range(num_samples):
     node_a = random.choice(nodes)
     node_b = random.choice(nodes)
@@ -75,18 +77,19 @@ def sample_distance_distribution(graph, num_samples):
   return dist_distr
 
 
-def moment_distr(distr, exp):
+def moment_distr(distr : Mapping[int, int], exp : int) -> float:
   return sum(val**exp * count for val, count in distr.items()) / sum(distr.values())
 
-def mean_distr(distr):
+def mean_distr(distr : Mapping[int, int]) -> float:
   return moment_distr(distr, 1)
 
 
-def normalize(ys):
+def normalize(ys : Collection[int]) -> list[float]:
   total = sum(ys)
   return [y / total for y in ys]
 
-def draw_degree_distr_exp(deg_distr, ax, fraction_degree_regression):
+def draw_degree_distr_exp(deg_distr : Mapping[int, int], ax,
+                          fraction_degree_regression : float) -> None:
   ax.set_title("Degree Distribution")
   ax.set_ylabel("Fraction of nodes")
   ax.set_xlabel("Degree")
@@ -110,7 +113,8 @@ def draw_degree_distr_exp(deg_distr, ax, fraction_degree_regression):
 
   ax.legend()
 
-def draw_degree_distr_power(deg_distr, ax, fraction_degree_regression):
+def draw_degree_distr_power(deg_distr : Mapping[int, int], ax,
+                            fraction_degree_regression : float) -> None:
   ax.set_title("Degree Distribution")
   ax.set_ylabel("Fraction of nodes")
   ax.set_xlabel("Degree")
@@ -135,7 +139,7 @@ def draw_degree_distr_power(deg_distr, ax, fraction_degree_regression):
 
   ax.legend()
 
-def draw_distance_distr(dist_distr, ax):
+def draw_distance_distr(dist_distr : Mapping[int, int], ax) -> None:
   ax.set_title("Distance Distribution")
   ax.set_ylabel("Percent of distances")
   ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
