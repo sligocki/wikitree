@@ -12,7 +12,7 @@ WikiId = str
 IdOrNum = WikiId | UserNum
 
 class Database(object):
-  def __init__(self, version : str | None) -> None:
+  def __init__(self, version : str) -> None:
     self.filename = Path(utils.data_version_dir(version), "wikitree_dump.db")
     try:
       self.conn = sqlite3.connect(self.filename)

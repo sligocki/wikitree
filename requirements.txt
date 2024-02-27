@@ -2,8 +2,13 @@ chinese_whispers>=0.8
 community
 graphviz>=0.20
 matplotlib>=3.6
+mypy>=1.8.0
 networkit>=10.0
+networkx-stubs
 networkx>=2.8
 numpy>=1.24
+pandas>=2.0
+pandas-stubs
 pyarrow>=10.0
+pyarrow-stubs
 Unidecode>=1.3
