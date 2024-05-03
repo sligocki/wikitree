@@ -15,6 +15,8 @@ def sequence(start : int, stop : int, count : int) -> list[int]:
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument("--min-per-name", type=int,
+                      help="Minimum number of profiles per name to include.")
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
@@ -24,14 +26,20 @@ def main():
   utils.log(f"Loaded {len(df):_} rows")
 
   # Find the earliest registered_time for each name_last_birth
-  name_earliest = df.groupby("name_last_birth")["registered_time"].min()
-  utils.log(f"Found {len(name_earliest):_} surnames")
+  name_earliest = df.groupby("name_last_birth").agg(
+    earliest_date=("registered_time", "min"),
+    num_profiles=("wikitree_id", "count"))
+  utils.log(f"Found {len(name_earliest):_} unique surnames")
 
-  name_earliest = name_earliest.sort_values()
-  utils.log(f"Sorted {len(name_earliest):_} names")
+  if args.min_per_name:
+    name_earliest = name_earliest.loc[name_earliest.num_profiles >= args.min_per_name]
+    utils.log(f"Filtered down to {len(name_earliest):_} surnames with at least {args.min_per_name:_} profiles")
+
+  name_earliest = name_earliest.sort_values("earliest_date")
+  utils.log("Calculated earliest registration times with each surname")
 
   # Plot the number of unique name_last_births over time
-  name_earliest.plot(
+  name_earliest["earliest_date"].plot(
     title="WikiTree: New surnames over time",
     xlabel="Surname",
     ylabel="Date of Earliest Profile",
