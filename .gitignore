@@ -4,3 +4,6 @@ data/
 results/
 d
 bazel-*
+venv/
+.DS_Store
+.vscode/
