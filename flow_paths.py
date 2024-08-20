@@ -13,7 +13,6 @@ will have a much smaller effect).
 
 import argparse
 import collections
-import datetime
 import math
 
 from graphviz import Digraph
@@ -144,7 +143,7 @@ def main():
     max_dist = -1
     for frac, person in ordered_people:
       if dists[person] > max_dist:
-        print(start, dists[person], frac, try_decode_wikitree_id(db, person))
+        print(f"{start}  {dists[person]:2d}  {frac:7.2%}  {try_decode_wikitree_id(db, person)}")
         max_dist = dists[person]
         if max_dist >= 20:
           break
