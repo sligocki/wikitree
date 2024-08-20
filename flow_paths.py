@@ -16,6 +16,7 @@ import collections
 import math
 
 from graphviz import Digraph
+import numpy as np
 
 import bfs_tools
 import data_reader
@@ -39,6 +40,7 @@ def flow_paths(db, start, max_dist):
     dists[node.person] = node.dist
     sources[node.person] = node.prevs
     all_people.append(node.person)
+  utils.log(f"Traversed {len(all_people):_d} nodes")
 
   utils.log("Calculating flow counts")
   # Map from person -> set of all people who have a shortest path to start
@@ -54,10 +56,10 @@ def flow_paths(db, start, max_dist):
       # on a shortest paths to everyone we are.
       on_path_to[source].update(on_path_to[person])
 
-  # Return mapping from people to fraction of people whom can be reached, via
+  # Return mapping from people to number of people whom can be reached, via
   # a shortest path, through this person.
-  return {person: float(len(on_path_to[person])) / len(all_people)
-          for person in sources}, sources, dists
+  flows = {person: len(on_path_to[person]) for person in sources}
+  return flows, sources, dists
 
 def create_dot(db, start, flows, sources, name, cutoff, node_attr_func):
   """Create a graphviz DOT file with all people who have flow >= cutoff and all of their neighbors."""
@@ -75,10 +77,10 @@ def create_dot(db, start, flows, sources, name, cutoff, node_attr_func):
     node_attrs = node_attr_func(person)
     dot.node(str(person), **node_attrs)
     for source in sources[person]:
-      dot.edge(str(person), str(source), label="%.2f" % flows[person])
+      dot.edge(str(person), str(source), label="%.2f" % (flows[person] / len(flows)))
 
     for neigh in db.neighbors_of(person):
-      if flows[neigh] >= cutoff:
+      if flows[neigh] >= cutoff * len(flows):
         todo.append(neigh)
 
   dot.view()
@@ -97,6 +99,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("id_or_nums", nargs="+")
   parser.add_argument("--max-dist", type=int)
+  parser.add_argument("--distr-dist", type=int, default=7)
   parser.add_argument("--cutoff", type=float, default=0.05,
                       help="Cuttoff for including connection in DOT.")
   parser.add_argument("--highlight-after-num", type=int,
@@ -118,6 +121,7 @@ def main():
     except:
       start = db.id2num(start)
     flows, sources, dists = flow_paths(db, start, args.max_dist)
+    num_nodes = len(dists)
 
     def node_attr_func(node):
       ret = {"label": try_decode_wikitree_id(db, node)}
@@ -136,17 +140,32 @@ def main():
 
     utils.log("Ordering people")
     # Order folks from most flow to least.
-    ordered_people = reversed(sorted([(flows[person], person)
-                                      for person in flows]))
+    ordered_people = sorted([(flows[person], person) for person in flows],
+                            reverse=True)
 
     utils.log("Highest flow per distance")
     max_dist = -1
-    for frac, person in ordered_people:
+    for num_flows, person in ordered_people:
       if dists[person] > max_dist:
-        print(f"{start}  {dists[person]:2d}  {frac:7.2%}  {try_decode_wikitree_id(db, person)}")
+        print(f"{start}  {dists[person]:2d}  {num_flows:10_d}  {num_flows / num_nodes:7.2%}  {try_decode_wikitree_id(db, person)}")
         max_dist = dists[person]
         if max_dist >= 20:
           break
+    
+    utils.log("Flow distribution")
+    total = len(ordered_people)
+    flow_distr = {n : [] for n in range(args.distr_dist + 1)}
+    for num_flows, person in ordered_people:
+      if dists[person] > args.distr_dist:
+        break
+      flow_distr[dists[person]].append(num_flows)
+    for n in range(args.distr_dist + 1):
+      distr = flow_distr[n]
+      if len(distr) < 20:
+        print(n, sorted(distr))
+      else:
+        print(n, " ".join(f"{round(x):7_d}" for x in np.quantile(distr, [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0])))
+      # print(f"{n:3d}  {distr[0]:_d} {distr[len(distr)//2]:_d} {distr[-1]:_d}")
 
   utils.log("Done")
 
