@@ -104,12 +104,15 @@ def main():
                       help="Cuttoff for including connection in DOT.")
   parser.add_argument("--highlight-after-num", type=int,
                       help="Highlight profiles created after a specified profile number.")
+  parser.add_argument("--print-all", action="store_true")
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
   utils.log("Loading connections")
   db = data_reader.Database(args.version)
-  if not args.max_dist:
+  if args.max_dist:
+    args.distr_dist = max(args.max_dist, args.distr_dist)
+  else:
     db.load_connections()
     args.max_dist = math.inf
 
@@ -166,6 +169,11 @@ def main():
       else:
         print(n, " ".join(f"{round(x):7_d}" for x in np.quantile(distr, [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0])))
       # print(f"{n:3d}  {distr[0]:_d} {distr[len(distr)//2]:_d} {distr[-1]:_d}")
+
+  if args.print_all:
+    utils.log("All Flow Counts")
+    for num_flows, person in ordered_people:
+      print(f"{dists[person]:2d}  {num_flows:5d}  {try_decode_wikitree_id(db, person)}")
 
   utils.log("Done")
 
