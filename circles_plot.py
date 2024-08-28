@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from collection.abc import Collection
+from collections.abc import Collection
 import json
 import math
 from pathlib import Path
@@ -30,7 +30,7 @@ def main():
   parser.add_argument("circles_json", nargs="+", type=Path)
   parser.add_argument("--wikitree-ids", "--ids", nargs="*")
   parser.add_argument("--max-plots", type=int, default=20)
-  parser.add_argument("--max-circle", type=int)
+  parser.add_argument("--max-circle", type=int, default=60)
 
   parser.add_argument("--log-y", action="store_true",
                       help="Plot with log-Y axis.")
