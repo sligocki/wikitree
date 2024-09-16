@@ -16,13 +16,17 @@ def main():
   parser.add_argument("wikitree_id")
   parser.add_argument("--time", action="store_true",
                       help="Include time-of-day in filename.")
+  parser.add_argument("--infile", "-f", type=Path)
   args = parser.parse_args()
 
-  utils.log("Loading URL")
-  params = urllib.parse.urlencode({"WikiTreeID": args.wikitree_id})
-  url = f"https://wikitree.sdms.si/function/WT100Circles/Tree.json?{params}"
-  with urllib.request.urlopen(url) as resp:
-    data_text = resp.read().decode("ascii")
+  if args.infile:
+    data_text = args.infile.read_text()
+  else:
+    params = urllib.parse.urlencode({"WikiTreeID": args.wikitree_id})
+    url = f"https://plus.wikitree.com/function/WT100Circles/Tree.json?{params}"
+    utils.log(f"Loading URL {url}")
+    with urllib.request.urlopen(url) as resp:
+      data_text = resp.read().decode("ascii")
 
   utils.log("Parsing JSON")
   try:
