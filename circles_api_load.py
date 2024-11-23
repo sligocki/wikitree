@@ -5,10 +5,18 @@ import datetime
 import json
 from pathlib import Path
 from pprint import pprint
+import subprocess
 import urllib.parse
-import urllib.request
 
 import utils
+
+
+def read_url(url : str) -> str:
+  # Recently this started failing with error:
+  #   urllib.error.URLError: <urlopen error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] ssl/tls alert handshake failure (_ssl.c:1000)>
+  # with urllib.request.urlopen(url) as resp:
+  #   data_text = resp.read().decode("ascii")
+  return subprocess.run(["curl", url], stdout=subprocess.PIPE, check=True, encoding="ascii").stdout
 
 
 def main():
@@ -25,8 +33,7 @@ def main():
     params = urllib.parse.urlencode({"WikiTreeID": args.wikitree_id})
     url = f"https://plus.wikitree.com/function/WT100Circles/Tree.json?{params}"
     utils.log(f"Loading URL {url}")
-    with urllib.request.urlopen(url) as resp:
-      data_text = resp.read().decode("ascii")
+    data_text = read_url(url)
 
   utils.log("Parsing JSON")
   try:
