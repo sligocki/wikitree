@@ -3,9 +3,7 @@
 import argparse
 import collections
 import json
-from pprint import pprint
 import random
-import time
 
 import bfs_tools
 import data_reader
@@ -39,14 +37,14 @@ def enum_user_nums(db, args):
   if args.random:
     all_people = list(db.enum_people())
     random.shuffle(all_people)
-    for user_id in all_people:
-      yield all_people
+    for user_num in all_people:
+      yield user_num
   else:
     for wikitree_id in args.wikitree_id:
       yield db.id2num(wikitree_id)
 
 
-if __name__ == "__main__":
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   parser.add_argument("--random", action="store_true")
@@ -80,3 +78,6 @@ if __name__ == "__main__":
       json.dump(circle_sizes, f)
 
   utils.log("Done")
+
+if __name__ == "__main__":
+  main()
