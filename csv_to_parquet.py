@@ -51,6 +51,7 @@ WIKITREE_PERSON_COLUMNS_OLD2NEW = {
   "Is Locked": "is_locked",
   "Is Guest": "is_guest",
   "Connected": "is_connected",
+  "Research Status": "research_status",
 }
 
 WIKITREE_MARRIAGE_COLUMNS_OLD2NEW = {

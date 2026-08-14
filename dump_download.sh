@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script for updating data dump from apps.wikitree.com
+# Script for updating data dump from apps-sftp.wikitree.com
 
 set -u
 set -e
@@ -12,7 +12,7 @@ echo "Checking version of data dump"
 # We export TIMESTAMP so that it can be used by dump_build.sh
 TIMESTAMP=$( \
   echo ls -l dumps/dump_people_users.csv.gz \
-  | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com \
+  | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps-sftp.wikitree.com \
   | python3 process_ls_date.py)
 echo "Data dump version: $TIMESTAMP"
 export TIMESTAMP
@@ -27,5 +27,5 @@ else
   mkdir data/dumps/$TIMESTAMP
   # cd in a subshell so that we don't permanently change directories.
   (cd data/dumps/$TIMESTAMP;
-   echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps.wikitree.com)
+   echo get dumps/*.csv.gz | sshpass -f "$PW_FILE" sftp ${USERNAME}@apps-sftp.wikitree.com)
 fi
