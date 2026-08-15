@@ -86,10 +86,16 @@ class UserRow(Row):
     return self.lookup("WikiTree ID_DB")
 
   def father_num(self) -> int | None:
-    return ParseInt(self.lookup("Father"))
+    f = ParseInt(self.lookup("Father"))
+    if f is not None and f == self.user_num():
+      return None
+    return f
 
   def mother_num(self) -> int | None:
-    return ParseInt(self.lookup("Mother"))
+    m = ParseInt(self.lookup("Mother"))
+    if m is not None and m == self.user_num():
+      return None
+    return m
 
   def birth_name(self) -> str:
     first_name = self.lookup("First Name")
