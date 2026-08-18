@@ -3,11 +3,17 @@ import networkx as nx
 import time
 import json
 import csv
+import argparse
+from pathlib import Path
 
 def main():
-    print("Loading fast_metric_core...")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("graph_in", type=Path)
+    args = parser.parse_args()
+
+    print(f"Loading graph from {args.graph_in}...")
     t0 = time.time()
-    G_multi = nx.read_weighted_edgelist('data/version/2026-07-26/graphs/family/fast_metric_core.multi.weight.edges.nx', create_using=nx.MultiGraph)
+    G_multi = nx.read_weighted_edgelist(args.graph_in, create_using=nx.MultiGraph)
     print(f"Loaded multigraph in {time.time() - t0:.2f}s")
     
     print("Converting to simple graph...")
@@ -76,7 +82,7 @@ def main():
     
     triconnected_comps.sort(key=len, reverse=True)
     
-    out_file = 'data/version/2026-07-26/graphs/family/triconnected_fast_metric_core.json'
+    out_file = args.graph_in.parent / f"triconnected_{args.graph_in.name}.json"
     print(f"Writing results to {out_file}...")
     with open(out_file, 'w') as f:
         json.dump(triconnected_comps, f)

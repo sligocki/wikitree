@@ -1,8 +1,11 @@
-import networkx as nx
-import graph_tools
-import time
-from pathlib import Path
+import argparse
 from collections import defaultdict
+from pathlib import Path
+import time
+
+import networkx as nx
+
+import graph_tools
 
 def remove_parallel_edges(G):
     """Globally remove all parallel edges, keeping only the minimum weight edge."""
@@ -67,9 +70,13 @@ def contract_metric_graph(G, new_edges_queue):
     return True, contracted_count
 
 def main():
-    print("Loading initial topological core...", flush=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("graph_in", type=Path)
+    args = parser.parse_args()
+    
+    print(f"Loading initial topological core from {args.graph_in}...", flush=True)
     t0 = time.time()
-    G = graph_tools.load_graph('data/version/2026-07-26/graphs/family/topo.multi.weight.edges.nx')
+    G = graph_tools.load_graph(args.graph_in)
     print(f"Loaded in {time.time() - t0:.2f}s", flush=True)
     
     total_pruned = 0
@@ -158,9 +165,9 @@ def main():
     print(f"Total nodes contracted: {total_contracted}", flush=True)
     print(f"Final Metric Core: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges", flush=True)
     
-    out_file = 'data/version/2026-07-26/graphs/family/fast_metric_core'
+    out_file = args.graph_in.parent / 'fast_metric_core'
     print(f"Saving Metric Core to {out_file} ...", flush=True)
-    graph_tools.write_graph(G, Path(out_file))
+    graph_tools.write_graph(G, out_file)
     print("Saved.", flush=True)
 
 if __name__ == "__main__":
