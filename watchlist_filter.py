@@ -1,6 +1,5 @@
 # Filter watchlist by various criteria to find profiles that might be worth removing.
-# Get JSON for wishlist at:
-#   https://apps.wikitree.com/apps/wikitree-api-examples/getWatchlist/javascript.html
+# Use `watchlist_download.py` to load watchlist.
 
 import argparse
 import json
@@ -35,10 +34,14 @@ def main():
   parser.add_argument("--watchlist", type=Path,
                       default=Path("data/watchlist.json"))
 
-  # Filter parameters
+  # Filter parameters. Which profiles do we expect to be in watchlist?
+  #   1) Any profile within CC7
   parser.add_argument("--circles", type=int, default=7)
+  #   2) Any ancestory within 10 generations
   parser.add_argument("--ancestor-gens", type=int, default=10)
+  #   3) Any grandchild of such an ancestor
   parser.add_argument("--descendant-gens", type=int, default=2)
+  #   4) Spouses of any relative
 
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
@@ -51,36 +54,35 @@ def main():
     js = json.load(f)
     assert len(js) == 1
     assert js[0]["watchlistCount"] == len(js[0]["watchlist"])
-    watchlist = frozenset(x["Id"] for x in js[0]["watchlist"])
-  utils.log(f"Loaded watchlist. Size: {len(watchlist):_}")
-  watchlist = frozenset(x for x in watchlist if db.num2id(x))
-  utils.log(f"Filtered watchlist down to: {len(watchlist):_}")
+    watchlist = frozenset(x["Id"] for x in js[0]["watchlist"] if "Id" in x)
+  utils.log(f"Watchlist size: {len(watchlist):_}")
 
-  dists, _, _, _ = distances.get_distances(
-    db, focus_num, dist_cutoff=args.circles)
+  watchlist = frozenset(x for x in watchlist if db.num2id(x))
+  utils.log(f"Filtered to data dump: {len(watchlist):_} (rest are probably private profiles)")
+
+  dists, _, _, _ = distances.get_distances(db, focus_num, dist_cutoff=args.circles)
   circles = frozenset(dists.keys())
-  utils.log(f"Loaded {len(circles):_} people within {args.circles} of {focus_id}")
+  utils.log(f"  # People within {args.circles} of {focus_id}: {len(circles):_}")
 
   ancestors = frozenset(load_ancestors(
     db, focus_num, args.ancestor_gens))
-  utils.log(f"Loaded {len(ancestors):_} ancestors of {focus_id}")
+  utils.log(f"  # Ancestors of {focus_id}: {len(ancestors):_}")
 
   relatives = ancestors.union(*[
     load_descendants(db, x, args.descendant_gens)
     for x in ancestors])
-  utils.log(f"Loaded {len(relatives):_} relatives of {focus_id}")
+  utils.log(f"  # Relatives of {focus_id}: {len(relatives):_}")
 
   kin = relatives.union(*[db.partners_of(x) for x in relatives])
-  utils.log(f"Loaded {len(kin):_} kin of {focus_id}")
+  utils.log(f"  # Kin of {focus_id}: {len(kin):_}")
 
-  good = circles | kin
-  utils.log(f"  # Kin or in circles: {len(good):_}")
+  wanted = circles | kin
+  utils.log(f"  # Wanted in watchlist: {len(wanted):_}")
 
-  print()
-  print(f"    * {len(good - watchlist)=}")
-  print(f"    * {len(watchlist - good)=}")
+  print(f"    * {len(wanted - watchlist)=}")
+  print(f"    * {len(watchlist - wanted)=}")
 
-  bad = watchlist - good
+  bad = watchlist - wanted
   print([db.num2id(x) for x in random.sample(list(bad), 20)])
 
 

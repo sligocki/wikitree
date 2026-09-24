@@ -1,6 +1,5 @@
 # Find people missing from watchlist from the nearest circles.
-# Get JSON for wishlist at:
-#   https://apps.wikitree.com/apps/wikitree-api-examples/getWatchlist/javascript.html
+# Use `watchlist_download.py` to load watchlist.
 
 import argparse
 import json
@@ -39,7 +38,7 @@ def main():
     js = json.load(f)
     assert len(js) == 1
     assert js[0]["watchlistCount"] == len(js[0]["watchlist"])
-    watchlist = frozenset(x["Id"] for x in js[0]["watchlist"])
+    watchlist = frozenset(x["Id"] for x in js[0]["watchlist"] if "Id" in x)
   utils.log(f"Loaded watchlist. Size: {len(watchlist):_}")
 
   search(db, focus_num, watchlist, args.max_dist)
