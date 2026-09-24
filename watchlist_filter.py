@@ -4,7 +4,6 @@
 import argparse
 import json
 from pathlib import Path
-import random
 
 import data_reader
 import distances
@@ -82,8 +81,22 @@ def main():
   print(f"    * {len(wanted - watchlist)=}")
   print(f"    * {len(watchlist - wanted)=}")
 
-  bad = watchlist - wanted
-  print([db.num2id(x) for x in random.sample(list(bad), 20)])
+  unwanted = watchlist - wanted
+
+  max_dist = 11
+  dists, _, _, _ = distances.get_distances(db, focus_num, dist_cutoff=max_dist)
+  utils.log(f"Loaded {max_dist} circles: {len(dists):_}")
+
+  display = []
+  for x in unwanted:
+    display.append((dists.get(x, max_dist), db.num2id(x)))
+  display.sort(reverse=True)
+
+  print()
+  print("Most distant in watchlist:")
+  for (d, id) in display[:20]:
+    print(d, id)
+    print(f"  * https://www.wikitree.com/index.php?title=Special:Connection&action=connect&person1Name=Ligocki-7&person2Name={id}")
 
 
 main()
