@@ -4,10 +4,6 @@ Find all of the shortest length connections between two people.
 """
 
 import argparse
-import collections
-import random
-import sys
-import time
 
 import graphviz
 
@@ -59,6 +55,32 @@ class Bfs(object):
     """Get a path from person -> self.start (not including person)."""
     for path in self.get_out_paths(person):
       yield list(reversed(path))
+
+
+def get_distance(db, person1, person2, rel_types=frozenset(["parent", "child", "sibling", "spouse"]), max_size=None) -> int | None:
+  """Returns the shortest distance between person1 and person2, or None if not found within max_size limit."""
+  if person1 == person2:
+    return 0
+
+  bfs1 = Bfs(db, person1, rel_types)
+  bfs2 = Bfs(db, person2, rel_types)
+
+  while not (len(bfs1.todo) == 0 == len(bfs2.todo)):
+    if max_size and len(bfs1.paths) + len(bfs2.paths) > max_size:
+      return None
+
+    if len(bfs1.todo) <= len(bfs2.todo):
+      this = bfs1
+      other = bfs2
+    else:
+      this = bfs2
+      other = bfs1
+
+    for person in this.next_gen():
+      if person in other.paths:
+        return bfs1.dists[person] + bfs2.dists[person]
+
+  return None
 
 
 def find_connections(db, person1, person2, rel_types=frozenset(["parent", "child", "sibling", "spouse"]), max_dist=None):
