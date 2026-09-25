@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import data_reader
@@ -42,6 +43,8 @@ def main():
   parser.add_argument("--descendant-gens", type=int, default=2)
   #   4) Spouses of any relative
 
+  parser.add_argument("--max-dist-sort", type=int, default=10)
+  parser.add_argument("--unwanted-file", type=Path, default=Path("results/watch_unwanted.tsv"))
   parser.add_argument("--version", help="Data version (defaults to most recent).")
   args = parser.parse_args()
 
@@ -83,20 +86,19 @@ def main():
 
   unwanted = watchlist - wanted
 
-  max_dist = 11
-  dists, _, _, _ = distances.get_distances(db, focus_num, dist_cutoff=max_dist)
-  utils.log(f"Loaded {max_dist} circles: {len(dists):_}")
+  dists, _, _, _ = distances.get_distances(db, focus_num, dist_cutoff=args.max_dist_sort)
+  utils.log(f"Loaded {args.max_dist_sort} circles: {len(dists):_}")
 
   display = []
   for x in unwanted:
-    display.append((dists.get(x, max_dist), db.num2id(x)))
+    display.append((dists.get(x, math.inf), db.num2id(x)))
   display.sort(reverse=True)
+  utils.log("Sorted")
 
-  print()
-  print("Most distant in watchlist:")
-  for (d, id) in display[:20]:
-    print(d, id)
-    print(f"  * https://www.wikitree.com/index.php?title=Special:Connection&action=connect&person1Name=Ligocki-7&person2Name={id}")
+  with open(args.unwanted_file, "w") as f:
+    for (d, id) in display:
+      f.write(f"{d}\t{id}\thttps://www.wikitree.com/index.php?title=Special:Connection&action=connect&person1Name=Ligocki-7&person2Name={id}\n")
+  utils.log(f"Wrote {len(display):_} rows to {args.unwanted_file}")
 
 
 main()
